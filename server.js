@@ -81,13 +81,8 @@ if (fs.existsSync(legacyInventoriesPath)) {
 }
 
 // Security middleware
-app.use(helmet({ crossOriginResourcePolicy: false }));
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(helmet());
+app.use(cors());
 
 // Rate limiting - general (socket.io transport polling is exempt: it is
 // long-lived realtime traffic, not API abuse, and shares the user's IP)
