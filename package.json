@@ -8,7 +8,7 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "nodemon server.js",
     "client": "cd frontend && npm start",
-    "build": "npm run build --prefix frontend",
+    "build": "echo 'Frontend deployed separately on Cloudflare Pages — skipping build'",
     "install-all": "npm install && cd frontend && npm install",
     "turnon": "concurrently \"npm run server\" \"npm run client\""
   },
