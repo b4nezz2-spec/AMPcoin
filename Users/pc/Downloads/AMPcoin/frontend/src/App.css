@@ -1,0 +1,45 @@
+/* Add these styles to match the profile page design */
+.profile-page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.profile-info {
+  margin-bottom: 20px;
+}
+
+.profile-info h2 {
+  color: #ffffff;
+  margin-bottom: 10px;
+  font-size: 24px;
+}
+
+.profile-info p {
+  color: #cccccc;
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.inventory-section {
+  margin-top: 20px;
+}
+
+.inventory-section h3 {
+  color: #00aaff;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.inventory-section p {
+  color: #aaaaaa;
+  font-size: 14px;
+}

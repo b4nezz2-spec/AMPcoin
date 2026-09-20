@@ -1,0 +1,467 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useAuth } from '../context/AuthContext';
+import ProfileModal from './ProfileModal';
+
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const DEFAULT_AVATAR = '/default-avatar.png';
+
+const profileCache = new Map();
+const profilePending = new Map();
+
+async function resolveUserProfile(identifier, force = false) {
+  if (!identifier) return { avatar: '', displayName: '' };
+  const key = String(identifier).toLowerCase();
+  if (!force && profileCache.has(key)) return profileCache.get(key);
+  if (profilePending.has(key)) return profilePending.get(key);
+
+  const promise = (async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/users/profile/${encodeURIComponent(identifier)}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const result = {
+        avatar: data.avatar || '',
+        displayName: data.displayName || ''
+      };
+      profileCache.set(key, result);
+      return result;
+    } catch (error) {
+      console.warn('Failed to resolve profile for', identifier, error.message);
+      return { avatar: '', displayName: '' };
+    } finally {
+      profilePending.delete(key);
+    }
+  })();
+
+  profilePending.set(key, promise);
+  return promise;
+}
+
+function getFallbackAvatar(robloxUserId) {
+  if (robloxUserId) {
+    return `https://www.roblox.com/headshot-thumbnail/image?userId=${robloxUserId}&width=150&height=150&format=png`;
+  }
+  return DEFAULT_AVATAR;
+}
+
+function ChatAvatar({ msg, resolved }) {
+  const avatarSrc = resolved?.avatar || msg.avatar || getFallbackAvatar(msg.robloxUserId);
+  return (
+    <div className="chat-avatar-wrap">
+      <img
+        src={avatarSrc || DEFAULT_AVATAR}
+        alt=""
+        className="chat-avatar"
+        onError={(e) => {
+          const fb = getFallbackAvatar(msg.robloxUserId);
+          if (e.target.src !== fb) e.target.src = fb;
+          else if (e.target.src !== DEFAULT_AVATAR) e.target.src = DEFAULT_AVATAR;
+        }}
+      />
+    </div>
+  );
+}
+
+const ChatPanel = ({ socket }) => {
+  const [messages, setMessages] = useState([]);
+  const [inputMessage, setInputMessage] = useState('');
+  const [onlineUsers, setOnlineUsers] = useState(0);
+  const [isTyping, setIsTyping] = useState({});
+  const [resolvedProfiles, setResolvedProfiles] = useState({});
+  const [sending, setSending] = useState(false);
+  const [cooldownLeft, setCooldownLeft] = useState(0); // seconds left on 5s chat cooldown
+  const [viewProfile, setViewProfile] = useState(null); // chat user profile modal
+  const cooldownTimer = useRef(null);
+  const { user } = useAuth();
+  const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
+  const formRef = useRef(null);
+
+  const resolveAllProfiles = useCallback(async (msgs) => {
+    const needed = msgs.filter((m) => {
+      if (!m.userId && !m.robloxUsername) return false;
+      const key = String(m.userId || m.robloxUsername).toLowerCase();
+      const cached = profileCache.has(key);
+      if (cached) return false;
+      return !m.avatar || !m.displayName;
+    });
+    const unique = [];
+    const seen = new Set();
+    for (const m of needed) {
+      const key = String(m.userId || m.robloxUsername).toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      unique.push(m);
+    }
+    if (unique.length === 0) return;
+    const patches = {};
+    await Promise.all(
+      unique.map(async (m) => {
+        const identifier = m.robloxUsername || m.userId;
+        if (!identifier) return;
+        const key = String(identifier).toLowerCase();
+        const profile = await resolveUserProfile(identifier);
+        if (profile.avatar || profile.displayName) {
+          patches[key] = profile;
+        }
+      })
+    );
+    if (Object.keys(patches).length > 0) {
+      setResolvedProfiles((prev) => ({ ...prev, ...patches }));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (socket) {
+      socket.emit('joinChat', { userId: user?.id, username: user?.displayName || 'Anonymous' });
+
+      const onReceive = (message) => {
+        setMessages((prev) => [...prev, message]);
+      };
+      const onOnline = (data) => {
+        setOnlineUsers(data.count);
+      };
+      const onTypingStart = (data) => {
+        setIsTyping((prev) => ({ ...prev, [data.userId]: true }));
+      };
+      const onTypingStop = (data) => {
+        setIsTyping((prev) => {
+          const next = { ...prev };
+          delete next[data.userId];
+          return next;
+        });
+      };
+
+      socket.on('receiveMessage', onReceive);
+      socket.on('onlineCountUpdate', onOnline);
+      socket.on('typingStart', onTypingStart);
+      socket.on('typingStop', onTypingStop);
+
+      fetchRecentMessages();
+      fetchOnlineCount();
+
+      return () => {
+        socket.off('receiveMessage', onReceive);
+        socket.off('onlineCountUpdate', onOnline);
+        socket.off('typingStart', onTypingStart);
+        socket.off('typingStop', onTypingStop);
+      };
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [socket, user]);
+
+  useEffect(() => {
+    resolveAllProfiles(messages);
+  }, [messages, resolveAllProfiles]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const fetchOnlineCount = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/chat/online`);
+      if (res.ok) {
+        const data = await res.json();
+        setOnlineUsers(data.count || 0);
+      }
+    } catch (e) {
+      console.warn('Online count fetch error', e.message);
+    }
+  };
+
+  const fetchRecentMessages = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/api/chat/messages`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(data.messages || []);
+      }
+    } catch (error) {
+      console.error('Error fetching chat messages:', error);
+    }
+  };
+
+  const startCooldown = (seconds) => {
+    const secs = Math.max(1, Math.ceil(seconds || 5));
+    setCooldownLeft(secs);
+    if (cooldownTimer.current) clearInterval(cooldownTimer.current);
+    cooldownTimer.current = setInterval(() => {
+      setCooldownLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(cooldownTimer.current);
+          cooldownTimer.current = null;
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  useEffect(() => () => {
+    if (cooldownTimer.current) clearInterval(cooldownTimer.current);
+  }, []);
+
+  const handleSendMessage = async (e) => {
+    if (e) e.preventDefault();
+    const trimmed = inputMessage.trim();
+    if (!trimmed || !user || sending || cooldownLeft > 0) return;
+
+    setSending(true);
+    const displayName =
+      user.robloxDisplayName || user.displayName || user.robloxUsername || 'Anonymous';
+    const optimisticMsg = {
+      id: `opt-${Date.now()}`,
+      userId: user.id,
+      robloxUsername: user.robloxUsername || '',
+      robloxUserId: user.robloxUserId || null,
+      username: displayName,
+      displayName: displayName,
+      avatar: user.avatar || '',
+      message: trimmed,
+      timestamp: new Date().toISOString(),
+      type: 'user_message',
+      optimistic: true
+    };
+
+    setMessages((prev) => [...prev, optimisticMsg]);
+    setInputMessage('');
+
+    try {
+      if (socket && socket.connected) {
+        socket.emit('sendMessage', optimisticMsg);
+      }
+      const response = await fetch(`${API_BASE}/api/chat/send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ message: trimmed })
+      });
+
+      if (response.ok) {
+        const saved = await response.json();
+        if (socket && socket.connected) {
+          socket.emit('chatMessage', saved);
+        }
+        setMessages((prev) =>
+          prev.map((m) => (m.id === optimisticMsg.id ? saved : m))
+        );
+        startCooldown(5);
+      } else {
+        const data = await response.json().catch(() => ({}));
+        // Rejected (cooldown/mute/rate-limit): drop the ghost message, keep the text
+        setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
+        setInputMessage(trimmed);
+        if (response.status === 429) {
+          startCooldown(data.retryAfter || 5);
+        }
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+    } finally {
+      setSending(false);
+      if (inputRef.current) inputRef.current.focus();
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setInputMessage(value);
+
+    if (socket && user) {
+      if (value.length > 0) {
+        socket.emit('typingStart', { userId: user.id, username: user.displayName });
+        clearTimeout(window.typingTimeout);
+        window.typingTimeout = setTimeout(() => {
+          socket.emit('typingStop', { userId: user.id });
+        }, 1500);
+      } else {
+        socket.emit('typingStop', { userId: user.id });
+      }
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (formRef.current) formRef.current.requestSubmit();
+    }
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const formatTime = (timestamp) => {
+    try {
+      return new Date(timestamp).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return '';
+    }
+  };
+
+  const getTypingUsers = () => {
+    return Object.entries(isTyping)
+      .filter(([, typing]) => typing)
+      .map(([userId]) => {
+        const userMsg = messages.find((m) => String(m.userId) === String(userId));
+        return (
+          <span key={userId} className="typing-user">
+            {userMsg?.displayName || userMsg?.username || `User ${userId}`}
+          </span>
+        );
+      });
+  };
+
+  const getResolved = (msg) => {
+    const key = String(msg.userId || msg.robloxUsername || '').toLowerCase();
+    return resolvedProfiles[key] || null;
+  };
+
+  const openUserProfile = (msg) => {
+    const resolved = getResolved(msg);
+    setViewProfile({
+      id: msg.userId,
+      robloxUsername: msg.robloxUsername || '',
+      robloxDisplayName: resolved?.displayName || msg.displayName || msg.username || '',
+      displayName: resolved?.displayName || msg.displayName || msg.username || msg.robloxUsername || 'Anonymous',
+      avatar: resolved?.avatar || msg.avatar || '',
+      robloxUserId: msg.robloxUserId || null
+    });
+  };
+
+  return (
+    <div className="chat-panel">
+      <div className="chat-header">
+        <h3 className="chat-title">💬 Live Chat</h3>
+        <div className="chat-stats">
+          <span className="online-dot" />
+          <span className="online-count">{onlineUsers} online</span>
+        </div>
+      </div>
+
+      <div className="chat-messages">
+        {messages.length === 0 ? (
+          <div className="chat-empty">No messages yet. Say hello! 👋</div>
+        ) : (
+          messages.map((msg, idx) => {
+            const resolved = getResolved(msg);
+            const isOwn = user && String(msg.userId) === String(user.id);
+            const displayName =
+              resolved?.displayName ||
+              msg.displayName ||
+              msg.username ||
+              msg.robloxUsername ||
+              'Anonymous';
+            return (
+              <div
+                key={msg.id || idx}
+                className={`chat-message-row ${isOwn ? 'own-row' : 'other-row'}`}
+              >
+                {!isOwn && (
+                  <span onClick={() => openUserProfile(msg)} style={{ cursor: 'pointer' }}>
+                    <ChatAvatar msg={msg} resolved={resolved} />
+                  </span>
+                )}
+                <div className={`chat-bubble ${isOwn ? 'own' : 'other'}`}>
+                  <div className="bubble-header">
+                    <span
+                      className="bubble-username bubble-username-clickable"
+                      title={msg.robloxUsername || ''}
+                      onClick={() => openUserProfile(msg)}
+                    >
+                      {displayName}
+                    </span>
+                    <span className="bubble-timestamp">{formatTime(msg.timestamp)}</span>
+                  </div>
+                  <div className="bubble-content">{msg.message}</div>
+                </div>
+                {isOwn && (
+                  <span onClick={() => openUserProfile(msg)} style={{ cursor: 'pointer' }}>
+                    <ChatAvatar msg={msg} resolved={resolved} />
+                  </span>
+                )}
+              </div>
+            );
+          })
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {Object.keys(isTyping).length > 0 && (
+        <div className="typing-indicator">
+          <span className="typing-dots">
+            <span />
+            <span />
+            <span />
+          </span>
+          <span className="typing-users-wrap">{getTypingUsers()} typing...</span>
+        </div>
+      )}
+
+      <form
+        ref={formRef}
+        className="chat-input-form"
+        onSubmit={handleSendMessage}
+      >
+        <div className="chat-input-wrap">
+          <input
+            ref={inputRef}
+            type="text"
+            value={inputMessage}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            placeholder="Type your message..."
+            className="chat-input"
+            maxLength={500}
+            disabled={sending || !user}
+            autoComplete="off"
+          />
+          <span className="chat-char-count">{inputMessage.length}/500</span>
+        </div>
+        <button
+          type="submit"
+          className="send-button"
+          disabled={!inputMessage.trim() || sending || !user || cooldownLeft > 0}
+          title={cooldownLeft > 0 ? `Wait ${cooldownLeft}s before sending again` : 'Send'}
+        >
+          {sending ? (
+            <span className="send-spinner" />
+          ) : cooldownLeft > 0 ? (
+            <>
+              <span className="send-text">Wait {cooldownLeft}s</span>
+            </>
+          ) : (
+            <>
+              <span className="send-icon">➤</span>
+              <span className="send-text">Send</span>
+            </>
+          )}
+        </button>
+      </form>
+
+      {viewProfile && (
+        <ProfileModal
+          viewer={user}
+          profileUser={viewProfile}
+          isOwn={user && String(user.id) === String(viewProfile.id)}
+          socket={socket}
+          onClose={() => setViewProfile(null)}
+        />
+      )}
+    </div>
+  );
+};
+
+export default ChatPanel;

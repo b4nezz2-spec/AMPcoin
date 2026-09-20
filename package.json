@@ -1,0 +1,35 @@
+{
+  "name": "ampcoin",
+  "version": "1.0.0",
+  "description": "An Adopt Me Casino-style item betting platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "nodemon server.js",
+    "client": "cd frontend && npm start",
+    "build": "npm run build --prefix frontend",
+    "install-all": "npm install && cd frontend && npm install",
+    "turnon": "npm start && cd frontend && npm start"
+  },
+  "keywords": ["casino", "gaming", "roblox", "adoptme"],
+  "author": "AMPcoin",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^7.5.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "helmet": "^7.0.0",
+    "express-rate-limit": "^6.10.0",
+    "uuid": "^9.0.0",
+    "crypto": "^1.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "concurrently": "^8.2.0"
+  }
+}

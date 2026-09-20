@@ -1,0 +1,2389 @@
+{
+  "coinflips": [],
+  "inventories": [
+    {
+      "id": "inv-rxndy",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "items": [],
+      "totalValue": 0,
+      "createdAt": "2026-09-19T20:00:00.000Z",
+      "updatedAt": "2026-09-20T10:08:05.073Z"
+    },
+    {
+      "id": "inv-admin",
+      "userId": "2",
+      "items": [
+        {
+          "itemId": "crow-003",
+          "name": "Crow",
+          "value": 4000,
+          "rarity": "rare",
+          "quantity": 1,
+          "image": "https://images.rbxcdn.com/ce3b29cce2cbcfb1c1bf436c641d4c2b.png",
+          "createdAt": "2026-09-19T20:00:00.000Z"
+        },
+        {
+          "id": "bat-dragon-001",
+          "itemId": "bat-dragon-001",
+          "name": "Bat Dragon",
+          "itemName": "Bat Dragon",
+          "value": 12000,
+          "rarity": "legendary",
+          "quantity": 1,
+          "image": "https://images.rbxcdn.com/3ad2fa86d1bfbb45277864f7b6b1580f.png",
+          "imageUrl": "https://images.rbxcdn.com/3ad2fa86d1bfbb45277864f7b6b1580f.png",
+          "details": {
+            "name": "Bat Dragon",
+            "imageUrl": "https://images.rbxcdn.com/3ad2fa86d1bfbb45277864f7b6b1580f.png",
+            "rarity": "legendary"
+          },
+          "createdAt": "2026-09-20T00:22:11.090Z",
+          "updatedAt": "2026-09-20T00:22:11.090Z"
+        }
+      ],
+      "totalValue": 16000,
+      "createdAt": "2026-09-19T20:00:00.000Z",
+      "updatedAt": "2026-09-20T00:22:11.090Z"
+    },
+    {
+      "id": "inv-demo",
+      "userId": "1",
+      "items": [
+        {
+          "itemId": "crow-003",
+          "name": "Crow",
+          "value": 4000,
+          "rarity": "rare",
+          "quantity": 1,
+          "image": "https://images.rbxcdn.com/ce3b29cce2cbcfb1c1bf436c641d4c2b.png",
+          "createdAt": "2026-09-19T20:00:00.000Z"
+        }
+      ],
+      "totalValue": 4000,
+      "createdAt": "2026-09-19T20:00:00.000Z",
+      "updatedAt": "2026-09-19T20:00:00.000Z"
+    },
+    {
+      "id": "inv-c05a3398-c7be-4e1a-81fd-93a8c513145f",
+      "userId": "c05a3398-c7be-4e1a-81fd-93a8c513145f",
+      "items": [
+        {
+          "id": "a5966f18-73a7-4e90-b38c-dadf3d5e3bae",
+          "itemId": "a5966f18-73a7-4e90-b38c-dadf3d5e3bae",
+          "name": "Frost Dragon",
+          "itemName": "Frost Dragon",
+          "value": 15000,
+          "rarity": "mythic",
+          "quantity": 1,
+          "image": "https://images.rbxcdn.com/9788f8dcf6e5e8e8ea476e33dfdbbfef.png",
+          "imageUrl": "https://images.rbxcdn.com/9788f8dcf6e5e8e8ea476e33dfdbbfef.png",
+          "details": {
+            "name": "Frost Dragon",
+            "imageUrl": "https://images.rbxcdn.com/9788f8dcf6e5e8e8ea476e33dfdbbfef.png",
+            "rarity": "mythic"
+          },
+          "createdAt": "2026-09-20T01:28:39.523Z",
+          "updatedAt": "2026-09-20T01:28:39.523Z"
+        },
+        {
+          "id": "bat-dragon-001",
+          "itemId": "bat-dragon-001",
+          "name": "Bat Dragon",
+          "itemName": "Bat Dragon",
+          "value": 12000,
+          "rarity": "legendary",
+          "quantity": 1,
+          "image": "https://images.rbxcdn.com/3ad2fa86d1bfbb45277864f7b6b1580f.png",
+          "imageUrl": "https://images.rbxcdn.com/3ad2fa86d1bfbb45277864f7b6b1580f.png",
+          "details": {
+            "name": "Bat Dragon",
+            "imageUrl": "https://images.rbxcdn.com/3ad2fa86d1bfbb45277864f7b6b1580f.png",
+            "rarity": "legendary"
+          },
+          "createdAt": "2026-09-20T01:29:01.918Z",
+          "updatedAt": "2026-09-20T01:29:01.918Z"
+        },
+        {
+          "id": "crow-003",
+          "itemId": "crow-003",
+          "name": "Crow",
+          "itemName": "Crow",
+          "value": 4000,
+          "rarity": "rare",
+          "quantity": 6,
+          "image": "https://images.rbxcdn.com/ce3b29cce2cbcfb1c1bf436c641d4c2b.png",
+          "imageUrl": "https://images.rbxcdn.com/ce3b29cce2cbcfb1c1bf436c641d4c2b.png",
+          "details": {
+            "name": "Crow",
+            "imageUrl": "https://images.rbxcdn.com/ce3b29cce2cbcfb1c1bf436c641d4c2b.png",
+            "rarity": "rare"
+          },
+          "createdAt": "2026-09-20T01:53:32.299Z",
+          "updatedAt": "2026-09-20T01:53:32.299Z"
+        }
+      ],
+      "totalValue": 51000,
+      "createdAt": "2026-09-19T23:42:59.540Z",
+      "updatedAt": "2026-09-20T01:58:46.876Z"
+    },
+    {
+      "id": "inv-fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "userId": "fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "items": [
+        {
+          "id": "amvgg-168",
+          "itemId": "amvgg-168",
+          "name": "Shadow Dragon",
+          "itemName": "Shadow Dragon",
+          "value": 5600,
+          "rarity": "legendary",
+          "quantity": 1,
+          "image": "https://amvgg.net/wp-content/uploads/pets/Shadow Dragon.webp",
+          "imageUrl": "https://amvgg.net/wp-content/uploads/pets/Shadow Dragon.webp",
+          "details": {
+            "name": "Shadow Dragon",
+            "imageUrl": "https://amvgg.net/wp-content/uploads/pets/Shadow Dragon.webp",
+            "rarity": "legendary"
+          },
+          "createdAt": "2026-09-20T02:23:01.658Z",
+          "updatedAt": "2026-09-20T09:19:14.571Z"
+        },
+        {
+          "id": "amvgg-169",
+          "itemId": "amvgg-169",
+          "name": "Giraffe",
+          "itemName": "Giraffe",
+          "value": 3220,
+          "rarity": "legendary",
+          "quantity": 1,
+          "image": "https://amvgg.net/wp-content/uploads/pets/Giraffe.webp",
+          "imageUrl": "https://amvgg.net/wp-content/uploads/pets/Giraffe.webp",
+          "details": {
+            "name": "Giraffe",
+            "imageUrl": "https://amvgg.net/wp-content/uploads/pets/Giraffe.webp",
+            "rarity": "legendary"
+          },
+          "createdAt": "2026-09-20T02:23:01.658Z",
+          "updatedAt": "2026-09-20T09:19:14.599Z"
+        },
+        {
+          "id": "amvgg-171",
+          "itemId": "amvgg-171",
+          "name": "Owl",
+          "itemName": "Owl",
+          "value": 2050,
+          "rarity": "legendary",
+          "quantity": 1,
+          "image": "https://amvgg.net/wp-content/uploads/pets/Owl.webp",
+          "imageUrl": "https://amvgg.net/wp-content/uploads/pets/Owl.webp",
+          "details": {
+            "name": "Owl",
+            "imageUrl": "https://amvgg.net/wp-content/uploads/pets/Owl.webp",
+            "rarity": "legendary"
+          },
+          "createdAt": "2026-09-20T02:23:01.658Z",
+          "updatedAt": "2026-09-20T09:19:14.614Z"
+        },
+        {
+          "id": "amvgg-1",
+          "itemId": "amvgg-1",
+          "name": "African Wild Dog",
+          "itemName": "African Wild Dog",
+          "value": 1980,
+          "rarity": "epic",
+          "quantity": 1,
+          "image": "https://amvgg.net/wp-content/uploads/pets/African Wild Dog.webp",
+          "imageUrl": "https://amvgg.net/wp-content/uploads/pets/African Wild Dog.webp",
+          "details": {
+            "name": "African Wild Dog",
+            "imageUrl": "https://amvgg.net/wp-content/uploads/pets/African Wild Dog.webp",
+            "rarity": "epic"
+          },
+          "createdAt": "2026-09-20T02:23:01.658Z",
+          "updatedAt": "2026-09-20T09:19:14.620Z"
+        }
+      ],
+      "totalValue": 12850,
+      "createdAt": "2026-09-20T01:19:12.452Z",
+      "updatedAt": "2026-09-20T10:05:20.135Z"
+    }
+  ],
+  "blackjackGames": [
+    {
+      "id": "5a3106ea-519f-4fc0-bf7e-755c5dd4443a",
+      "playerId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "playerName": "RXNDY",
+      "wagerItems": [
+        {
+          "id": "crow-003",
+          "itemId": "crow-003",
+          "name": "Crow",
+          "itemName": "Crow",
+          "value": 4000,
+          "rarity": "rare",
+          "quantity": 4,
+          "image": "https://images.rbxcdn.com/ce3b29cce2cbcfb1c1bf436c641d4c2b.png"
+        }
+      ],
+      "betValue": 16000,
+      "playerHand": [
+        {
+          "suit": "spades",
+          "rank": "3",
+          "value": 3
+        },
+        {
+          "suit": "spades",
+          "rank": "4",
+          "value": 4
+        }
+      ],
+      "dealerHand": [
+        {
+          "suit": "spades",
+          "rank": "J",
+          "value": 10
+        },
+        {
+          "suit": "spades",
+          "rank": "K",
+          "value": 10
+        }
+      ],
+      "deck": [
+        {
+          "suit": "clubs",
+          "rank": "Q",
+          "value": 10
+        },
+        {
+          "suit": "spades",
+          "rank": "A",
+          "value": 11
+        },
+        {
+          "suit": "hearts",
+          "rank": "7",
+          "value": 7
+        },
+        {
+          "suit": "clubs",
+          "rank": "J",
+          "value": 10
+        },
+        {
+          "suit": "clubs",
+          "rank": "7",
+          "value": 7
+        },
+        {
+          "suit": "spades",
+          "rank": "6",
+          "value": 6
+        },
+        {
+          "suit": "hearts",
+          "rank": "8",
+          "value": 8
+        },
+        {
+          "suit": "spades",
+          "rank": "2",
+          "value": 2
+        },
+        {
+          "suit": "hearts",
+          "rank": "2",
+          "value": 2
+        },
+        {
+          "suit": "clubs",
+          "rank": "4",
+          "value": 4
+        },
+        {
+          "suit": "hearts",
+          "rank": "10",
+          "value": 10
+        },
+        {
+          "suit": "clubs",
+          "rank": "9",
+          "value": 9
+        },
+        {
+          "suit": "diamonds",
+          "rank": "9",
+          "value": 9
+        },
+        {
+          "suit": "diamonds",
+          "rank": "2",
+          "value": 2
+        },
+        {
+          "suit": "diamonds",
+          "rank": "8",
+          "value": 8
+        },
+        {
+          "suit": "clubs",
+          "rank": "5",
+          "value": 5
+        },
+        {
+          "suit": "clubs",
+          "rank": "2",
+          "value": 2
+        },
+        {
+          "suit": "diamonds",
+          "rank": "J",
+          "value": 10
+        },
+        {
+          "suit": "hearts",
+          "rank": "5",
+          "value": 5
+        },
+        {
+          "suit": "spades",
+          "rank": "Q",
+          "value": 10
+        },
+        {
+          "suit": "clubs",
+          "rank": "3",
+          "value": 3
+        },
+        {
+          "suit": "spades",
+          "rank": "5",
+          "value": 5
+        },
+        {
+          "suit": "hearts",
+          "rank": "K",
+          "value": 10
+        },
+        {
+          "suit": "hearts",
+          "rank": "A",
+          "value": 11
+        },
+        {
+          "suit": "hearts",
+          "rank": "6",
+          "value": 6
+        },
+        {
+          "suit": "clubs",
+          "rank": "6",
+          "value": 6
+        },
+        {
+          "suit": "clubs",
+          "rank": "K",
+          "value": 10
+        },
+        {
+          "suit": "hearts",
+          "rank": "4",
+          "value": 4
+        },
+        {
+          "suit": "diamonds",
+          "rank": "7",
+          "value": 7
+        },
+        {
+          "suit": "clubs",
+          "rank": "10",
+          "value": 10
+        },
+        {
+          "suit": "hearts",
+          "rank": "Q",
+          "value": 10
+        },
+        {
+          "suit": "diamonds",
+          "rank": "4",
+          "value": 4
+        },
+        {
+          "suit": "hearts",
+          "rank": "9",
+          "value": 9
+        },
+        {
+          "suit": "diamonds",
+          "rank": "3",
+          "value": 3
+        },
+        {
+          "suit": "diamonds",
+          "rank": "5",
+          "value": 5
+        },
+        {
+          "suit": "clubs",
+          "rank": "8",
+          "value": 8
+        },
+        {
+          "suit": "diamonds",
+          "rank": "10",
+          "value": 10
+        },
+        {
+          "suit": "spades",
+          "rank": "8",
+          "value": 8
+        },
+        {
+          "suit": "diamonds",
+          "rank": "Q",
+          "value": 10
+        },
+        {
+          "suit": "diamonds",
+          "rank": "6",
+          "value": 6
+        },
+        {
+          "suit": "clubs",
+          "rank": "A",
+          "value": 11
+        },
+        {
+          "suit": "diamonds",
+          "rank": "A",
+          "value": 11
+        },
+        {
+          "suit": "spades",
+          "rank": "7",
+          "value": 7
+        },
+        {
+          "suit": "spades",
+          "rank": "9",
+          "value": 9
+        },
+        {
+          "suit": "spades",
+          "rank": "10",
+          "value": 10
+        },
+        {
+          "suit": "diamonds",
+          "rank": "K",
+          "value": 10
+        },
+        {
+          "suit": "hearts",
+          "rank": "3",
+          "value": 3
+        },
+        {
+          "suit": "hearts",
+          "rank": "J",
+          "value": 10
+        }
+      ],
+      "status": "completed",
+      "playerTurn": false,
+      "result": "loss",
+      "payout": 0,
+      "profit": -16000,
+      "taxAmount": 0,
+      "createdAt": "2026-09-20T01:06:31.048Z",
+      "updatedAt": "2026-09-20T01:06:32.538Z",
+      "completedAt": "2026-09-20T01:06:32.538Z"
+    },
+    {
+      "id": "c9f8aa4f-f81c-4cde-a9d3-1e8358933c57",
+      "playerId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "playerName": "RXNDY",
+      "wagerItems": [
+        {
+          "id": "a5966f18-73a7-4e90-b38c-dadf3d5e3bae",
+          "itemId": "a5966f18-73a7-4e90-b38c-dadf3d5e3bae",
+          "name": "Frost Dragon",
+          "itemName": "Frost Dragon",
+          "value": 15000,
+          "rarity": "mythic",
+          "quantity": 3,
+          "image": "https://images.rbxcdn.com/9788f8dcf6e5e8e8ea476e33dfdbbfef.png"
+        }
+      ],
+      "betValue": 45000,
+      "playerHand": [
+        {
+          "suit": "hearts",
+          "rank": "10",
+          "value": 10
+        },
+        {
+          "suit": "diamonds",
+          "rank": "2",
+          "value": 2
+        },
+        {
+          "suit": "diamonds",
+          "rank": "10",
+          "value": 10
+        }
+      ],
+      "dealerHand": [
+        {
+          "suit": "clubs",
+          "rank": "J",
+          "value": 10
+        },
+        {
+          "suit": "diamonds",
+          "rank": "6",
+          "value": 6
+        }
+      ],
+      "deck": [
+        {
+          "suit": "hearts",
+          "rank": "A",
+          "value": 11
+        },
+        {
+          "suit": "diamonds",
+          "rank": "7",
+          "value": 7
+        },
+        {
+          "suit": "spades",
+          "rank": "8",
+          "value": 8
+        },
+        {
+          "suit": "clubs",
+          "rank": "4",
+          "value": 4
+        },
+        {
+          "suit": "spades",
+          "rank": "7",
+          "value": 7
+        },
+        {
+          "suit": "diamonds",
+          "rank": "A",
+          "value": 11
+        },
+        {
+          "suit": "spades",
+          "rank": "5",
+          "value": 5
+        },
+        {
+          "suit": "clubs",
+          "rank": "A",
+          "value": 11
+        },
+        {
+          "suit": "clubs",
+          "rank": "10",
+          "value": 10
+        },
+        {
+          "suit": "spades",
+          "rank": "K",
+          "value": 10
+        },
+        {
+          "suit": "diamonds",
+          "rank": "Q",
+          "value": 10
+        },
+        {
+          "suit": "diamonds",
+          "rank": "9",
+          "value": 9
+        },
+        {
+          "suit": "clubs",
+          "rank": "2",
+          "value": 2
+        },
+        {
+          "suit": "diamonds",
+          "rank": "K",
+          "value": 10
+        },
+        {
+          "suit": "spades",
+          "rank": "3",
+          "value": 3
+        },
+        {
+          "suit": "hearts",
+          "rank": "7",
+          "value": 7
+        },
+        {
+          "suit": "clubs",
+          "rank": "8",
+          "value": 8
+        },
+        {
+          "suit": "spades",
+          "rank": "2",
+          "value": 2
+        },
+        {
+          "suit": "clubs",
+          "rank": "3",
+          "value": 3
+        },
+        {
+          "suit": "spades",
+          "rank": "4",
+          "value": 4
+        },
+        {
+          "suit": "spades",
+          "rank": "Q",
+          "value": 10
+        },
+        {
+          "suit": "hearts",
+          "rank": "9",
+          "value": 9
+        },
+        {
+          "suit": "clubs",
+          "rank": "7",
+          "value": 7
+        },
+        {
+          "suit": "spades",
+          "rank": "9",
+          "value": 9
+        },
+        {
+          "suit": "spades",
+          "rank": "6",
+          "value": 6
+        },
+        {
+          "suit": "hearts",
+          "rank": "4",
+          "value": 4
+        },
+        {
+          "suit": "hearts",
+          "rank": "K",
+          "value": 10
+        },
+        {
+          "suit": "clubs",
+          "rank": "9",
+          "value": 9
+        },
+        {
+          "suit": "hearts",
+          "rank": "8",
+          "value": 8
+        },
+        {
+          "suit": "hearts",
+          "rank": "6",
+          "value": 6
+        },
+        {
+          "suit": "hearts",
+          "rank": "J",
+          "value": 10
+        },
+        {
+          "suit": "diamonds",
+          "rank": "5",
+          "value": 5
+        },
+        {
+          "suit": "clubs",
+          "rank": "K",
+          "value": 10
+        },
+        {
+          "suit": "hearts",
+          "rank": "2",
+          "value": 2
+        },
+        {
+          "suit": "hearts",
+          "rank": "5",
+          "value": 5
+        },
+        {
+          "suit": "hearts",
+          "rank": "Q",
+          "value": 10
+        },
+        {
+          "suit": "diamonds",
+          "rank": "8",
+          "value": 8
+        },
+        {
+          "suit": "spades",
+          "rank": "A",
+          "value": 11
+        },
+        {
+          "suit": "spades",
+          "rank": "10",
+          "value": 10
+        },
+        {
+          "suit": "diamonds",
+          "rank": "J",
+          "value": 10
+        },
+        {
+          "suit": "diamonds",
+          "rank": "3",
+          "value": 3
+        },
+        {
+          "suit": "clubs",
+          "rank": "6",
+          "value": 6
+        },
+        {
+          "suit": "clubs",
+          "rank": "5",
+          "value": 5
+        },
+        {
+          "suit": "clubs",
+          "rank": "Q",
+          "value": 10
+        },
+        {
+          "suit": "spades",
+          "rank": "J",
+          "value": 10
+        },
+        {
+          "suit": "diamonds",
+          "rank": "4",
+          "value": 4
+        },
+        {
+          "suit": "hearts",
+          "rank": "3",
+          "value": 3
+        }
+      ],
+      "status": "completed",
+      "playerTurn": false,
+      "result": "bust",
+      "payout": 0,
+      "profit": -45000,
+      "taxAmount": 0,
+      "createdAt": "2026-09-20T01:06:26.100Z",
+      "updatedAt": "2026-09-20T01:06:27.367Z",
+      "completedAt": "2026-09-20T01:06:27.366Z"
+    },
+    {
+      "id": "589ad8c3-aeb0-48d4-b4f5-1f44acaf1d7f",
+      "playerId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "playerName": "RXNDY",
+      "wagerItems": [
+        {
+          "id": "a5966f18-73a7-4e90-b38c-dadf3d5e3bae",
+          "itemId": "a5966f18-73a7-4e90-b38c-dadf3d5e3bae",
+          "name": "Frost Dragon",
+          "itemName": "Frost Dragon",
+          "value": 15000,
+          "rarity": "mythic",
+          "quantity": 2,
+          "image": "https://images.rbxcdn.com/9788f8dcf6e5e8e8ea476e33dfdbbfef.png"
+        }
+      ],
+      "betValue": 30000,
+      "playerHand": [
+        {
+          "suit": "clubs",
+          "rank": "10",
+          "value": 10
+        },
+        {
+          "suit": "clubs",
+          "rank": "A",
+          "value": 11
+        },
+        {
+          "suit": "diamonds",
+          "rank": "Q",
+          "value": 10
+        }
+      ],
+      "dealerHand": [
+        {
+          "suit": "spades",
+          "rank": "10",
+          "value": 10
+        },
+        {
+          "suit": "clubs",
+          "rank": "Q",
+          "value": 10
+        }
+      ],
+      "deck": [
+        {
+          "suit": "clubs",
+          "rank": "2",
+          "value": 2
+        },
+        {
+          "suit": "spades",
+          "rank": "3",
+          "value": 3
+        },
+        {
+          "suit": "clubs",
+          "rank": "7",
+          "value": 7
+        },
+        {
+          "suit": "hearts",
+          "rank": "2",
+          "value": 2
+        },
+        {
+          "suit": "clubs",
+          "rank": "4",
+          "value": 4
+        },
+        {
+          "suit": "diamonds",
+          "rank": "8",
+          "value": 8
+        },
+        {
+          "suit": "hearts",
+          "rank": "K",
+          "value": 10
+        },
+        {
+          "suit": "clubs",
+          "rank": "J",
+          "value": 10
+        },
+        {
+          "suit": "spades",
+          "rank": "J",
+          "value": 10
+        },
+        {
+          "suit": "hearts",
+          "rank": "10",
+          "value": 10
+        },
+        {
+          "suit": "diamonds",
+          "rank": "K",
+          "value": 10
+        },
+        {
+          "suit": "clubs",
+          "rank": "5",
+          "value": 5
+        },
+        {
+          "suit": "diamonds",
+          "rank": "6",
+          "value": 6
+        },
+        {
+          "suit": "hearts",
+          "rank": "7",
+          "value": 7
+        },
+        {
+          "suit": "clubs",
+          "rank": "6",
+          "value": 6
+        },
+        {
+          "suit": "clubs",
+          "rank": "K",
+          "value": 10
+        },
+        {
+          "suit": "diamonds",
+          "rank": "10",
+          "value": 10
+        },
+        {
+          "suit": "hearts",
+          "rank": "6",
+          "value": 6
+        },
+        {
+          "suit": "spades",
+          "rank": "7",
+          "value": 7
+        },
+        {
+          "suit": "spades",
+          "rank": "6",
+          "value": 6
+        },
+        {
+          "suit": "spades",
+          "rank": "2",
+          "value": 2
+        },
+        {
+          "suit": "hearts",
+          "rank": "J",
+          "value": 10
+        },
+        {
+          "suit": "spades",
+          "rank": "8",
+          "value": 8
+        },
+        {
+          "suit": "hearts",
+          "rank": "A",
+          "value": 11
+        },
+        {
+          "suit": "spades",
+          "rank": "A",
+          "value": 11
+        },
+        {
+          "suit": "hearts",
+          "rank": "5",
+          "value": 5
+        },
+        {
+          "suit": "spades",
+          "rank": "9",
+          "value": 9
+        },
+        {
+          "suit": "spades",
+          "rank": "K",
+          "value": 10
+        },
+        {
+          "suit": "diamonds",
+          "rank": "9",
+          "value": 9
+        },
+        {
+          "suit": "clubs",
+          "rank": "9",
+          "value": 9
+        },
+        {
+          "suit": "diamonds",
+          "rank": "J",
+          "value": 10
+        },
+        {
+          "suit": "spades",
+          "rank": "4",
+          "value": 4
+        },
+        {
+          "suit": "hearts",
+          "rank": "4",
+          "value": 4
+        },
+        {
+          "suit": "hearts",
+          "rank": "3",
+          "value": 3
+        },
+        {
+          "suit": "hearts",
+          "rank": "8",
+          "value": 8
+        },
+        {
+          "suit": "diamonds",
+          "rank": "5",
+          "value": 5
+        },
+        {
+          "suit": "hearts",
+          "rank": "Q",
+          "value": 10
+        },
+        {
+          "suit": "hearts",
+          "rank": "9",
+          "value": 9
+        },
+        {
+          "suit": "diamonds",
+          "rank": "3",
+          "value": 3
+        },
+        {
+          "suit": "diamonds",
+          "rank": "4",
+          "value": 4
+        },
+        {
+          "suit": "clubs",
+          "rank": "3",
+          "value": 3
+        },
+        {
+          "suit": "spades",
+          "rank": "Q",
+          "value": 10
+        },
+        {
+          "suit": "diamonds",
+          "rank": "A",
+          "value": 11
+        },
+        {
+          "suit": "diamonds",
+          "rank": "2",
+          "value": 2
+        },
+        {
+          "suit": "clubs",
+          "rank": "8",
+          "value": 8
+        },
+        {
+          "suit": "spades",
+          "rank": "5",
+          "value": 5
+        },
+        {
+          "suit": "diamonds",
+          "rank": "7",
+          "value": 7
+        }
+      ],
+      "status": "completed",
+      "playerTurn": false,
+      "result": "win",
+      "payout": 28500,
+      "profit": 28500,
+      "taxAmount": 1500,
+      "createdAt": "2026-09-20T00:41:48.169Z",
+      "updatedAt": "2026-09-20T00:41:51.369Z",
+      "completedAt": "2026-09-20T00:41:51.369Z",
+      "returnedItems": [
+        {
+          "id": "a5966f18-73a7-4e90-b38c-dadf3d5e3bae",
+          "itemId": "a5966f18-73a7-4e90-b38c-dadf3d5e3bae",
+          "name": "Frost Dragon",
+          "itemName": "Frost Dragon",
+          "value": 15000,
+          "rarity": "mythic",
+          "quantity": 2,
+          "image": "https://images.rbxcdn.com/9788f8dcf6e5e8e8ea476e33dfdbbfef.png"
+        }
+      ]
+    },
+    {
+      "id": "0d0c482e-65eb-45da-8ad1-2fe9c5700cb1",
+      "playerId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "playerName": "RXNDY",
+      "betAmount": 100,
+      "initialDeck": [],
+      "playerHand": [
+        {
+          "suit": "diamonds",
+          "rank": "8",
+          "value": 8
+        },
+        {
+          "suit": "hearts",
+          "rank": "A",
+          "value": 11
+        }
+      ],
+      "dealerHand": [
+        {
+          "suit": "spades",
+          "rank": "9",
+          "value": 9
+        },
+        {
+          "suit": "hidden",
+          "rank": "hidden",
+          "value": 0
+        }
+      ],
+      "status": "in_progress",
+      "playerTurn": true,
+      "deck": [
+        {
+          "suit": "hearts",
+          "rank": "6",
+          "value": 6
+        },
+        {
+          "suit": "hearts",
+          "rank": "10",
+          "value": 10
+        },
+        {
+          "suit": "spades",
+          "rank": "2",
+          "value": 2
+        },
+        {
+          "suit": "clubs",
+          "rank": "6",
+          "value": 6
+        },
+        {
+          "suit": "clubs",
+          "rank": "J",
+          "value": 10
+        },
+        {
+          "suit": "clubs",
+          "rank": "5",
+          "value": 5
+        },
+        {
+          "suit": "spades",
+          "rank": "Q",
+          "value": 10
+        },
+        {
+          "suit": "clubs",
+          "rank": "3",
+          "value": 3
+        },
+        {
+          "suit": "diamonds",
+          "rank": "A",
+          "value": 11
+        },
+        {
+          "suit": "spades",
+          "rank": "A",
+          "value": 11
+        },
+        {
+          "suit": "diamonds",
+          "rank": "5",
+          "value": 5
+        },
+        {
+          "suit": "clubs",
+          "rank": "A",
+          "value": 11
+        },
+        {
+          "suit": "spades",
+          "rank": "4",
+          "value": 4
+        },
+        {
+          "suit": "hearts",
+          "rank": "3",
+          "value": 3
+        },
+        {
+          "suit": "spades",
+          "rank": "J",
+          "value": 10
+        },
+        {
+          "suit": "spades",
+          "rank": "7",
+          "value": 7
+        },
+        {
+          "suit": "hearts",
+          "rank": "4",
+          "value": 4
+        },
+        {
+          "suit": "diamonds",
+          "rank": "9",
+          "value": 9
+        },
+        {
+          "suit": "diamonds",
+          "rank": "3",
+          "value": 3
+        },
+        {
+          "suit": "spades",
+          "rank": "8",
+          "value": 8
+        },
+        {
+          "suit": "clubs",
+          "rank": "4",
+          "value": 4
+        },
+        {
+          "suit": "clubs",
+          "rank": "K",
+          "value": 10
+        },
+        {
+          "suit": "hearts",
+          "rank": "8",
+          "value": 8
+        },
+        {
+          "suit": "diamonds",
+          "rank": "2",
+          "value": 2
+        },
+        {
+          "suit": "clubs",
+          "rank": "8",
+          "value": 8
+        },
+        {
+          "suit": "hearts",
+          "rank": "K",
+          "value": 10
+        },
+        {
+          "suit": "spades",
+          "rank": "3",
+          "value": 3
+        },
+        {
+          "suit": "diamonds",
+          "rank": "Q",
+          "value": 10
+        },
+        {
+          "suit": "spades",
+          "rank": "5",
+          "value": 5
+        },
+        {
+          "suit": "spades",
+          "rank": "6",
+          "value": 6
+        },
+        {
+          "suit": "hearts",
+          "rank": "7",
+          "value": 7
+        },
+        {
+          "suit": "clubs",
+          "rank": "7",
+          "value": 7
+        },
+        {
+          "suit": "clubs",
+          "rank": "10",
+          "value": 10
+        },
+        {
+          "suit": "clubs",
+          "rank": "Q",
+          "value": 10
+        },
+        {
+          "suit": "clubs",
+          "rank": "9",
+          "value": 9
+        },
+        {
+          "suit": "hearts",
+          "rank": "5",
+          "value": 5
+        },
+        {
+          "suit": "diamonds",
+          "rank": "10",
+          "value": 10
+        },
+        {
+          "suit": "hearts",
+          "rank": "J",
+          "value": 10
+        },
+        {
+          "suit": "diamonds",
+          "rank": "K",
+          "value": 10
+        },
+        {
+          "suit": "hearts",
+          "rank": "9",
+          "value": 9
+        },
+        {
+          "suit": "hearts",
+          "rank": "Q",
+          "value": 10
+        },
+        {
+          "suit": "spades",
+          "rank": "10",
+          "value": 10
+        },
+        {
+          "suit": "diamonds",
+          "rank": "6",
+          "value": 6
+        },
+        {
+          "suit": "diamonds",
+          "rank": "4",
+          "value": 4
+        },
+        {
+          "suit": "clubs",
+          "rank": "2",
+          "value": 2
+        },
+        {
+          "suit": "hearts",
+          "rank": "2",
+          "value": 2
+        },
+        {
+          "suit": "diamonds",
+          "rank": "J",
+          "value": 10
+        },
+        {
+          "suit": "spades",
+          "rank": "K",
+          "value": 10
+        }
+      ],
+      "createdAt": "2026-09-17T15:58:05.069Z",
+      "updatedAt": "2026-09-17T15:58:05.069Z"
+    }
+  ],
+  "transactions": [
+    {
+      "id": "bc33d82d-10a8-4f3d-9bf7-6df75852503e",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "amount": 120.54,
+      "type": "deposit",
+      "status": "completed",
+      "metadata": {
+        "depositId": "66b9cb11-d13e-4e3b-8f91-232322d0df7e",
+        "fee": 2.46,
+        "method": "credit_card"
+      },
+      "timestamp": "2026-09-16T19:35:29.498Z"
+    },
+    {
+      "id": "e03ea98b-5d80-44c1-b9eb-b0647393ac43",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "amount": 54.88,
+      "type": "deposit",
+      "status": "completed",
+      "metadata": {
+        "depositId": "1dcc3177-be4c-4d65-af14-49546b004f9d",
+        "fee": 1.12,
+        "method": "credit_card"
+      },
+      "timestamp": "2026-09-17T01:12:56.806Z"
+    },
+    {
+      "id": "62e4f28c-3d2b-4d24-8395-f690fb5be2e6",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "robloxUsername": "POOpPANTSpro",
+      "amount": -25000,
+      "type": "admin_balance_remove",
+      "status": "completed",
+      "metadata": {
+        "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+        "reason": "Admin balance adjustment"
+      },
+      "timestamp": "2026-09-20T00:07:00.358Z"
+    },
+    {
+      "id": "4546c3d9-2a4f-4208-8d0d-b3e11d21cd7f",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "robloxUsername": "POOpPANTSpro",
+      "amount": 123,
+      "type": "admin_balance_add",
+      "status": "completed",
+      "metadata": {
+        "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+        "reason": "Admin balance adjustment"
+      },
+      "timestamp": "2026-09-20T00:20:53.853Z"
+    },
+    {
+      "id": "730d8b54-8e89-4145-9d4e-a782420ccc3b",
+      "status": "completed",
+      "timestamp": "2026-09-20T00:41:51.372Z",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "robloxUsername": "RXNDY",
+      "amount": 28500,
+      "type": "blackjack_win",
+      "metadata": {
+        "gameId": "589ad8c3-aeb0-48d4-b4f5-1f44acaf1d7f",
+        "betValue": 30000,
+        "result": "win",
+        "grossProfit": 30000,
+        "tax": 1500
+      }
+    },
+    {
+      "id": "be52ecea-3f56-41f8-aa12-347048075967",
+      "status": "completed",
+      "timestamp": "2026-09-20T00:41:51.372Z",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "robloxUsername": "RXNDY",
+      "amount": -1500,
+      "type": "blackjack_tax",
+      "metadata": {
+        "gameId": "589ad8c3-aeb0-48d4-b4f5-1f44acaf1d7f",
+        "taxRate": 0.05
+      }
+    },
+    {
+      "id": "a718aa3f-e16b-440a-a327-bbb1544e5834",
+      "status": "completed",
+      "timestamp": "2026-09-20T01:06:27.367Z",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "robloxUsername": "RXNDY",
+      "amount": -45000,
+      "type": "blackjack_loss",
+      "metadata": {
+        "gameId": "c9f8aa4f-f81c-4cde-a9d3-1e8358933c57",
+        "betValue": 45000,
+        "wagerItems": [
+          {
+            "itemId": "a5966f18-73a7-4e90-b38c-dadf3d5e3bae",
+            "name": "Frost Dragon",
+            "quantity": 3,
+            "value": 15000
+          }
+        ],
+        "houseRecipientId": null,
+        "houseRecipientUsername": null
+      }
+    },
+    {
+      "id": "40ca2541-d7b5-415c-bd0d-25d116b942d8",
+      "status": "completed",
+      "timestamp": "2026-09-20T01:06:32.538Z",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "robloxUsername": "RXNDY",
+      "amount": -16000,
+      "type": "blackjack_loss",
+      "metadata": {
+        "gameId": "5a3106ea-519f-4fc0-bf7e-755c5dd4443a",
+        "betValue": 16000,
+        "wagerItems": [
+          {
+            "itemId": "crow-003",
+            "name": "Crow",
+            "quantity": 4,
+            "value": 4000
+          }
+        ],
+        "houseRecipientId": null,
+        "houseRecipientUsername": null
+      }
+    },
+    {
+      "id": "bfade8c3-63d8-4bd2-ab01-50d5bb2e3546",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "robloxUsername": "RXNDY",
+      "amount": -15000,
+      "type": "coinflip_tax",
+      "status": "completed",
+      "metadata": {
+        "coinflipId": "9937ff0b-238b-45d2-a929-5b6b7aecb402",
+        "taxRate": 1,
+        "taxRecipientId": "c05a3398-c7be-4e1a-81fd-93a8c513145f",
+        "taxRecipientUsername": "TestUser_866394",
+        "taxItems": [
+          {
+            "itemId": "a5966f18-73a7-4e90-b38c-dadf3d5e3bae",
+            "name": "Frost Dragon",
+            "quantity": 1,
+            "value": 15000
+          }
+        ]
+      },
+      "timestamp": "2026-09-20T01:28:39.524Z"
+    },
+    {
+      "id": "5fdbceec-819a-49db-bd92-bb465adfbe4e",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "robloxUsername": "RXNDY",
+      "amount": -12000,
+      "type": "coinflip_tax",
+      "status": "completed",
+      "metadata": {
+        "coinflipId": "0237f206-cdf4-4199-b011-b7ab02f3f636",
+        "taxRate": 1,
+        "taxRecipientId": "c05a3398-c7be-4e1a-81fd-93a8c513145f",
+        "taxRecipientUsername": "TestUser_866394",
+        "taxItems": [
+          {
+            "itemId": "bat-dragon-001",
+            "name": "Bat Dragon",
+            "quantity": 1,
+            "value": 12000
+          }
+        ]
+      },
+      "timestamp": "2026-09-20T01:29:01.920Z"
+    },
+    {
+      "id": "a4e3125e-e3dc-4169-82ed-2b37bf49faa6",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "robloxUsername": "RXNDY",
+      "amount": -12000,
+      "type": "coinflip_tax",
+      "status": "completed",
+      "metadata": {
+        "coinflipId": "b97480a1-9af5-4240-9f35-fb612327ff4d",
+        "taxRate": 1,
+        "taxRecipientId": "c05a3398-c7be-4e1a-81fd-93a8c513145f",
+        "taxRecipientUsername": "TestUser_866394",
+        "taxItems": [
+          {
+            "itemId": "crow-003",
+            "name": "Crow",
+            "quantity": 3,
+            "value": 4000
+          }
+        ]
+      },
+      "timestamp": "2026-09-20T01:53:32.300Z"
+    },
+    {
+      "id": "1b46dc06-19fe-4924-a62d-e2d99367acad",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "robloxUsername": "RXNDY",
+      "amount": -12000,
+      "type": "coinflip_tax",
+      "status": "completed",
+      "metadata": {
+        "coinflipId": "c0c40907-85a8-474e-9ac7-ec7dd2f1dcb6",
+        "taxRate": 1,
+        "taxRecipientId": "c05a3398-c7be-4e1a-81fd-93a8c513145f",
+        "taxRecipientUsername": "TestUser_866394",
+        "taxItems": [
+          {
+            "itemId": "crow-003",
+            "name": "Crow",
+            "quantity": 3,
+            "value": 4000
+          }
+        ]
+      },
+      "timestamp": "2026-09-20T01:58:46.877Z"
+    },
+    {
+      "id": "97e42b5b-11fd-4a6f-820e-6fe7257b1b84",
+      "userId": "fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "robloxUsername": "doggyloverman2",
+      "amount": 0,
+      "type": "tip",
+      "status": "completed",
+      "metadata": {
+        "recipientId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+        "recipientUsername": "POOpPANTSpro",
+        "itemId": "amvgg-170",
+        "itemName": "Frost Dragon",
+        "quantity": 1,
+        "value": 2560
+      },
+      "timestamp": "2026-09-20T10:05:20.137Z"
+    }
+  ],
+  "deposits": [
+    {
+      "id": "66b9cb11-d13e-4e3b-8f91-232322d0df7e",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "amount": 123,
+      "netAmount": 120.54,
+      "fee": 2.46,
+      "method": "credit_card",
+      "status": "completed",
+      "timestamp": "2026-09-16T19:35:29.488Z"
+    },
+    {
+      "id": "1dcc3177-be4c-4d65-af14-49546b004f9d",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "amount": 56,
+      "netAmount": 54.88,
+      "fee": 1.12,
+      "method": "credit_card",
+      "status": "completed",
+      "timestamp": "2026-09-17T01:12:56.806Z"
+    },
+    {
+      "id": "1405f90e-bd9f-4ce7-8a8f-ec9bd2f00161",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "robloxUsername": "POOpPANTSpro",
+      "amount": 1233,
+      "address": "Deposit",
+      "status": "pending",
+      "createdAt": "2026-09-20T01:33:08.106Z",
+      "updatedAt": "2026-09-20T01:33:08.106Z"
+    },
+    {
+      "id": "35540f39-7827-44ac-b408-406cfb2407e2",
+      "userId": "fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "robloxUsername": "doggyloverman2",
+      "amount": 233,
+      "address": "Deposit",
+      "status": "pending",
+      "createdAt": "2026-09-20T09:09:07.118Z",
+      "updatedAt": "2026-09-20T09:09:07.118Z"
+    },
+    {
+      "id": "b1043342-f6e8-44f8-a82e-6de25777e1e6",
+      "userId": "fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "robloxUsername": "doggyloverman2",
+      "amount": 2222,
+      "address": "Deposit",
+      "status": "pending",
+      "createdAt": "2026-09-20T09:13:13.347Z",
+      "updatedAt": "2026-09-20T09:13:13.347Z"
+    }
+  ],
+  "withdrawals": [],
+  "chatMessages": [
+    {
+      "id": "1b9c0c60-1822-4705-afdf-20c51699eb98",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "robloxUsername": "POOpPANTSpro",
+      "username": "RXNDY",
+      "displayName": "RXNDY",
+      "avatar": "https://tr.rbxcdn.com/30DAY-AvatarHeadshot-C221C37410A457469A781A10EE995168-Png/420/420/AvatarHeadshot/Png/noFilter",
+      "robloxUserId": "3454432458",
+      "message": "diddy",
+      "timestamp": "2026-09-20T10:01:31.077Z",
+      "type": "user_message"
+    }
+  ],
+  "taxRecipients": [
+    {
+      "id": "1",
+      "name": "Treasury",
+      "userId": "2",
+      "wallet": "treasury-wallet-address",
+      "description": "Platform treasury for collected taxes",
+      "enabled": true,
+      "createdAt": "2026-09-15T19:08:59.870Z",
+      "updatedAt": "2026-09-15T19:08:59.870Z"
+    }
+  ],
+  "adminLogs": [
+    {
+      "id": "182a2e48-7c7b-4d39-ba10-6e9526ae7ab5",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "targetUsername": "POOpPANTSpro",
+      "itemId": "bat-dragon-001",
+      "itemName": "Bat Dragon",
+      "quantity": 1,
+      "timestamp": "2026-09-19T23:50:16.909Z"
+    },
+    {
+      "id": "4373a34e-95ff-44df-abaf-49199667b836",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "balance_remove",
+      "targetUsername": "POOpPANTSpro",
+      "oldValue": 25000,
+      "newValue": 0,
+      "reason": "Admin balance adjustment",
+      "timestamp": "2026-09-20T00:07:00.358Z"
+    },
+    {
+      "id": "a2c7f33a-86fb-4579-a2b6-6a1537c8723d",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "targetUsername": "POOpPANTSpro",
+      "itemId": "a5966f18-73a7-4e90-b38c-dadf3d5e3bae",
+      "itemName": "Frost Dragon",
+      "quantity": 1,
+      "timestamp": "2026-09-20T00:07:09.104Z"
+    },
+    {
+      "id": "b86b190c-3ea4-48ad-b445-618f30809c0f",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "targetUsername": "POOpPANTSpro",
+      "itemId": "bat-dragon-001",
+      "itemName": "Bat Dragon",
+      "quantity": 1,
+      "timestamp": "2026-09-20T00:07:11.358Z"
+    },
+    {
+      "id": "baac4429-065e-4366-a160-1bb426fbcafa",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "targetUsername": "POOpPANTSpro",
+      "itemId": "a5966f18-73a7-4e90-b38c-dadf3d5e3bae",
+      "itemName": "Frost Dragon",
+      "quantity": 1,
+      "timestamp": "2026-09-20T00:07:12.743Z"
+    },
+    {
+      "id": "b857d76c-e800-40e6-8b7d-a2f76c102929",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "targetUsername": "POOpPANTSpro",
+      "itemId": "bat-dragon-001",
+      "itemName": "Bat Dragon",
+      "quantity": 1,
+      "timestamp": "2026-09-20T00:07:14.600Z"
+    },
+    {
+      "id": "58612642-b7ae-437e-87b2-976b110fbf67",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "targetUsername": "POOpPANTSpro",
+      "itemId": "crow-003",
+      "itemName": "Crow",
+      "quantity": 1,
+      "timestamp": "2026-09-20T00:07:16.792Z"
+    },
+    {
+      "id": "ff83d65f-7eee-495d-b995-98dbcb71e094",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "targetUsername": "POOpPANTSpro",
+      "itemId": "crow-003",
+      "itemName": "Crow",
+      "quantity": 1,
+      "timestamp": "2026-09-20T00:07:18.352Z"
+    },
+    {
+      "id": "85f26088-6f93-4a5d-9168-7101dbf100b8",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "targetUsername": "POOpPANTSpro",
+      "itemId": "crow-003",
+      "itemName": "Crow",
+      "quantity": 1,
+      "timestamp": "2026-09-20T00:07:19.544Z"
+    },
+    {
+      "id": "1862065f-8b73-4dc7-b133-97dfe46a4abd",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "targetUsername": "POOpPANTSpro",
+      "itemId": "crow-003",
+      "itemName": "Crow",
+      "quantity": 1,
+      "timestamp": "2026-09-20T00:19:13.635Z"
+    },
+    {
+      "id": "cb2ae00a-0d0e-43dc-81b2-724615893893",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "targetUsername": "POOpPANTSpro",
+      "itemId": "evil-unicorn-002",
+      "itemName": "Evil Unicorn",
+      "quantity": 1,
+      "timestamp": "2026-09-20T00:19:15.288Z"
+    },
+    {
+      "id": "6df800c2-27e5-4a3a-bacd-7ad8eec6dc25",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "targetUsername": "POOpPANTSpro",
+      "itemId": "bat-dragon-001",
+      "itemName": "Bat Dragon",
+      "quantity": 1,
+      "timestamp": "2026-09-20T00:19:16.761Z"
+    },
+    {
+      "id": "26568ecd-d698-4efd-a391-92f8ede54047",
+      "adminId": "2",
+      "adminUsername": "AdminUser",
+      "action": "add_item_to_user",
+      "targetUserId": "2",
+      "targetUsername": "AdminUser",
+      "itemId": "8ed875ca-0f4a-4367-b49d-8ed9aa42c8a0",
+      "itemName": "DelMe",
+      "quantity": 1,
+      "timestamp": "2026-09-20T00:19:57.827Z"
+    },
+    {
+      "id": "126d52ba-bd5e-41f5-a63b-32f925f0ff6e",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "balance_add",
+      "targetUsername": "POOpPANTSpro",
+      "oldValue": 0,
+      "newValue": 123,
+      "reason": "Admin balance adjustment",
+      "timestamp": "2026-09-20T00:20:53.853Z"
+    },
+    {
+      "id": "ea4895b6-870d-4764-8f58-bb70cf220771",
+      "adminId": "2",
+      "adminUsername": "AdminUser",
+      "action": "remove_pet_from_user",
+      "targetUserId": "2",
+      "petId": "8ed875ca-0f4a-4367-b49d-8ed9aa42c8a0",
+      "timestamp": "2026-09-20T00:21:40.173Z"
+    },
+    {
+      "id": "c01dec7f-bdd6-4c71-a181-b8274d6e146c",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "account_status_change",
+      "targetUsername": "TestUser_866394",
+      "newValue": "banned",
+      "reason": "Admin action: banned",
+      "timestamp": "2026-09-20T01:03:55.647Z"
+    },
+    {
+      "id": "8e87c347-cb28-47e6-a757-15b76625b391",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "account_status_change",
+      "targetUsername": "TestUser_866394",
+      "newValue": "active",
+      "reason": "Admin action: active",
+      "timestamp": "2026-09-20T01:03:56.600Z"
+    },
+    {
+      "id": "4257bbcd-1301-4cc6-b804-ff10ec703860",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "account_status_change",
+      "targetUsername": "TestUser_866394",
+      "newValue": "banned",
+      "reason": "Admin action: banned",
+      "timestamp": "2026-09-20T01:03:58.431Z"
+    },
+    {
+      "id": "818400ae-8bb1-4f70-8cb8-27e6e84f9eae",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "account_status_change",
+      "targetUsername": "TestUser_866394",
+      "newValue": "active",
+      "reason": "Admin action: active",
+      "timestamp": "2026-09-20T01:03:58.768Z"
+    },
+    {
+      "id": "6977862f-d74c-4913-a4a9-88220e13f30a",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "targetUsername": "doggyloverman2",
+      "itemId": "a5966f18-73a7-4e90-b38c-dadf3d5e3bae",
+      "itemName": "Frost Dragon",
+      "quantity": 1,
+      "timestamp": "2026-09-20T01:24:40.741Z"
+    },
+    {
+      "id": "66dc2623-bce3-452f-a140-9702301dd277",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "account_status_change",
+      "targetUsername": "TestUser_866394",
+      "newValue": "active",
+      "reason": "Admin action: active",
+      "timestamp": "2026-09-20T01:34:11.593Z"
+    },
+    {
+      "id": "0fa0e9e6-34a1-42c3-9f1c-d78384a5dd22",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "targetUsername": "doggyloverman2",
+      "itemId": "crow-003",
+      "itemName": "Crow",
+      "quantity": 1,
+      "timestamp": "2026-09-20T01:48:01.560Z"
+    },
+    {
+      "id": "3b4f47cd-dbb7-4c4f-928d-76489091525b",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "targetUsername": "doggyloverman2",
+      "itemId": "crow-003",
+      "itemName": "Crow",
+      "quantity": 1,
+      "timestamp": "2026-09-20T01:48:09.502Z"
+    },
+    {
+      "id": "1ddb2d23-e906-443d-83ef-74c829afb0a6",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "targetUsername": "doggyloverman2",
+      "itemId": "crow-003",
+      "itemName": "Crow",
+      "quantity": 1,
+      "timestamp": "2026-09-20T01:48:11.702Z"
+    },
+    {
+      "id": "0cf95ed1-97dd-4d8d-bce5-5f05dcf3979e",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "targetUsername": "doggyloverman2",
+      "itemId": "a5966f18-73a7-4e90-b38c-dadf3d5e3bae",
+      "itemName": "Frost Dragon",
+      "quantity": 1,
+      "timestamp": "2026-09-20T01:57:59.936Z"
+    },
+    {
+      "id": "23a13d6a-f856-4d81-9406-e5b619ab79c3",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "targetUsername": "doggyloverman2",
+      "itemId": "crow-003",
+      "itemName": "Crow",
+      "quantity": 1,
+      "timestamp": "2026-09-20T01:58:04.582Z"
+    },
+    {
+      "id": "b6558ebc-ab7d-401c-8e65-63505002473e",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "targetUsername": "doggyloverman2",
+      "itemId": "crow-003",
+      "itemName": "Crow",
+      "quantity": 1,
+      "timestamp": "2026-09-20T01:58:07.272Z"
+    },
+    {
+      "id": "7daf8706-436d-44a9-b471-c2a52d695964",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "targetUsername": "doggyloverman2",
+      "itemId": "crow-003",
+      "itemName": "Crow",
+      "quantity": 1,
+      "timestamp": "2026-09-20T01:58:08.670Z"
+    },
+    {
+      "id": "8f64a118-635c-4d05-bad8-f1e4a5aeab85",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "targetUsername": "doggyloverman2",
+      "itemId": "amvgg-2552",
+      "itemName": "Cryptid",
+      "quantity": 1,
+      "timestamp": "2026-09-20T02:25:49.654Z"
+    },
+    {
+      "id": "75e837ba-ed33-4498-aed9-bef856ebe62e",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "targetUsername": "POOpPANTSpro",
+      "itemId": "amvgg-173",
+      "itemName": "Diamond Butterfly",
+      "quantity": 1,
+      "timestamp": "2026-09-20T02:38:57.460Z"
+    },
+    {
+      "id": "a07f4bb5-51a6-4a02-95dd-b5b46f97d07a",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "transaction_status_update",
+      "targetId": "363c39ae-e583-45bd-890c-d3a4f794f9ad",
+      "newValue": "rejected",
+      "reason": "Admin transaction update",
+      "timestamp": "2026-09-20T09:15:27.424Z"
+    },
+    {
+      "id": "2d209868-22d2-4d9d-a0b7-e2868ed51f86",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "transaction_status_update",
+      "targetId": "95ba7907-8b0e-4e18-819a-ed5607e23289",
+      "newValue": "rejected",
+      "reason": "Admin transaction update",
+      "timestamp": "2026-09-20T09:15:29.636Z"
+    },
+    {
+      "id": "1b79123d-fb0b-4763-969f-b56744f1e26f",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "transaction_status_update",
+      "targetId": "df5952e8-ff2e-473b-a47b-cb8c27a50943",
+      "newValue": "rejected",
+      "reason": "Admin transaction update",
+      "timestamp": "2026-09-20T09:15:31.308Z"
+    },
+    {
+      "id": "bac3bf09-b9b2-45f8-9651-6ea1625aff96",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "targetUsername": "doggyloverman2",
+      "itemId": "amvgg-168",
+      "itemName": "Shadow Dragon",
+      "quantity": 1,
+      "timestamp": "2026-09-20T09:19:14.572Z"
+    },
+    {
+      "id": "6953de8f-9613-44c6-b940-8fae08e357ce",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "targetUsername": "doggyloverman2",
+      "itemId": "amvgg-169",
+      "itemName": "Giraffe",
+      "quantity": 1,
+      "timestamp": "2026-09-20T09:19:14.600Z"
+    },
+    {
+      "id": "3dfe2110-cb43-4324-9c02-e373fac597a0",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "targetUsername": "doggyloverman2",
+      "itemId": "amvgg-170",
+      "itemName": "Frost Dragon",
+      "quantity": 1,
+      "timestamp": "2026-09-20T09:19:14.609Z"
+    },
+    {
+      "id": "c179ae90-dbfc-46e4-9dd2-f3f17cd5bc5b",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "targetUsername": "doggyloverman2",
+      "itemId": "amvgg-171",
+      "itemName": "Owl",
+      "quantity": 1,
+      "timestamp": "2026-09-20T09:19:14.615Z"
+    },
+    {
+      "id": "af4adfcc-e9b8-4aae-af99-003382dbf88d",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "targetUsername": "doggyloverman2",
+      "itemId": "amvgg-1",
+      "itemName": "African Wild Dog",
+      "quantity": 1,
+      "timestamp": "2026-09-20T09:19:14.621Z"
+    }
+  ],
+  "settings": [
+    {
+      "id": "1",
+      "key": "coinflip_fee_percentage",
+      "value": 0.3,
+      "description": "Percentage fee for coinflip winnings",
+      "category": "taxes",
+      "createdAt": "2026-09-15T19:08:59.870Z",
+      "updatedAt": "2026-09-20T09:14:32.585Z"
+    },
+    {
+      "id": "2",
+      "key": "blackjack_fee_percentage",
+      "value": 0.3,
+      "description": "Percentage fee for blackjack winnings",
+      "category": "taxes",
+      "createdAt": "2026-09-15T19:08:59.870Z",
+      "updatedAt": "2026-09-20T09:14:32.585Z"
+    },
+    {
+      "id": "7",
+      "key": "site_name",
+      "value": "AMPcoin",
+      "description": "Name of the site",
+      "category": "general",
+      "createdAt": "2026-09-15T19:08:59.870Z",
+      "updatedAt": "2026-09-15T19:08:59.870Z"
+    },
+    {
+      "id": "8",
+      "key": "site_description",
+      "value": "An Adopt Me Casino-style item betting platform",
+      "description": "Description of the site",
+      "category": "general",
+      "createdAt": "2026-09-15T19:08:59.870Z",
+      "updatedAt": "2026-09-15T19:08:59.870Z"
+    },
+    {
+      "id": "9",
+      "key": "maintenance_mode",
+      "value": false,
+      "description": "Whether the site is in maintenance mode",
+      "category": "system",
+      "createdAt": "2026-09-15T19:08:59.870Z",
+      "updatedAt": "2026-09-15T19:08:59.870Z"
+    },
+    {
+      "id": "10",
+      "key": "chat_cooldown_ms",
+      "value": 1000,
+      "description": "Chat message cooldown in milliseconds",
+      "category": "chat",
+      "createdAt": "2026-09-15T19:08:59.870Z",
+      "updatedAt": "2026-09-15T19:08:59.870Z"
+    },
+    {
+      "id": "75410781-7347-4ecb-86d0-2a235b07fa56",
+      "key": "bot_user",
+      "value": "botuser",
+      "description": "Bot user identifier for transactions",
+      "category": "bot",
+      "createdAt": "2026-09-20T00:06:25.166Z",
+      "updatedAt": "2026-09-20T09:13:54.052Z"
+    },
+    {
+      "id": "466144a7-ef47-4df8-b0b0-9d6cdbfa1b80",
+      "key": "redirect_link",
+      "value": " https://roblox.com",
+      "description": "Redirect link for bot transactions",
+      "category": "bot",
+      "createdAt": "2026-09-20T00:06:25.166Z",
+      "updatedAt": "2026-09-20T09:13:54.052Z"
+    },
+    {
+      "id": "28f0ecce-e710-44cd-8878-7e4e10f1e5bd",
+      "key": "deposit_fee_percentage",
+      "value": 0.02,
+      "description": "Deposit tax percentage",
+      "category": "taxes",
+      "createdAt": "2026-09-20T00:19:57.878Z",
+      "updatedAt": "2026-09-20T01:28:25.515Z"
+    },
+    {
+      "id": "f46d5cba-dfc5-4bdd-93e9-acb7b8d06553",
+      "key": "withdrawal_fee_percentage",
+      "value": 0.03,
+      "description": "Withdrawal tax percentage",
+      "category": "taxes",
+      "createdAt": "2026-09-20T00:19:57.878Z",
+      "updatedAt": "2026-09-20T01:28:25.515Z"
+    },
+    {
+      "id": "2ec67d64-6cb6-4157-a95b-b0a8c6e3acee",
+      "key": "tax_recipient",
+      "value": "TestUser_866394",
+      "description": "User (id or roblox username) that receives taxed items",
+      "category": "taxes",
+      "createdAt": "2026-09-20T01:28:25.515Z",
+      "updatedAt": "2026-09-20T09:14:32.585Z"
+    },
+    {
+      "id": "ad6870fd-38d2-4b94-a59c-81fc1c1bf4be",
+      "key": "tax_enabled",
+      "value": true,
+      "description": "Master tax switch",
+      "category": "taxes",
+      "createdAt": "2026-09-20T09:14:32.585Z",
+      "updatedAt": "2026-09-20T09:14:32.585Z"
+    },
+    {
+      "id": "eb2f3efc-8dc3-4969-b65a-be14c6a84e9f",
+      "key": "tax_percentage",
+      "value": 30,
+      "description": "House tax percentage (10-30)",
+      "category": "taxes",
+      "createdAt": "2026-09-20T09:14:32.585Z",
+      "updatedAt": "2026-09-20T09:14:32.585Z"
+    }
+  ],
+  "pendingTransactions": [],
+  "itemWithdrawals": [
+    {
+      "id": "363c39ae-e583-45bd-890c-d3a4f794f9ad",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "robloxUsername": "POOpPANTSpro",
+      "items": [
+        {
+          "itemId": "bat-dragon-001",
+          "name": "Bat Dragon",
+          "value": 12000,
+          "rarity": "legendary",
+          "quantity": 1
+        },
+        {
+          "itemId": "bat-dragon-001",
+          "name": "Bat Dragon",
+          "value": 12000,
+          "rarity": "legendary",
+          "quantity": 1
+        },
+        {
+          "itemId": "bat-dragon-001",
+          "name": "Bat Dragon",
+          "value": 12000,
+          "rarity": "legendary",
+          "quantity": 1
+        },
+        {
+          "itemId": "10",
+          "name": "Shadow Dragon",
+          "value": 10000,
+          "rarity": "legendary",
+          "quantity": 1
+        },
+        {
+          "itemId": "evil-unicorn-002",
+          "name": "Evil Unicorn",
+          "value": 4500,
+          "rarity": "rare",
+          "quantity": 1
+        },
+        {
+          "itemId": "evil-unicorn-002",
+          "name": "Evil Unicorn",
+          "value": 4500,
+          "rarity": "rare",
+          "quantity": 1
+        }
+      ],
+      "totalValue": 55000,
+      "address": "Discord Server",
+      "status": "rejected",
+      "createdAt": "2026-09-20T02:22:16.769Z",
+      "updatedAt": "2026-09-20T09:15:27.424Z"
+    },
+    {
+      "id": "95ba7907-8b0e-4e18-819a-ed5607e23289",
+      "userId": "fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "robloxUsername": "doggyloverman2",
+      "items": [
+        {
+          "itemId": "a5966f18-73a7-4e90-b38c-dadf3d5e3bae",
+          "name": "Frost Dragon",
+          "value": 15000,
+          "rarity": "mythic",
+          "quantity": 1
+        }
+      ],
+      "totalValue": 15000,
+      "address": "Discord Server",
+      "status": "rejected",
+      "createdAt": "2026-09-20T02:24:45.139Z",
+      "updatedAt": "2026-09-20T09:15:29.636Z"
+    },
+    {
+      "id": "df5952e8-ff2e-473b-a47b-cb8c27a50943",
+      "userId": "fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "robloxUsername": "doggyloverman2",
+      "items": [
+        {
+          "itemId": "amvgg-2552",
+          "name": "Cryptid",
+          "value": 850,
+          "rarity": "legendary",
+          "quantity": 1
+        }
+      ],
+      "totalValue": 850,
+      "address": "Discord Server",
+      "status": "rejected",
+      "createdAt": "2026-09-20T09:07:07.223Z",
+      "updatedAt": "2026-09-20T09:15:31.308Z"
+    },
+    {
+      "id": "36de035c-8b43-4c21-914e-8e66bbba0d78",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "robloxUsername": "POOpPANTSpro",
+      "displayName": "RXNDY",
+      "items": [
+        {
+          "itemId": "amvgg-173",
+          "name": "Diamond Butterfly",
+          "value": 500,
+          "rarity": "legendary",
+          "quantity": 1
+        }
+      ],
+      "totalValue": 500,
+      "address": "Discord Server",
+      "status": "pending",
+      "createdAt": "2026-09-20T09:45:53.818Z",
+      "updatedAt": "2026-09-20T09:45:53.818Z"
+    },
+    {
+      "id": "ee55ab65-d408-4801-9782-be7e2271c6b8",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "robloxUsername": "POOpPANTSpro",
+      "displayName": "RXNDY",
+      "items": [
+        {
+          "itemId": "amvgg-170",
+          "name": "Frost Dragon",
+          "value": 2560,
+          "rarity": "legendary",
+          "quantity": 1
+        }
+      ],
+      "totalValue": 2560,
+      "address": "Discord Server",
+      "status": "pending",
+      "createdAt": "2026-09-20T10:08:05.074Z",
+      "updatedAt": "2026-09-20T10:08:05.074Z"
+    }
+  ]
+}
