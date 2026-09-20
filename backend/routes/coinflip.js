@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const { authenticateToken } = require('../middleware/auth');
 const dbManager = require('../db/dbHelper');
 const { getTaxRecipient, collectItemTax, getTaxConfig } = require('../taxUtil');
+const { addNotification } = require('../notificationService');
 
 function formatCoinflip(cf) {
   if (!cf) return null;
@@ -46,6 +47,7 @@ function formatCoinflip(cf) {
     taxItems: Array.isArray(cf.taxItems) ? cf.taxItems : [],
     taxRecipientId: cf.taxRecipientId || null,
     taxRecipientUsername: cf.taxRecipientUsername || null,
+    maxJoinPets: (typeof cf.maxJoinPets === 'number' && cf.maxJoinPets > 0) ? cf.maxJoinPets : null,
     status: cf.status,
     creatorSide: cf.creatorSide || cf.sideChosen || 'heads',
     sideChosen: cf.sideChosen || cf.creatorSide || 'heads',
@@ -153,7 +155,7 @@ function getCoinflipTaxRate() {
 // Create a new coinflip
 router.post('/', authenticateToken, (req, res) => {
   try {
-    const { selectedItems, minOpponentValue, maxOpponentValue, sideChosen, side } = req.body;
+    const { selectedItems, minOpponentValue, maxOpponentValue, sideChosen, side, maxJoinPets } = req.body;
     const userId = req.user.userId;
 
     if (!Array.isArray(selectedItems) || selectedItems.length === 0) {
@@ -215,6 +217,14 @@ router.post('/', authenticateToken, (req, res) => {
     let safeMax = isNaN(parsedMax) ? 1000000000 : parsedMax;
     if (!isFinite(safeMax) || safeMax <= 0) safeMax = 1000000000;
 
+    let safeMaxJoinPets = null;
+    if (maxJoinPets != null && maxJoinPets !== '') {
+      const parsedPets = parseInt(maxJoinPets, 10);
+      if (!isNaN(parsedPets)) {
+        safeMaxJoinPets = Math.min(15, Math.max(1, parsedPets));
+      }
+    }
+
     const newCoinflip = {
       id: uuidv4(),
       creatorId: userId,
@@ -229,6 +239,7 @@ router.post('/', authenticateToken, (req, res) => {
       creatorValue: totalValue,
       minOpponentValue: safeMin,
       maxOpponentValue: safeMax,
+      maxJoinPets: safeMaxJoinPets,
       taxRate: getCoinflipTaxRate(),
       taxAmount: 0,
       creatorSide: chosenSide,
@@ -315,6 +326,16 @@ router.post('/:id/join', authenticateToken, (req, res) => {
 
     // Check item value bounds (kept for old games only; new games accept any value).
     // Old records may have null/Infinity serialized — treat those as open range.
+    const opponentPetCount = detailedOpponentItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
+    const maxJoinPets = (typeof coinflip.maxJoinPets === 'number' && coinflip.maxJoinPets > 0)
+      ? coinflip.maxJoinPets
+      : null;
+    if (maxJoinPets && opponentPetCount > maxJoinPets) {
+      return res.status(400).json({
+        message: `This bet allows at most ${maxJoinPets} pet${maxJoinPets === 1 ? '' : 's'}`
+      });
+    }
+
     const opponentTotalValue = detailedOpponentItems.reduce((sum, item) => sum + (item.value * item.quantity), 0);
     const minReq = typeof coinflip.minOpponentValue === 'number' ? coinflip.minOpponentValue : 0;
     const maxRaw = coinflip.maxOpponentValue;
@@ -417,6 +438,19 @@ router.post('/:id/join', authenticateToken, (req, res) => {
     // Award the remaining pot items to the winner's inventory
     for (const potItem of winnerStacks) {
       dbManager.addItemToUserInventory(winnerId, potItem, potItem.quantity || 1);
+    }
+
+    // Notify the winner that they received items
+    const wonItemsCount = (winnerStacks || []).reduce((sum, it) => sum + (it.quantity || 1), 0);
+    if (wonItemsCount > 0) {
+      const firstWon = winnerStacks[0] || {};
+      addNotification({
+        userId: winnerId,
+        type: 'items',
+        title: 'Items received',
+        message: `You won the coinflip and received ${wonItemsCount} item${wonItemsCount === 1 ? '' : 's'}!`,
+        imageUrl: firstWon.imageUrl || firstWon.image || ''
+      });
     }
 
     // Update users game statistics

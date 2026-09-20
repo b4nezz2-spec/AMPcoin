@@ -54,6 +54,8 @@ if (!fs.existsSync(mainDbPath)) {
     deposits: [],
     inventories: [],
     chatMessages: [],
+    giveaways: [],
+    notifications: [],
     adminLogs: [],
     itemWithdrawals: [],
     taxRecipients: [],
@@ -111,8 +113,13 @@ const coinflipRoutes = require('./backend/routes/coinflip');
 const blackjackRoutes = require('./backend/routes/blackjack');
 const walletRoutes = require('./backend/routes/wallet');
 const chatRoutes = require('./backend/routes/chat');
+const giveawayRoutes = require('./backend/routes/giveaways');
+const notificationRoutes = require('./backend/routes/notifications');
+const realtime = require('./backend/realtime');
 const adminRoutes = require('./backend/routes/admin');
 const statsRoutes = require('./backend/routes/stats');
+
+realtime.setIo(io);
 
 // API routes
 app.use('/api/auth', authRoutes);
@@ -122,6 +129,8 @@ app.use('/api/coinflip', coinflipRoutes);
 app.use('/api/blackjack', blackjackRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/giveaways', giveawayRoutes);
+app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/stats', statsRoutes);
 
@@ -142,9 +151,23 @@ if (process.env.NODE_ENV === 'production') {
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 
+  // Track which user owns this socket so we can push notifications
+  socket.on('joinChat', (data) => {
+    realtime.registerUser(data && data.userId, socket.id);
+  });
+
+  socket.on('disconnect', () => {
+    realtime.unregisterSocket(socket.id);
+  });
+
   // Handle chat messages
   socket.on('chatMessage', (data) => {
     io.emit('chatMessage', data);
+  });
+
+  // Live giveaway updates (joins / winner drawn)
+  socket.on('giveawayUpdate', (data) => {
+    io.emit('giveawayUpdate', data);
   });
 
   // Handle coinflip updates

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import io from 'socket.io-client';
 
 import './App.css';
+import './giveaways-notifications.css';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import CoinflipPage from './pages/CoinflipPage';

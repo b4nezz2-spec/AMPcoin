@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import InventoryPickerModal from './InventoryPickerModal';
 import './ProfileModal.css';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -43,7 +44,7 @@ function getRank(wager) {
 
 const ProfileModal = ({ viewer, profileUser, isOwn, socket, onClose }) => {
   const [stats, setStats] = useState({ wager: 0, profit: 0, won: 0, lost: 0 });
-  const [tipOpen, setTipOpen] = useState(false);
+  const [tipModalOpen, setTipModalOpen] = useState(false);
   const [tipInventory, setTipInventory] = useState([]);
   const [tippingId, setTippingId] = useState(null);
   const [tipNote, setTipNote] = useState('');
@@ -81,11 +82,11 @@ const ProfileModal = ({ viewer, profileUser, isOwn, socket, onClose }) => {
 
   const openTipPicker = async () => {
     setTipNote('');
-    if (tipOpen) {
-      setTipOpen(false);
+    if (tipModalOpen) {
+      setTipModalOpen(false);
       return;
     }
-    setTipOpen(true);
+    setTipModalOpen(true);
     try {
       const res = await fetch(`${API_BASE}/api/users/inventory/${viewer.id}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -191,43 +192,24 @@ const ProfileModal = ({ viewer, profileUser, isOwn, socket, onClose }) => {
         </div>
 
         {showTip && (
-          <>
-            <button className="profile-tip-btn" onClick={openTipPicker}>
-              {tipOpen ? 'Close' : 'Send Tip'}
-            </button>
-            {tipOpen && (
-              <div className="tip-picker">
-                <div className="tip-picker-label">Pick one of your items to tip:</div>
-                {tipInventory.length === 0 ? (
-                  <div className="tip-empty">You have no items to tip</div>
-                ) : (
-                  <div className="tip-grid">
-                    {tipInventory.map((item) => {
-                      const key = item.itemId || item.id;
-                      return (
-                        <div
-                          key={key}
-                          className="tip-tile"
-                          onClick={() => sendTip(item)}
-                          title={`Tip ${item.details?.name || item.name || item.itemName}`}
-                        >
-                          <img
-                            src={item.details?.imageUrl || item.image || item.imageUrl || '/default-item.png'}
-                            alt=""
-                            onError={(e) => { e.target.src = '/default-item.png'; }}
-                          />
-                          <span className="tip-tile-val">{Number(item.value || item.details?.value || 0).toLocaleString()}</span>
-                          {tippingId === key && <span className="tip-tile-busy">...</span>}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
-          </>
+          <button className="profile-tip-btn" onClick={openTipPicker}>
+            {tipModalOpen ? 'Close' : 'Send Tip'}
+          </button>
         )}
-        {tipNote && <div className="profile-tip-note">{tipNote}</div>}
+        {showTip && (
+          <InventoryPickerModal
+            isOpen={tipModalOpen}
+            title={`Tip ${displayName}`}
+            subtitle="Pick one of your items to send"
+            items={tipInventory}
+            busyId={tippingId}
+            note={tipNote}
+            noteType={tipNote && tipNote.toLowerCase().includes('fail') ? 'error' : 'ok'}
+            actionLabel="TIP"
+            onClose={() => setTipModalOpen(false)}
+            onSelect={sendTip}
+          />
+        )}
       </div>
     </div>
   );

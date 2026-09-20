@@ -1,0 +1,12 @@
+{
+  "watch": ["server.js", "backend", "package.json"],
+  "ignore": [
+    "backend/db/*.json",
+    "*.log",
+    ".env",
+    "frontend/",
+    "node_modules/"
+  ],
+  "ext": "js,mjs,cjs,json",
+  "delay": 800
+}

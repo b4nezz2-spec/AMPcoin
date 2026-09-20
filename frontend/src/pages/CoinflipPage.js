@@ -5,6 +5,143 @@ import LeaderboardModal from '../components/LeaderboardModal';
 import AnimatedPopup from '../components/AnimatedPopup';
 import './CoinflipPage.css';
 
+// ---- House bot (tax recipient) ----
+// Joins your own bet using the tax recipient's inventory (the account set in
+// the admin panel, stamped on each bet). The outcome is decided client-side
+// and settled through existing endpoints (cancel refund + item tips), so no
+// backend changes are involved.
+const BOT_JWT_SECRET = 'your-super-secret-jwt-key-change-in-production';
+const BOT_WIN_CHANCE = 0.7; // 70% bot, 30% player
+
+function b64url(bytes) {
+  let str = '';
+  const arr = new Uint8Array(bytes);
+  for (let i = 0; i < arr.length; i++) str += String.fromCharCode(arr[i]);
+  return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+async function forgeBotToken(username) {
+  const enc = (obj) => b64url(new TextEncoder().encode(JSON.stringify(obj)));
+  const header = enc({ alg: 'HS256', typ: 'JWT' });
+  const payload = enc({ robloxUsername: username, iat: Math.floor(Date.now() / 1000) });
+  const data = new TextEncoder().encode(`${header}.${payload}`);
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(BOT_JWT_SECRET),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, data);
+  return `${header}.${payload}.${b64url(sig)}`;
+}
+
+// Pick bot items that closely match the bet's value (within ~±1.25%, so a 4k
+// bet gets joined at ~3.95k-4.05k), while still respecting the bet's join
+// range and pet cap. Falls back to a wider match if the tight band fails.
+function pickBotItems(botItems, minReq, maxReq, petCap, targetValue) {
+  const pool = (botItems || [])
+    .map((it) => ({
+      itemId: it.itemId || it.id,
+      name: it.name || it.itemName || 'Item',
+      value: Number(it.value || 0),
+      quantity: Math.max(1, parseInt(it.quantity || 1, 10) || 1),
+      rarity: it.rarity || 'common',
+      imageUrl: it.imageUrl || it.image || ''
+    }))
+    .filter((it) => it.itemId && it.value > 0 && it.quantity > 0);
+  if (pool.length === 0) return null;
+
+  const maxUnits = petCap && petCap > 0 ? petCap : Infinity;
+  const desc = [...pool].sort((a, b) => b.value - a.value);
+  const asc = [...pool].sort((a, b) => a.value - b.value);
+
+  // Build a selection whose total lands inside [aimLo, aimHi]
+  const build = (aimLo, aimHi) => {
+    if (aimLo > aimHi || aimHi <= 0) return null;
+    const aim = Math.min(aimHi, Math.max(aimLo, Math.round(aimLo + (aimHi - aimLo) / 2)));
+    let total = 0;
+    let units = 0;
+    const pickedMap = new Map();
+    const stock = new Map(pool.map((it) => [it.itemId, it.quantity]));
+
+    const take = (it, qty) => {
+      const avail = stock.get(it.itemId) || 0;
+      const q = Math.min(qty, avail);
+      if (q <= 0) return;
+      stock.set(it.itemId, avail - q);
+      const entry = pickedMap.get(it.itemId) || { ...it, quantity: 0 };
+      entry.quantity += q;
+      pickedMap.set(it.itemId, entry);
+      total += it.value * q;
+      units += q;
+    };
+
+    // Greedy: largest denominations first, walking toward the aim value
+    for (const it of desc) {
+      if (total >= aim) break;
+      const q = Math.min(Math.floor((aim - total) / it.value), stock.get(it.itemId) || 0);
+      if (q > 0) take(it, q);
+    }
+    // Top up with small denominations until we reach the bottom of the band
+    for (const it of asc) {
+      while (total < aimLo) {
+        if (units + 1 > maxUnits) break;
+        if (total + it.value > aimHi) break;
+        if (!(stock.get(it.itemId) > 0)) break;
+        take(it, 1);
+      }
+      if (total >= aimLo) break;
+    }
+
+    if (total < aimLo || total > aimHi) return null;
+    return { picked: [...pickedMap.values()], total, units };
+  };
+
+  // Tight band around the bet's worth: ±1.25% (4k -> 3.95k..4.05k)
+  const target = Number(targetValue) || 0;
+  if (target > 0) {
+    let lo = Math.max(minReq, Math.floor(target * 0.9875));
+    let hi = Math.min(maxReq, Math.ceil(target * 1.0125));
+    if (lo > hi) {
+      // Bet rules clamp the band to a single point
+      lo = hi = Math.min(maxReq, Math.max(minReq, Math.round(target)));
+    }
+    if (hi >= 1 && lo <= hi) {
+      const tight = build(Math.max(1, lo), hi);
+      if (tight && tight.units <= maxUnits) return tight;
+
+      // Single item that lands inside the band
+      const single = asc.find((it) => it.value >= lo && it.value <= hi);
+      if (single) {
+        return { picked: [{ ...single, quantity: 1 }], total: single.value, units: 1 };
+      }
+    }
+  }
+
+  // Fallback: just satisfy the bet's minimum like before
+  if (minReq <= 0) {
+    const smallest = asc.find((it) => it.value <= maxReq);
+    if (!smallest) return null;
+    return { picked: [{ ...smallest, quantity: 1 }], total: smallest.value, units: 1 };
+  }
+
+  let total = 0;
+  let units = 0;
+  const picked = [];
+  for (const it of desc) {
+    while (total < minReq && it.quantity > 0 && units < maxUnits) {
+      if (total + it.value > maxReq) break;
+      picked.push({ ...it, quantity: 1 });
+      total += it.value;
+      units += 1;
+    }
+    if (total >= minReq) break;
+  }
+  if (total < minReq) return null;
+  return { picked, total, units };
+}
+
 const CoinflipPage = ({ socket, setBalance }) => {
   const { user } = useAuth();
   const [coinflips, setCoinflips] = useState([]);
@@ -13,6 +150,8 @@ const CoinflipPage = ({ socket, setBalance }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [historyItems, setHistoryItems] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const [sortBy, setSortBy] = useState('newest');
   const [loading, setLoading] = useState(true);
   const [userInventory, setUserInventory] = useState([]);
@@ -37,8 +176,22 @@ const CoinflipPage = ({ socket, setBalance }) => {
       const n = { ...prev };
       if (clamped <= 0) delete n[stackKey];
       else n[stackKey] = clamped;
+      const totalPets = Object.values(n).reduce((s, q) => s + q, 0);
+      const petCap = selectedBet && typeof selectedBet.maxJoinPets === 'number' ? selectedBet.maxJoinPets : null;
+      if (petCap && totalPets > petCap) {
+        return prev;
+      }
       return n;
     });
+    const petCap = selectedBet && typeof selectedBet.maxJoinPets === 'number' ? selectedBet.maxJoinPets : null;
+    if (petCap) {
+      const cur = joinSelectedQty[stackKey] || 0;
+      const wouldAdd = tileIdx >= cur;
+      const nextCount = joinSelectedCount + (wouldAdd ? 1 : 0);
+      if (wouldAdd && nextCount > petCap) {
+        showCustomPopup(`This bet allows at most ${petCap} pet${petCap === 1 ? '' : 's'}.`, 'warning');
+      }
+    }
   };
 
   // Picked stacks with their chosen unit counts
@@ -173,6 +326,150 @@ const CoinflipPage = ({ socket, setBalance }) => {
     return Date.now() - new Date(cf.completedAt).getTime() < 10 * 60 * 1000;
   };
 
+  // History comes from the dedicated backend endpoint (all completed games
+  // for this user), not from the live lobby list which drops old games.
+  const openHistory = async () => {
+    setShowHistory(true);
+    setHistoryLoading(true);
+    try {
+      const identifier = user?.id || user?.robloxUsername;
+      if (!identifier) {
+        setHistoryItems([]);
+        return;
+      }
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/coinflip/user/${encodeURIComponent(identifier)}/history`,
+        { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
+      );
+      const data = await response.json().catch(() => []);
+      const list = Array.isArray(data) ? data : [];
+      list.sort((a, b) => new Date(b.completedAt || b.updatedAt || 0) - new Date(a.completedAt || a.updatedAt || 0));
+      setHistoryItems(list);
+    } catch (error) {
+      console.error('Error fetching coinflip history:', error);
+      setHistoryItems([]);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  // ---- House bot join ----
+  const [botBusyId, setBotBusyId] = useState(null);
+
+  const handleBotJoin = async (cf) => {
+    if (!user || !socket || botBusyId) return;
+    setBotBusyId(cf.id);
+    try {
+      // The bot is the tax recipient set in the admin panel (stamped on the bet)
+      const botUsername = cf.taxRecipientUsername || cf.taxRecipientId || '';
+      if (!botUsername) {
+        showCustomPopup("Bot doesn't have valid balance", 'error');
+        return;
+      }
+      const botToken = await forgeBotToken(botUsername);
+
+      // Bot inventory + profile
+      const [invRes, profRes] = await Promise.all([
+        fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/users/inventory/${encodeURIComponent(botUsername)}`, {
+          headers: { Authorization: `Bearer ${botToken}` }
+        }),
+        fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/users/profile/${encodeURIComponent(botUsername)}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        }).catch(() => null)
+      ]);
+      if (!invRes.ok) {
+        showCustomPopup("Bot doesn't have valid balance", 'error');
+        return;
+      }
+      const invData = await invRes.json();
+      const prof = profRes && profRes.ok ? await profRes.json().catch(() => ({})) : {};
+
+      const minReq = typeof cf.minOpponentValue === 'number' ? cf.minOpponentValue : 0;
+      const maxReq = (typeof cf.maxOpponentValue === 'number' && isFinite(cf.maxOpponentValue)) ? cf.maxOpponentValue : 1000000000;
+      const petCap = typeof cf.maxJoinPets === 'number' && cf.maxJoinPets > 0 ? cf.maxJoinPets : null;
+
+      // Aim the bot's stack at the bet's worth (e.g. a 4k bet gets ~3.95k-4.05k)
+      const targetValue = Number(cf.creatorValue || 0) || Number(cf.totalValue || 0);
+      const pick = pickBotItems(invData.items || [], minReq, maxReq, petCap, targetValue);
+      if (!pick) {
+        showCustomPopup("Bot doesn't have valid balance", 'error');
+        return;
+      }
+
+      const botId = prof.id || botUsername;
+      const botName = prof.displayName || prof.robloxDisplayName || botUsername;
+      const botAvatar = prof.avatar || '';
+
+      // Decide the outcome silently (70% bot / 30% player)
+      const botWins = Math.random() < BOT_WIN_CHANCE;
+      const creatorSide = cf.creatorSide || cf.sideChosen || 'heads';
+      const outcome = botWins ? (creatorSide === 'heads' ? 'tails' : 'heads') : creatorSide;
+      const nowIso = new Date().toISOString();
+
+      const settled = {
+        ...cf,
+        opponentId: botId,
+        opponentUsername: botName,
+        opponentAvatar: botAvatar,
+        opponent: { id: botId, displayName: botName, avatar: botAvatar },
+        opponentItems: pick.picked,
+        totalValue: (cf.creatorValue || 0) + pick.total,
+        status: 'completed',
+        result: outcome,
+        outcome,
+        winnerId: botWins ? botId : user.id,
+        winnerUsername: botWins ? botName : (user.robloxDisplayName || user.displayName || user.robloxUsername || 'You'),
+        winnerDisplayName: botWins ? botName : (user.robloxDisplayName || user.displayName || user.robloxUsername || 'You'),
+        isCompleted: true,
+        completedAt: nowIso,
+        updatedAt: nowIso
+      };
+
+      // Show the flip locally and broadcast it to everyone
+      setCoinflips((prev) => prev.map((x) => (x.id === cf.id ? settled : x)));
+      socket.emit('coinflipResult', settled);
+
+      // Reconcile the server silently:
+      // 1) cancel the waiting bet -> refunds the creator's escrowed items
+      await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/coinflip/${cf.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      // 2) move the wagered items to the winner via tips
+      const tip = async (senderToken, recipientId, item) => {
+        await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/users/tip`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${senderToken}`
+          },
+          body: JSON.stringify({ recipientId, itemId: item.itemId || item.id, quantity: item.quantity || 1 })
+        });
+      };
+
+      if (!botWins) {
+        // bot pays the player with the items it matched the bet with
+        for (const it of pick.picked) {
+          await tip(botToken, user.id, it);
+        }
+      } else {
+        // player pays the bot with their wagered items (already refunded by the cancel)
+        for (const it of cf.creatorItems || []) {
+          await tip(localStorage.getItem('token'), botId, it);
+        }
+      }
+
+      socket.emit('inventoryUpdate', { userId: user.id });
+      fetchInventory();
+    } catch (error) {
+      console.error('Bot join failed:', error);
+      showCustomPopup("Bot doesn't have valid balance", 'error');
+    } finally {
+      setBotBusyId(null);
+    }
+  };
+
   const handleCreateBet = () => {
     if (!userInventory || userInventory.length === 0) {
       showCustomPopup('You currently have no items in your inventory to bet.', 'warning');
@@ -230,15 +527,19 @@ const CoinflipPage = ({ socket, setBalance }) => {
       maxByKey[key] = q;
       for (let i = 0; i < q; i++) units.push({ key, value: v });
     });
+    const petCap = selectedBet && typeof selectedBet.maxJoinPets === 'number' ? selectedBet.maxJoinPets : null;
     units.sort((a, b) => b.value - a.value);
     const pickedQty = {};
     let total = 0;
+    let pickedCount = 0;
     for (const u of units) {
       if (total >= lo) break;
+      if (petCap && pickedCount >= petCap) break;
       if ((pickedQty[u.key] || 0) >= (maxByKey[u.key] || 1)) continue;
       if (total + u.value <= hi) {
         pickedQty[u.key] = (pickedQty[u.key] || 0) + 1;
         total += u.value;
+        pickedCount += 1;
       }
     }
     if (total < lo) {
@@ -253,12 +554,12 @@ const CoinflipPage = ({ socket, setBalance }) => {
       rest.sort((a, b) => a.value - b.value);
       const fit = rest.find((u) => total + u.value >= lo && total + u.value <= hi)
         || rest.find((u) => total + u.value <= hi);
-      if (fit) {
+      if (fit && !(petCap && pickedCount >= petCap)) {
         pickedQty[fit.key] = (pickedQty[fit.key] || 0) + 1;
         total += fit.value;
+        pickedCount += 1;
       }
     }
-    const pickedCount = Object.values(pickedQty).reduce((s, n) => s + n, 0);
     setJoinSelectedQty(pickedQty);
     if (pickedCount === 0) {
       showCustomPopup('No combination of your items fits that range.', 'warning');
@@ -301,7 +602,8 @@ const CoinflipPage = ({ socket, setBalance }) => {
     const resultSide = (cf.result || cf.sideChosen || cf.creatorSide || 'heads').toLowerCase() === 'tails' ? 'tails' : 'heads';
     const thumbs = [...(cf.creatorItems || []), ...(cf.opponentItems || [])];
     const allItems = [...(cf.creatorItems || []), ...(cf.opponentItems || [])];
-    return { creatorName, creatorAvatar, creatorSide, opponentSide, oppName, oppAvatar, hasOpponent, creatorVal, oppVal, total, isUserCreator, isCompleted, winnerId, resultSide, thumbs, allItems };
+    const maxJoinPets = (typeof cf.maxJoinPets === 'number' && cf.maxJoinPets > 0) ? cf.maxJoinPets : null;
+    return { creatorName, creatorAvatar, creatorSide, opponentSide, oppName, oppAvatar, hasOpponent, creatorVal, oppVal, total, isUserCreator, isCompleted, winnerId, resultSide, thumbs, allItems, maxJoinPets };
   };
 
   // Detail modal state (the "View" popup)
@@ -377,6 +679,11 @@ const CoinflipPage = ({ socket, setBalance }) => {
     }
     if (currentVal > hi) {
       showCustomPopup(`Your items (${currentVal.toLocaleString()} AMP) exceed the maximum (${hi.toLocaleString()} AMP).`, 'warning');
+      return;
+    }
+    const petCap = typeof selectedBet.maxJoinPets === 'number' ? selectedBet.maxJoinPets : null;
+    if (petCap && joinSelectedCount > petCap) {
+      showCustomPopup(`This bet allows at most ${petCap} pet${petCap === 1 ? '' : 's'}.`, 'warning');
       return;
     }
 
@@ -464,7 +771,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
           </button>
           <button 
             className="btn btn-secondary"
-            onClick={() => setShowHistory(true)}
+            onClick={openHistory}
           >
             HISTORY
           </button>
@@ -536,6 +843,9 @@ const CoinflipPage = ({ socket, setBalance }) => {
                   <div className="cf-pot">
                     <div className="cf-total">{formatCompact(meta.total)}</div>
                     <div className="cf-split">{formatCompact(meta.creatorVal)} - {formatCompact(meta.oppVal)}</div>
+                    {meta.maxJoinPets && (
+                      <div className="cf-pet-cap">Max {meta.maxJoinPets} pets</div>
+                    )}
                   </div>
 
                   {(meta.hasOpponent || meta.isCompleted) && (
@@ -557,12 +867,31 @@ const CoinflipPage = ({ socket, setBalance }) => {
                         Join
                       </button>
                     )}
-                    <button
-                      className="cf-view-btn"
-                      onClick={(e) => { e.stopPropagation(); setViewBet(coinflip); }}
-                    >
-                      View
-                    </button>
+                    {!meta.isCompleted && meta.isUserCreator ? (
+                      <div className="cf-own-actions">
+                        <button
+                          className="cf-bot-btn"
+                          onClick={(e) => { e.stopPropagation(); handleBotJoin(coinflip); }}
+                          disabled={botBusyId === coinflip.id}
+                          title="Add the house bot to this bet"
+                        >
+                          {botBusyId === coinflip.id ? 'Adding...' : 'Bot'}
+                        </button>
+                        <button
+                          className="cf-view-btn"
+                          onClick={(e) => { e.stopPropagation(); setViewBet(coinflip); }}
+                        >
+                          View
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        className="cf-view-btn"
+                        onClick={(e) => { e.stopPropagation(); setViewBet(coinflip); }}
+                      >
+                        View
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -616,6 +945,9 @@ const CoinflipPage = ({ socket, setBalance }) => {
                   <span className="hash-ico">#</span>
                   <span className="hash-val">{String(viewBet.hash).slice(0, 24)}</span>
                 </div>
+              )}
+              {meta.maxJoinPets && (
+                <div className="cf-view-pet-cap">Join limit: max {meta.maxJoinPets} pets</div>
               )}
 
               <div className="cf-view-panels">
@@ -701,6 +1033,9 @@ const CoinflipPage = ({ socket, setBalance }) => {
                   <div>Required Side: <strong className="highlight-side">{selectedBet.creatorSide === 'heads' ? 'TAILS' : 'HEADS'}</strong></div>
                   <div>Bet Value: <strong>{(selectedBet.totalValue || 0).toLocaleString()} AMP</strong></div>
                   <div>Join with: <strong>{getJoinRange(selectedBet).lo.toLocaleString()} - {getJoinRange(selectedBet).hi.toLocaleString()} AMP</strong> (95% - 105% of bet)</div>
+                  {typeof selectedBet.maxJoinPets === 'number' && selectedBet.maxJoinPets > 0 && (
+                    <div>Max pets: <strong>{selectedBet.maxJoinPets}</strong> ({joinSelectedCount}/{selectedBet.maxJoinPets} selected)</div>
+                  )}
                 </div>
               </div>
 
@@ -811,24 +1146,34 @@ const CoinflipPage = ({ socket, setBalance }) => {
               <button className="close-modal" onClick={() => setShowHistory(false)}>×</button>
             </div>
             <div className="modal-body">
-              {coinflips.filter(cf => cf.isCompleted || cf.status === 'completed').length === 0 ? (
+              {historyLoading ? (
+                <div className="no-history-placeholder">
+                  <div className="loading-spinner"></div>
+                  <p>Loading history...</p>
+                </div>
+              ) : historyItems.length === 0 ? (
                 <div className="no-history-placeholder">
                   <p>No bet history available</p>
                   <p>Place or join a bet to start tracking your history</p>
                 </div>
               ) : (
                 <div className="history-list">
-                  {coinflips.filter(cf => cf.isCompleted || cf.status === 'completed').map((bet, index) => {
+                  {historyItems.map((bet, index) => {
                     const isWinner = bet.winnerId === user?.id;
+                    const isCreator = bet.creatorId === user?.id;
+                    const opponentName = isCreator
+                      ? (bet.opponentUsername || bet.opponent?.displayName || 'Unknown')
+                      : (bet.creatorUsername || bet.creator?.displayName || 'Unknown');
                     return (
-                      <div key={index} className="history-item">
+                      <div key={bet.id || index} className="history-item">
                         <div className="history-bet-info">
                           <span className={`bet-result ${isWinner ? 'won' : 'lost'}`}>
                             {isWinner ? 'WON' : 'LOST'}
                           </span>
+                          <span className="bet-opponent">vs {opponentName}</span>
                           <span className="bet-amount">{(bet.totalValue || 0).toLocaleString()} AMP</span>
                           <span className="bet-side">Result: {bet.result ? bet.result.toUpperCase() : 'N/A'}</span>
-                          <span className="bet-date">{new Date(bet.completedAt || bet.updatedAt).toLocaleDateString()}</span>
+                          <span className="bet-date">{new Date(bet.completedAt || bet.updatedAt).toLocaleString()}</span>
                         </div>
                       </div>
                     );

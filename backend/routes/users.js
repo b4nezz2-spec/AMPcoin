@@ -3,6 +3,7 @@ const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { authenticateToken } = require('../middleware/auth');
 const dbManager = require('../db/dbHelper');
+const { addNotification } = require('../notificationService');
 
 const ROBLOX_PROFILE_CACHE_TTL = 1000 * 60 * 60; // 1 hour cache
 
@@ -384,6 +385,14 @@ router.post('/tip', authenticateToken, (req, res) => {
       timestamp: new Date().toISOString()
     });
     dbManager.saveMainDb();
+
+    addNotification({
+      userId: recipient.id,
+      type: 'tip',
+      title: 'Tip received',
+      message: `${req.user.robloxUsername || 'Someone'} tipped you ${snapshot.name}!`,
+      imageUrl: snapshot.imageUrl || snapshot.image || ''
+    });
 
     res.json({ message: `Tipped ${snapshot.name} to ${recipient.displayName || recipient.robloxUsername}!` });
   } catch (error) {

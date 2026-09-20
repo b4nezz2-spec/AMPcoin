@@ -1,0 +1,310 @@
+/* ---------------- Notifications (header) ---------------- */
+/* Loaded after App.css so these rules win */
+
+.notifications {
+  position: relative;
+  cursor: pointer;
+}
+.notification-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: -10px;
+  width: 320px;
+  max-height: 400px;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+  z-index: 200;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+.notification-dd-header {
+  padding: 12px 16px;
+  font-weight: 800;
+  color: #00d4ff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.9);
+}
+.notification-list {
+  overflow-y: auto;
+}
+.notification-item {
+  display: flex;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  align-items: flex-start;
+}
+.notification-item.unread {
+  background: rgba(0, 170, 255, 0.08);
+}
+.notification-item-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(30, 41, 59, 0.8);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.notification-item-icon img {
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+.notification-item-body { min-width: 0; }
+.notification-item-title {
+  color: #f1f5f9;
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+.notification-item-msg {
+  color: #cbd5e1;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  word-break: break-word;
+}
+.notification-item-time {
+  color: #64748b;
+  font-size: 0.7rem;
+  margin-top: 3px;
+}
+.notification-empty {
+  padding: 28px 16px;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+/* Header GW button (next to the bell) */
+.header-gw-btn {
+  height: 38px;
+  min-width: 44px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1.05rem;
+  color: #fff;
+  background: linear-gradient(135deg, #00aaff 0%, #0055ff 100%);
+  box-shadow: 0 3px 12px rgba(0, 110, 255, 0.35);
+  transition: all 0.2s ease;
+}
+.header-gw-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 16px rgba(0, 110, 255, 0.5);
+}
+.header-gw-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ---------------- Giveaway chat cards ---------------- */
+.gw-card-row {
+  padding: 4px 2px;
+}
+
+.gw-card {
+  width: 100%;
+  box-sizing: border-box;
+  background: #171a2b;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  padding: 12px 14px 14px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+.gw-card.ended { opacity: 0.85; }
+
+.gw-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.gw-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #e8edf7;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.gw-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #00d4ff;
+  background: rgba(0, 170, 255, 0.12);
+  border: 1px solid rgba(0, 170, 255, 0.35);
+  font-size: 0.75rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
+.gw-body {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gw-item-img {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: rgba(0, 0, 0, 0.35);
+  flex-shrink: 0;
+}
+
+.gw-item-meta {
+  min-width: 0;
+  flex: 1;
+}
+
+.gw-item-name {
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gw-item-sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.gw-item-val {
+  color: #3aa5ff;
+  font-weight: 800;
+  font-size: 0.82rem;
+}
+
+.gw-entries-count {
+  color: #8b95ad;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.gw-creator-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 110px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 999px;
+  padding: 4px 10px 4px 4px;
+  flex-shrink: 0;
+}
+.gw-creator-chip img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #10142a;
+}
+.gw-creator-chip span {
+  color: #cbd5e1;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gw-actions { margin-top: 12px; }
+
+.gw-join-big {
+  width: 100%;
+  display: block;
+  padding: 11px 0;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #ffffff;
+  text-align: center;
+  background: linear-gradient(135deg, #38a8ff 0%, #1f6fff 100%);
+  box-shadow: 0 4px 14px rgba(31, 111, 255, 0.35);
+  transition: all 0.15s ease;
+}
+.gw-join-big:hover:not(:disabled) { filter: brightness(1.1); }
+.gw-join-big:disabled { opacity: 0.6; cursor: wait; }
+.gw-join-big.joined {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  box-shadow: none;
+  cursor: default;
+}
+.gw-join-big.locked {
+  background: rgba(148, 163, 184, 0.1);
+  color: #f87171;
+  font-size: 0.8rem;
+  box-shadow: none;
+  cursor: default;
+}
+
+.gw-draw-btn {
+  width: 100%;
+  padding: 11px 0;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+.gw-draw-btn:disabled { opacity: 0.6; cursor: wait; }
+
+.gw-winner-banner {
+  margin-top: 12px;
+  text-align: center;
+  color: #fbbf24;
+  font-weight: 800;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  border-radius: 10px;
+  padding: 9px;
+}
+
+.gw-refund-banner {
+  margin-top: 12px;
+  text-align: center;
+  color: #94a3b8;
+  font-weight: 600;
+  background: rgba(148, 163, 184, 0.08);
+  border-radius: 10px;
+  padding: 9px;
+}
+
+.gw-win-line {
+  text-align: center;
+  color: #fbbf24;
+  font-weight: 800;
+  font-size: 0.85rem;
+  background: rgba(251, 191, 36, 0.08);
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin: 4px 0;
+}
+
+.gw-error-line {
+  text-align: center;
+  color: #f87171;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin: 4px 0;
+}

@@ -139,49 +139,56 @@
 
 /* Compact chip layout — stays small no matter how few items are picked */
 .selected-items.compact {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  min-height: 54px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 10px;
+  min-height: 72px;
   padding: 10px 12px;
-  align-items: center;
+  align-items: stretch;
 }
 .selected-items.compact .no-selected-items {
-  width: 100%;
+  grid-column: 1 / -1;
   padding: 6px;
 }
-.selected-chip {
-  display: inline-flex;
+.modal.enhanced .selected-chip {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  max-width: 220px;
+  gap: 4px;
+  max-width: none;
   background: rgba(30, 41, 59, 0.9);
   border: 1px solid rgba(0, 212, 255, 0.25);
-  border-radius: 8px;
-  padding: 3px 4px 3px 3px;
+  border-radius: 10px;
+  padding: 8px 8px 6px;
+  position: relative;
+  text-align: center;
 }
-.selected-chip .chip-img {
-  width: 28px;
-  height: 28px;
+.modal.enhanced .selected-chip .chip-img {
+  width: 30px;
+  height: 30px;
   border-radius: 6px;
   object-fit: cover;
   flex-shrink: 0;
 }
-.selected-chip .chip-name {
-  font-size: 0.75rem;
+.modal.enhanced .selected-chip .chip-name {
+  font-size: 0.72rem;
   color: #e2e8f0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 110px;
+  max-width: 100%;
+  width: 100%;
 }
-.selected-chip .chip-val {
-  font-size: 0.75rem;
+.modal.enhanced .selected-chip .chip-val {
+  font-size: 0.72rem;
   font-weight: bold;
   color: #00d4ff;
   white-space: nowrap;
 }
-.chip-x {
+.modal.enhanced .chip-x {
+  position: absolute;
+  top: -6px;
+  right: -6px;
   background: rgba(239, 68, 68, 0.2);
   border: 1px solid rgba(239, 68, 68, 0.3);
   color: #f87171;
@@ -362,9 +369,181 @@
 .cf-create-sides {
   display: flex;
   gap: 10px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 2;
 }
 .cf-create-sides .side-btn {
   min-width: 130px;
+  flex: 0 0 auto;
+}
+
+.cf-limitations {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 168px;
+  margin-left: 4px;
+}
+.cf-limit-switch-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(0, 212, 255, 0.22);
+  border-radius: 10px;
+  height: 48px;
+  box-sizing: border-box;
+}
+.cf-limitations.on .cf-limit-switch-row {
+  border-color: rgba(0, 212, 255, 0.55);
+  box-shadow: 0 0 14px rgba(0, 212, 255, 0.18);
+}
+.cf-limit-label {
+  color: #cbd5e1;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.cf-limitations.on .cf-limit-label {
+  color: #7ddfff;
+}
+.cf-limit-switch {
+  position: relative;
+  width: 42px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(51, 65, 85, 0.9);
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: background 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+}
+.cf-limit-switch.on {
+  background: linear-gradient(45deg, #00aaff, #00d4ff);
+  border-color: rgba(0, 212, 255, 0.7);
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.4);
+}
+.cf-limit-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #f8fafc;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.cf-limit-switch.on .cf-limit-knob {
+  transform: translateX(18px);
+}
+.cf-limit-dropdown {
+  position: relative;
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-8px) scale(0.96);
+  pointer-events: none;
+  overflow: visible;
+  transition: max-height 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cf-limit-dropdown.enabled {
+  max-height: 280px;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+.cf-limit-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  background: rgba(15, 23, 42, 0.85);
+  color: #e2e8f0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.cf-limit-trigger:hover:not(:disabled) {
+  border-color: #00d4ff;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.25);
+}
+.cf-limit-caret {
+  color: #00d4ff;
+  transition: transform 0.25s ease;
+}
+.cf-limit-dropdown.open .cf-limit-caret {
+  transform: rotate(180deg);
+}
+.cf-limit-menu {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  border-radius: 10px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45), 0 0 16px rgba(0, 212, 255, 0.12);
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(-6px);
+  transition: max-height 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease, transform 0.28s ease;
+}
+.cf-limit-dropdown.open .cf-limit-menu {
+  max-height: 180px;
+  opacity: 1;
+  transform: translateY(0);
+}
+.cf-limit-opt {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(30, 41, 59, 0.9);
+  color: #cbd5e1;
+  border-radius: 7px;
+  padding: 7px 0;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(6px) scale(0.9);
+  animation: cfLimitPop 0.28s ease forwards;
+  animation-delay: calc(var(--i, 1) * 18ms);
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+.cf-limit-dropdown:not(.open) .cf-limit-opt {
+  animation: none;
+}
+.cf-limit-opt:hover {
+  border-color: rgba(0, 212, 255, 0.5);
+  color: #7ddfff;
+  transform: translateY(-1px);
+}
+.cf-limit-opt.active {
+  background: linear-gradient(45deg, #00aaff, #00d4ff);
+  border-color: transparent;
+  color: #0f172a;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.35);
+}
+@keyframes cfLimitPop {
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-actions.create-actions {
+  overflow: visible;
 }
 .cf-create-confirm {
   display: flex;

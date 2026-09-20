@@ -66,6 +66,90 @@ function ChatAvatar({ msg, resolved }) {
   );
 }
 
+// Chat giveaway card — matches the design: title + timer, item row with
+// entries count and creator chip, and a big blue Join button.
+// The winner is drawn automatically when the timer hits zero — no manual draw.
+const GiveawayCard = ({ msg, user, onJoin, joining }) => {
+  const gw = msg.giveaway || {};
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    if (gw.status !== 'open') return;
+    const t = setInterval(() => setTick((x) => x + 1), 1000);
+    return () => clearInterval(t);
+  }, [gw.status]);
+
+  const isCreator = user && String(gw.creatorId) === String(user.id);
+  const joined = user && (gw.entries || []).some((e) => String(e.userId) === String(user.id));
+  const eligible = user && (gw.eligibleUserIds || []).map(String).includes(String(user.id));
+  const isOpen = gw.status === 'open';
+  const itemName = gw.item?.name || gw.item?.itemName || 'Item';
+  const itemImg = gw.item?.imageUrl || gw.item?.image || '/default-item.png';
+
+  const msLeft = gw.endsAt ? new Date(gw.endsAt).getTime() - Date.now() : 0;
+  const secsLeft = Math.max(0, Math.ceil(msLeft / 1000));
+  const timerText = `${String(Math.floor(secsLeft / 60)).padStart(2, '0')}:${String(secsLeft % 60).padStart(2, '0')}`;
+
+  let action = null;
+  if (isOpen) {
+    if (isCreator) {
+      action = <div className="gw-join-big locked">Waiting for timer... {(gw.entries || []).length} joined</div>;
+    } else if (joined) {
+      action = <div className="gw-join-big joined">✓ Joined</div>;
+    } else if (!eligible) {
+      action = <div className="gw-join-big locked">🔒 Need 1 bet in the last 24h to join</div>;
+    } else {
+      action = (
+        <button className="gw-join-big" onClick={() => onJoin(gw.id)} disabled={joining}>
+          🎁 Join
+        </button>
+      );
+    }
+  }
+
+  return (
+    <div className={`gw-card ${isOpen ? '' : 'ended'}`}>
+      <div className="gw-header">
+        <span className="gw-title">🎁 Giveaway</span>
+        {isOpen && <span className="gw-timer">⏱ {timerText}</span>}
+      </div>
+      <div className="gw-body">
+        <img
+          className="gw-item-img"
+          src={itemImg}
+          alt=""
+          onError={(e) => { e.target.src = '/default-item.png'; }}
+        />
+        <div className="gw-item-meta">
+          <div className="gw-item-name">{itemName}{(gw.item?.quantity || 1) > 1 ? ` ×${gw.item.quantity}` : ''}</div>
+          <div className="gw-item-sub">
+            <span className="gw-item-val">◈ {Number(gw.item?.value || 0).toLocaleString()}</span>
+            <span className="gw-entries-count">{(gw.entries || []).length} entries</span>
+          </div>
+        </div>
+        <div className="gw-creator-chip" title={`by ${gw.creatorName || 'Anonymous'}`}>
+          <img
+            src={gw.creatorAvatar || DEFAULT_AVATAR}
+            alt=""
+            onError={(e) => { e.target.src = DEFAULT_AVATAR; }}
+          />
+          <span>{gw.creatorName || 'Anonymous'}</span>
+        </div>
+      </div>
+      {gw.status === 'ended' ? (
+        gw.winnerId ? (
+          <div className="gw-winner-banner">🏆 Winner: {gw.winnerName}</div>
+        ) : (
+          <div className="gw-refund-banner">No entries — item returned to {gw.creatorName}</div>
+        )
+      ) : (
+        <div className="gw-actions">{action}</div>
+      )
+      }
+    </div>
+  );
+};
+
 const ChatPanel = ({ socket }) => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
@@ -75,6 +159,10 @@ const ChatPanel = ({ socket }) => {
   const [sending, setSending] = useState(false);
   const [cooldownLeft, setCooldownLeft] = useState(0); // seconds left on 5s chat cooldown
   const [viewProfile, setViewProfile] = useState(null); // chat user profile modal
+
+  // Giveaway interaction state (creation lives in the header GW button;
+  // the winner is drawn automatically by the server when the timer ends)
+  const [joiningGw, setJoiningGw] = useState(false);
   const cooldownTimer = useRef(null);
   const { user } = useAuth();
   const messagesEndRef = useRef(null);
@@ -120,7 +208,12 @@ const ChatPanel = ({ socket }) => {
       socket.emit('joinChat', { userId: user?.id, username: user?.displayName || 'Anonymous' });
 
       const onReceive = (message) => {
-        setMessages((prev) => [...prev, message]);
+        // Dedup: our own optimistic/saved messages may echo back via broadcast
+        setMessages((prev) =>
+          message && message.id && prev.some((m) => m.id === message.id)
+            ? prev
+            : [...prev, message]
+        );
       };
       const onOnline = (data) => {
         setOnlineUsers(data.count);
@@ -136,10 +229,22 @@ const ChatPanel = ({ socket }) => {
         });
       };
 
+      const onGiveawayUpdate = (data) => {
+        if (!data || !data.id) return;
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.type === 'giveaway' && m.giveaway && m.giveaway.id === data.id
+              ? { ...m, giveaway: data }
+              : m
+          )
+        );
+      };
+
       socket.on('receiveMessage', onReceive);
       socket.on('onlineCountUpdate', onOnline);
       socket.on('typingStart', onTypingStart);
       socket.on('typingStop', onTypingStop);
+      socket.on('giveawayUpdate', onGiveawayUpdate);
 
       fetchRecentMessages();
       fetchOnlineCount();
@@ -149,6 +254,7 @@ const ChatPanel = ({ socket }) => {
         socket.off('onlineCountUpdate', onOnline);
         socket.off('typingStart', onTypingStart);
         socket.off('typingStop', onTypingStop);
+        socket.off('giveawayUpdate', onGiveawayUpdate);
       };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -329,6 +435,40 @@ const ChatPanel = ({ socket }) => {
     return resolvedProfiles[key] || null;
   };
 
+  // ---- Giveaways (join / draw; creation is in the header) ----
+  const joinGiveaway = async (gwId) => {
+    if (!gwId || joiningGw) return;
+    setJoiningGw(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/giveaways/${gwId}/join`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.giveaway) {
+        if (socket) socket.emit('giveawayUpdate', data.giveaway);
+      } else {
+        showGwError(data.message || 'Could not join the giveaway');
+      }
+    } catch (e) {
+      showGwError('Could not join the giveaway');
+    } finally {
+      setJoiningGw(false);
+    }
+  };
+
+  const showGwError = (text) => {
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `gwerr-${Date.now()}`,
+        type: 'giveaway_error',
+        message: text,
+        timestamp: new Date().toISOString()
+      }
+    ]);
+  };
+
   const openUserProfile = (msg) => {
     const resolved = getResolved(msg);
     setViewProfile({
@@ -356,6 +496,28 @@ const ChatPanel = ({ socket }) => {
           <div className="chat-empty">No messages yet. Say hello! 👋</div>
         ) : (
           messages.map((msg, idx) => {
+            if (msg.type === 'giveaway') {
+              return (
+                <div key={msg.id || idx} className="gw-card-row">
+                  <GiveawayCard
+                    msg={msg}
+                    user={user}
+                    onJoin={joinGiveaway}
+                    joining={joiningGw}
+                  />
+                </div>
+              );
+            }
+            if (msg.type === 'giveaway_win') {
+              return (
+                <div key={msg.id || idx} className="gw-win-line">{msg.message}</div>
+              );
+            }
+            if (msg.type === 'giveaway_error') {
+              return (
+                <div key={msg.id || idx} className="gw-error-line">⚠ {msg.message}</div>
+              );
+            }
             const resolved = getResolved(msg);
             const isOwn = user && String(msg.userId) === String(user.id);
             const displayName =

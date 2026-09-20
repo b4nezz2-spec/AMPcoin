@@ -10,6 +10,9 @@ const CreateCoinflipModal = ({ onClose, onCreated, userId, socket, setBalance, u
   const [sortBy, setSortBy] = useState('value_desc');
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState(null); // { message, type } custom popup
+  const [limitationsOn, setLimitationsOn] = useState(false);
+  const [maxJoinPets, setMaxJoinPets] = useState(5);
+  const [limitMenuOpen, setLimitMenuOpen] = useState(false);
 
   const showNotice = (message, type = 'info') => {
     setNotice({ message, type });
@@ -62,7 +65,6 @@ const CreateCoinflipModal = ({ onClose, onCreated, userId, socket, setBalance, u
     }
 
     setLoading(true);
-
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/coinflip`, {
         method: 'POST',
@@ -77,7 +79,8 @@ const CreateCoinflipModal = ({ onClose, onCreated, userId, socket, setBalance, u
             quantity: qty,
             value: item.value || item.details?.value || 0
           })),
-          sideChosen: selectedSide
+          sideChosen: selectedSide,
+          maxJoinPets: limitationsOn ? maxJoinPets : null
         })
       });
 
@@ -318,6 +321,54 @@ const CreateCoinflipModal = ({ onClose, onCreated, userId, socket, setBalance, u
             >
               <span className="coin-badge tails">T</span> Tails
             </button>
+            <div className={`cf-limitations ${limitationsOn ? 'on' : ''}`}>
+              <div className="cf-limit-switch-row">
+                <span className="cf-limit-label">Limit Items</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={limitationsOn}
+                  className={`cf-limit-switch ${limitationsOn ? 'on' : ''}`}
+                  onClick={() => {
+                    const next = !limitationsOn;
+                    setLimitationsOn(next);
+                    setLimitMenuOpen(next);
+                  }}
+                >
+                  <span className="cf-limit-knob" />
+                </button>
+              </div>
+              <div className={`cf-limit-dropdown ${limitationsOn && limitMenuOpen ? 'open' : ''} ${limitationsOn ? 'enabled' : ''}`}>
+                <button
+                  type="button"
+                  className="cf-limit-trigger"
+                  disabled={!limitationsOn}
+                  onClick={() => setLimitMenuOpen((o) => !o)}
+                  aria-expanded={limitationsOn && limitMenuOpen}
+                >
+                  Max {maxJoinPets} pet{maxJoinPets === 1 ? '' : 's'}
+                  <span className="cf-limit-caret">▾</span>
+                </button>
+                <div className="cf-limit-menu" role="listbox">
+                  {Array.from({ length: 15 }, (_, i) => i + 1).map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      role="option"
+                      aria-selected={maxJoinPets === n}
+                      className={`cf-limit-opt ${maxJoinPets === n ? 'active' : ''}`}
+                      style={{ '--i': n }}
+                      onClick={() => {
+                        setMaxJoinPets(n);
+                        setLimitMenuOpen(false);
+                      }}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
           <div className="cf-create-confirm">
             <button className="btn btn-secondary" onClick={onClose} disabled={loading}>

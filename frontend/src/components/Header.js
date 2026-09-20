@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ProfileModal from './ProfileModal';
+import InventoryPickerModal from './InventoryPickerModal';
 
 const DEFAULT_AVATAR = '/default-avatar.png';
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -27,9 +28,125 @@ const Header = ({ balance, notifications, socket }) => {
   const [botInfo, setBotInfo] = useState(null); // { botUser, redirectLink, botEnabled, avatar }
   const [tradeModal, setTradeModal] = useState(null); // { kind: 'withdraw'|'deposit', items, amount }
 
+  // Notifications
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifList, setNotifList] = useState([]);
+
+  // Giveaway creation (GW button next to the bell)
+  const [gwModalOpen, setGwModalOpen] = useState(false);
+  const [gwInventory, setGwInventory] = useState([]);
+  const [gwLoading, setGwLoading] = useState(false);
+  const [gwBusyId, setGwBusyId] = useState(null);
+  const [gwNote, setGwNote] = useState('');
+
   const num = (v) => {
     const n = Number(v);
     return isNaN(n) ? 0 : n;
+  };
+
+  const unreadCount = notifList.filter((n) => !n.read).length;
+
+  const fetchNotifications = useCallback(async () => {
+    if (!user) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/notifications`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setNotifList(data.notifications || []);
+      }
+    } catch (e) {
+      console.warn('Notification fetch failed:', e.message);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const onNotification = (n) => {
+      if (!n) return;
+      setNotifList((prev) => (n.id && prev.some((x) => x.id === n.id) ? prev : [n, ...prev]));
+    };
+    socket.on('notification', onNotification);
+    return () => socket.off('notification', onNotification);
+  }, [socket]);
+
+  const toggleNotifications = async () => {
+    const next = !notifOpen;
+    setNotifOpen(next);
+    if (next && unreadCount > 0) {
+      setNotifList((prev) => prev.map((n) => ({ ...n, read: true })));
+      try {
+        await fetch(`${API_BASE}/api/notifications/read`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+      } catch (e) {
+        console.warn('Mark-read failed:', e.message);
+      }
+    }
+  };
+
+  const notifIcon = (type) => {
+    switch (type) {
+      case 'tip': return '🎁';
+      case 'withdrawal': return '💸';
+      case 'items': return '📦';
+      case 'giveaway': return '🎉';
+      default: return '🔔';
+    }
+  };
+
+  const openGwModal = async () => {
+    if (!user) return;
+    setGwNote('');
+    setGwModalOpen(true);
+    setGwLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/users/inventory/${user.id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setGwInventory(data.items || []);
+      }
+    } catch (e) {
+      console.error('GW inventory fetch failed:', e.message);
+    } finally {
+      setGwLoading(false);
+    }
+  };
+
+  const createGiveaway = async (item) => {
+    const itemId = item.itemId || item.id;
+    if (!itemId || gwBusyId) return;
+    setGwBusyId(itemId);
+    setGwNote('');
+    try {
+      const res = await fetch(`${API_BASE}/api/giveaways`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ itemId, quantity: 1 })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.chatMessage) {
+        if (socket && socket.connected) socket.emit('chatMessage', data.chatMessage);
+        setGwModalOpen(false);
+      } else {
+        setGwNote(data.message || 'Failed to create giveaway');
+      }
+    } catch (e) {
+      setGwNote('Failed to create giveaway — server error');
+    } finally {
+      setGwBusyId(null);
+    }
   };
 
   // Compact display: 83623 -> 83.6k
@@ -264,13 +381,68 @@ const Header = ({ balance, notifications, socket }) => {
           }}
         />
 
-        <div className="notifications">
+        <div className="notifications" onClick={toggleNotifications}>
           <span className="notification-icon">🔔</span>
-          {notifications && notifications.length > 0 && (
-            <span className="notification-badge">{notifications.length}</span>
+          {unreadCount > 0 && (
+            <span className="notification-badge">{unreadCount}</span>
+          )}
+          {notifOpen && (
+            <div className="notification-dropdown" onClick={(e) => e.stopPropagation()}>
+              <div className="notification-dd-header">Notifications</div>
+              {notifList.length === 0 ? (
+                <div className="notification-empty">No notifications yet</div>
+              ) : (
+                <div className="notification-list">
+                  {notifList.map((n) => (
+                    <div key={n.id} className={`notification-item ${n.read ? '' : 'unread'}`}>
+                      <span className="notification-item-icon">
+                        {n.imageUrl ? (
+                          <img
+                            src={n.imageUrl}
+                            alt=""
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                          />
+                        ) : (
+                          notifIcon(n.type)
+                        )}
+                      </span>
+                      <div className="notification-item-body">
+                        {n.title && <div className="notification-item-title">{n.title}</div>}
+                        <div className="notification-item-msg">{n.message}</div>
+                        <div className="notification-item-time">
+                          {new Date(n.createdAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
         </div>
+        <button
+          className="header-gw-btn"
+          onClick={openGwModal}
+          disabled={!user}
+          title="Create a giveaway — only members with a bet in the last 24h can join"
+        >
+          🎁
+        </button>
       </div>
+
+      <InventoryPickerModal
+        isOpen={gwModalOpen}
+        title="Create a Giveaway"
+        subtitle="Pick the item you want to give away — only members with a bet in the last 24h can join"
+        items={gwInventory}
+        loading={gwLoading}
+        busyId={gwBusyId}
+        note={gwNote}
+        noteType={gwNote ? 'error' : undefined}
+        actionLabel="GIVE"
+        onClose={() => setGwModalOpen(false)}
+        onSelect={createGiveaway}
+      />
 
       {showProfileModal && (
         <ProfileModal

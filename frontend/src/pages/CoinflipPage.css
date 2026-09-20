@@ -939,6 +939,20 @@
   line-height: 1.1;
 }
 .cf-split { color: #8ea0c2; font-size: 0.85rem; font-weight: 600; margin-top: 2px; }
+.cf-pet-cap {
+  margin-top: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #7ddfff;
+  letter-spacing: 0.02em;
+}
+.cf-view-pet-cap {
+  text-align: center;
+  margin: 8px 0 0;
+  color: #7ddfff;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
 .cf-chip {
   width: 48px;
   height: 48px;
@@ -1197,4 +1211,71 @@
 .bet-result.lost {
   color: #ef4444;
   font-weight: bold;
+}
+
+.history-bet-info .bet-result {
+  flex: 0 0 auto;
+}
+
+.history-bet-info .bet-opponent {
+  flex: 1;
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.history-bet-info .bet-amount {
+  flex: 0 0 auto;
+  color: #00d4ff;
+  font-weight: 700;
+}
+
+.history-bet-info .bet-side {
+  flex: 0 0 auto;
+  color: #94a3b8;
+}
+
+.history-bet-info .bet-date {
+  flex: 0 0 auto;
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+@media (max-width: 640px) {
+  .history-bet-info {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}
+/* Bot button — gray, stacked on top of View for your own bets */
+.cf-own-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.cf-bot-btn {
+  background: #4b5563;
+  color: #e5e7eb;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 7px 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.cf-bot-btn:hover:not(:disabled) {
+  background: #5b6472;
+  transform: translateY(-1px);
+}
+
+.cf-bot-btn:disabled {
+  opacity: 0.55;
+  cursor: wait;
 }

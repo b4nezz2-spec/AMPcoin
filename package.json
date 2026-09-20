@@ -10,7 +10,7 @@
     "client": "cd frontend && npm start",
     "build": "npm run build --prefix frontend",
     "install-all": "npm install && cd frontend && npm install",
-    "turnon": "npm start && cd frontend && npm start"
+    "turnon": "concurrently \"npm run server\" \"npm run client\""
   },
   "keywords": ["casino", "gaming", "roblox", "adoptme"],
   "author": "AMPcoin",

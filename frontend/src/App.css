@@ -625,6 +625,24 @@ body {
   flex-wrap: wrap;
 }
 
+/* Leaderboard avatars — Roblox headshots come in at 150px, so they must
+   be pinned to a table-row friendly size or they blow up the layout */
+.leaderboard-modal .player-info,
+.leaderboard-page .player-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.leaderboard-modal .player-avatar,
+.leaderboard-page .player-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: rgba(30, 41, 59, 0.8);
+}
+
 /* Chat panel styles - Full right side */
 .chat-panel {
   position: fixed;
@@ -2599,4 +2617,197 @@ body::before {
   margin-bottom: 18px;
   word-break: break-word;
   user-select: all;
+}
+
+/* ---------------- Giveaways (chat) ---------------- */
+.chat-gw-btn {
+  flex: 0 0 auto;
+  height: 42px;
+  min-width: 52px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  color: #ffffff;
+  background: linear-gradient(135deg, #00aaff 0%, #0055ff 100%);
+  box-shadow: 0 3px 12px rgba(0, 110, 255, 0.35);
+  transition: all 0.2s ease;
+}
+.chat-gw-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 16px rgba(0, 110, 255, 0.5);
+}
+.chat-gw-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.gw-card-row {
+  padding: 4px 2px;
+}
+
+.gw-card {
+  width: 100%;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+  border: 1px solid rgba(0, 170, 255, 0.45);
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: 0 4px 18px rgba(0, 110, 255, 0.18);
+}
+
+.gw-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.gw-tag {
+  background: linear-gradient(135deg, #00aaff 0%, #0055ff 100%);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.gw-creator {
+  color: #94a3b8;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gw-item-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.gw-item-img {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: rgba(0, 0, 0, 0.35);
+  flex-shrink: 0;
+}
+
+.gw-item-meta { min-width: 0; }
+
+.gw-item-name {
+  color: #f1f5f9;
+  font-weight: 700;
+  font-size: 0.92rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gw-item-val {
+  color: #00d4ff;
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.gw-entries-count {
+  color: #94a3b8;
+  font-size: 0.75rem;
+  margin-top: 2px;
+}
+
+.gw-actions {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gw-join-btn {
+  flex: 1;
+  padding: 9px 0;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, #00aaff 0%, #0055ff 100%);
+  transition: all 0.2s ease;
+}
+.gw-join-btn:hover:not(:disabled) { filter: brightness(1.12); }
+.gw-join-btn:disabled { opacity: 0.6; cursor: wait; }
+
+.gw-draw-btn {
+  flex: 1;
+  padding: 9px 0;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+.gw-draw-btn:disabled { opacity: 0.6; cursor: wait; }
+
+.gw-joined-tag {
+  flex: 1;
+  text-align: center;
+  color: #10b981;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.gw-not-eligible {
+  flex: 1;
+  text-align: center;
+  color: #f87171;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.gw-winner-banner {
+  margin-top: 12px;
+  text-align: center;
+  color: #fbbf24;
+  font-weight: 800;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.gw-refund-banner {
+  margin-top: 12px;
+  text-align: center;
+  color: #94a3b8;
+  font-weight: 600;
+  background: rgba(148, 163, 184, 0.08);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.gw-win-line {
+  text-align: center;
+  color: #fbbf24;
+  font-weight: 800;
+  font-size: 0.85rem;
+  background: rgba(251, 191, 36, 0.08);
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin: 4px 0;
+}
+
+.gw-error-line {
+  text-align: center;
+  color: #f87171;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin: 4px 0;
 }

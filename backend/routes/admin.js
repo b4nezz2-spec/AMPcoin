@@ -3,6 +3,7 @@ const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { authenticateAdmin } = require('../middleware/auth');
 const dbManager = require('../db/dbHelper');
+const { addNotification } = require('../notificationService');
 
 // Admin dashboard stats
 function dashboardStats(req, res) {
@@ -606,6 +607,22 @@ router.put('/transactions/:transactionId/status', authenticateAdmin, (req, res) 
     if (itemWithdrawal) {
       itemWithdrawal.status = status;
       itemWithdrawal.updatedAt = new Date().toISOString();
+    }
+
+    // Notify the owner when their withdrawal completes
+    if (status === 'completed') {
+      const ownerId = (withdrawal && withdrawal.userId) || (itemWithdrawal && itemWithdrawal.userId);
+      if (ownerId) {
+        addNotification({
+          userId: ownerId,
+          type: 'withdrawal',
+          title: 'Withdrawal completed',
+          message: itemWithdrawal
+            ? 'Your item withdrawal was completed — check your Roblox inventory!'
+            : 'Your withdrawal was completed successfully!',
+          imageUrl: (itemWithdrawal && itemWithdrawal.imageUrl) || ''
+        });
+      }
     }
 
     const adminLog = {
