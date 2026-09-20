@@ -1,0 +1,552 @@
+{
+  "coinflips": [],
+  "inventories": [
+    {
+      "id": "inv-3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "items": [
+        {
+          "id": "amvgg-167",
+          "itemId": "amvgg-167",
+          "name": "Bat Dragon",
+          "itemName": "Bat Dragon",
+          "value": 7230,
+          "rarity": "legendary",
+          "quantity": 2,
+          "image": "https://amvgg.net/wp-content/uploads/pets/Bat Dragon.webp",
+          "imageUrl": "https://amvgg.net/wp-content/uploads/pets/Bat Dragon.webp",
+          "details": {
+            "name": "Bat Dragon",
+            "imageUrl": "https://amvgg.net/wp-content/uploads/pets/Bat Dragon.webp",
+            "rarity": "legendary"
+          },
+          "createdAt": "2026-09-20T02:23:01.658Z",
+          "updatedAt": "2026-09-20T14:54:24.488Z"
+        },
+        {
+          "id": "amvgg-168",
+          "itemId": "amvgg-168",
+          "name": "Shadow Dragon",
+          "itemName": "Shadow Dragon",
+          "value": 5600,
+          "rarity": "legendary",
+          "quantity": 1,
+          "image": "https://amvgg.net/wp-content/uploads/pets/Shadow Dragon.webp",
+          "imageUrl": "https://amvgg.net/wp-content/uploads/pets/Shadow Dragon.webp",
+          "details": {
+            "name": "Shadow Dragon",
+            "imageUrl": "https://amvgg.net/wp-content/uploads/pets/Shadow Dragon.webp",
+            "rarity": "legendary"
+          },
+          "createdAt": "2026-09-20T14:55:42.179Z",
+          "updatedAt": "2026-09-20T14:55:42.179Z"
+        },
+        {
+          "id": "amvgg-169",
+          "itemId": "amvgg-169",
+          "name": "Giraffe",
+          "itemName": "Giraffe",
+          "value": 3220,
+          "rarity": "legendary",
+          "quantity": 1,
+          "image": "https://amvgg.net/wp-content/uploads/pets/Giraffe.webp",
+          "imageUrl": "https://amvgg.net/wp-content/uploads/pets/Giraffe.webp",
+          "details": {
+            "name": "Giraffe",
+            "imageUrl": "https://amvgg.net/wp-content/uploads/pets/Giraffe.webp",
+            "rarity": "legendary"
+          },
+          "createdAt": "2026-09-20T14:55:42.181Z",
+          "updatedAt": "2026-09-20T14:55:42.181Z"
+        }
+      ],
+      "totalValue": 23280,
+      "createdAt": "2026-09-20T14:43:39.205Z",
+      "updatedAt": "2026-09-20T14:57:00.119Z"
+    },
+    {
+      "id": "inv-fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "userId": "fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "items": [
+        {
+          "id": "amvgg-169",
+          "itemId": "amvgg-169",
+          "name": "Giraffe",
+          "itemName": "Giraffe",
+          "value": 3220,
+          "rarity": "legendary",
+          "quantity": 1,
+          "image": "https://amvgg.net/wp-content/uploads/pets/Giraffe.webp",
+          "imageUrl": "https://amvgg.net/wp-content/uploads/pets/Giraffe.webp",
+          "details": {
+            "name": "Giraffe",
+            "imageUrl": "https://amvgg.net/wp-content/uploads/pets/Giraffe.webp",
+            "rarity": "legendary"
+          },
+          "createdAt": "2026-09-20T02:23:01.658Z",
+          "updatedAt": "2026-09-20T14:54:19.047Z"
+        },
+        {
+          "id": "amvgg-170",
+          "itemId": "amvgg-170",
+          "name": "Frost Dragon",
+          "itemName": "Frost Dragon",
+          "value": 2560,
+          "rarity": "legendary",
+          "quantity": 1,
+          "image": "https://amvgg.net/wp-content/uploads/pets/Frost Dragon.webp",
+          "imageUrl": "https://amvgg.net/wp-content/uploads/pets/Frost Dragon.webp",
+          "details": {
+            "name": "Frost Dragon",
+            "imageUrl": "https://amvgg.net/wp-content/uploads/pets/Frost Dragon.webp",
+            "rarity": "legendary"
+          },
+          "createdAt": "2026-09-20T02:23:01.658Z",
+          "updatedAt": "2026-09-20T14:54:19.101Z"
+        },
+        {
+          "id": "amvgg-171",
+          "itemId": "amvgg-171",
+          "name": "Owl",
+          "itemName": "Owl",
+          "value": 2050,
+          "rarity": "legendary",
+          "quantity": 1,
+          "image": "https://amvgg.net/wp-content/uploads/pets/Owl.webp",
+          "imageUrl": "https://amvgg.net/wp-content/uploads/pets/Owl.webp",
+          "details": {
+            "name": "Owl",
+            "imageUrl": "https://amvgg.net/wp-content/uploads/pets/Owl.webp",
+            "rarity": "legendary"
+          },
+          "createdAt": "2026-09-20T02:23:01.658Z",
+          "updatedAt": "2026-09-20T14:54:19.126Z"
+        }
+      ],
+      "totalValue": 7830,
+      "createdAt": "2026-09-20T14:54:15.604Z",
+      "updatedAt": "2026-09-20T14:54:19.126Z"
+    }
+  ],
+  "blackjackGames": [],
+  "transactions": [
+    {
+      "id": "0dc0b49a-b168-41fb-9395-497167897bf9",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "robloxUsername": "POOpPANTSpro",
+      "amount": 0,
+      "type": "giveaway_create",
+      "status": "completed",
+      "metadata": {
+        "giveawayId": "ba4bacc1-d194-420e-9d05-9e31ad635497",
+        "itemId": "amvgg-167",
+        "itemName": "Bat Dragon",
+        "quantity": 1,
+        "value": 7230,
+        "eligibleCount": 0
+      },
+      "timestamp": "2026-09-20T14:48:13.729Z"
+    },
+    {
+      "id": "e89cb95d-3d7a-4e6d-afca-5e04bccf768d",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "robloxUsername": "POOpPANTSpro",
+      "amount": 0,
+      "type": "giveaway_create",
+      "status": "completed",
+      "metadata": {
+        "giveawayId": "475029d6-8196-4c3f-9b32-6ce9b7fdb702",
+        "itemId": "amvgg-167",
+        "itemName": "Bat Dragon",
+        "quantity": 1,
+        "value": 7230,
+        "eligibleCount": 0
+      },
+      "timestamp": "2026-09-20T14:51:03.047Z"
+    },
+    {
+      "id": "f240df7f-959c-440b-b2ca-d7676cacf9f8",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "robloxUsername": "POOpPANTSpro",
+      "amount": 0,
+      "type": "tip",
+      "status": "completed",
+      "metadata": {
+        "recipientId": "2",
+        "recipientUsername": "Treasury",
+        "itemId": "amvgg-168",
+        "itemName": "Shadow Dragon",
+        "quantity": 1,
+        "value": 5600
+      },
+      "timestamp": "2026-09-20T14:53:21.357Z"
+    },
+    {
+      "id": "4858f7d7-cfcf-4102-8b4c-b56f93354983",
+      "userId": "2",
+      "robloxUsername": "Treasury",
+      "amount": 0,
+      "type": "tip",
+      "status": "completed",
+      "metadata": {
+        "recipientId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+        "recipientUsername": "POOpPANTSpro",
+        "itemId": "bot-1m",
+        "itemName": "Bot Treasure",
+        "quantity": 1,
+        "value": 1000000
+      },
+      "timestamp": "2026-09-20T14:55:42.194Z"
+    }
+  ],
+  "deposits": [],
+  "withdrawals": [],
+  "chatMessages": [],
+  "taxRecipients": [
+    {
+      "id": "1",
+      "name": "Treasury",
+      "userId": "2",
+      "wallet": "treasury-wallet-address",
+      "description": "Platform treasury for collected taxes",
+      "enabled": true,
+      "createdAt": "2026-09-15T19:08:59.870Z",
+      "updatedAt": "2026-09-15T19:08:59.870Z"
+    }
+  ],
+  "adminLogs": [
+    {
+      "id": "b11fb46f-2240-4913-8f97-763e98aa61d4",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "targetUsername": "POOpPANTSpro",
+      "itemId": "amvgg-167",
+      "itemName": "Bat Dragon",
+      "quantity": 1,
+      "timestamp": "2026-09-20T14:48:09.332Z"
+    },
+    {
+      "id": "43d2f3ba-aa17-46f1-bcab-f4f3d15cddcf",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "targetUsername": "POOpPANTSpro",
+      "itemId": "amvgg-168",
+      "itemName": "Shadow Dragon",
+      "quantity": 1,
+      "timestamp": "2026-09-20T14:48:09.396Z"
+    },
+    {
+      "id": "246c737e-ce8e-4656-bfb5-cb030c0852c4",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "targetUsername": "doggyloverman2",
+      "itemId": "amvgg-169",
+      "itemName": "Giraffe",
+      "quantity": 1,
+      "timestamp": "2026-09-20T14:54:19.049Z"
+    },
+    {
+      "id": "7859bc8b-be3a-4cbc-9a0a-f2b0c0c57f51",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "targetUsername": "doggyloverman2",
+      "itemId": "amvgg-170",
+      "itemName": "Frost Dragon",
+      "quantity": 1,
+      "timestamp": "2026-09-20T14:54:19.103Z"
+    },
+    {
+      "id": "ca650d69-31a6-4591-ad70-3214445b9989",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "fb52c8ce-2577-47c5-95b4-1fa8fd4691bb",
+      "targetUsername": "doggyloverman2",
+      "itemId": "amvgg-171",
+      "itemName": "Owl",
+      "quantity": 1,
+      "timestamp": "2026-09-20T14:54:19.127Z"
+    },
+    {
+      "id": "67301ace-ba6f-4d9b-8d8f-a61fd3dc6b06",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "targetUsername": "POOpPANTSpro",
+      "itemId": "amvgg-167",
+      "itemName": "Bat Dragon",
+      "quantity": 1,
+      "timestamp": "2026-09-20T14:54:24.489Z"
+    },
+    {
+      "id": "1a5b40f0-afd3-4cdc-a01d-8836d9a10dfc",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "targetUsername": "POOpPANTSpro",
+      "itemId": "amvgg-168",
+      "itemName": "Shadow Dragon",
+      "quantity": 1,
+      "timestamp": "2026-09-20T14:54:24.518Z"
+    },
+    {
+      "id": "e55d359d-6fd7-4f67-96db-2ab952e88e9c",
+      "adminId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "adminUsername": "POOpPANTSpro",
+      "action": "add_item_to_user",
+      "targetUserId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "targetUsername": "POOpPANTSpro",
+      "itemId": "amvgg-169",
+      "itemName": "Giraffe",
+      "quantity": 1,
+      "timestamp": "2026-09-20T14:54:24.524Z"
+    }
+  ],
+  "settings": [
+    {
+      "id": "1",
+      "key": "coinflip_fee_percentage",
+      "value": 0.3,
+      "description": "Percentage fee for coinflip winnings",
+      "category": "taxes",
+      "createdAt": "2026-09-15T19:08:59.870Z",
+      "updatedAt": "2026-09-20T14:53:57.154Z"
+    },
+    {
+      "id": "2",
+      "key": "blackjack_fee_percentage",
+      "value": 0.3,
+      "description": "Percentage fee for blackjack winnings",
+      "category": "taxes",
+      "createdAt": "2026-09-15T19:08:59.870Z",
+      "updatedAt": "2026-09-20T14:53:57.154Z"
+    },
+    {
+      "id": "7",
+      "key": "site_name",
+      "value": "AMPcoin",
+      "description": "Name of the site",
+      "category": "general",
+      "createdAt": "2026-09-15T19:08:59.870Z",
+      "updatedAt": "2026-09-15T19:08:59.870Z"
+    },
+    {
+      "id": "8",
+      "key": "site_description",
+      "value": "An Adopt Me Casino-style item betting platform",
+      "description": "Description of the site",
+      "category": "general",
+      "createdAt": "2026-09-15T19:08:59.870Z",
+      "updatedAt": "2026-09-15T19:08:59.870Z"
+    },
+    {
+      "id": "9",
+      "key": "maintenance_mode",
+      "value": false,
+      "description": "Whether the site is in maintenance mode",
+      "category": "system",
+      "createdAt": "2026-09-15T19:08:59.870Z",
+      "updatedAt": "2026-09-15T19:08:59.870Z"
+    },
+    {
+      "id": "10",
+      "key": "chat_cooldown_ms",
+      "value": 1000,
+      "description": "Chat message cooldown in milliseconds",
+      "category": "chat",
+      "createdAt": "2026-09-15T19:08:59.870Z",
+      "updatedAt": "2026-09-15T19:08:59.870Z"
+    },
+    {
+      "id": "75410781-7347-4ecb-86d0-2a235b07fa56",
+      "key": "bot_user",
+      "value": "botuser",
+      "description": "Bot user identifier for transactions",
+      "category": "bot",
+      "createdAt": "2026-09-20T00:06:25.166Z",
+      "updatedAt": "2026-09-20T09:13:54.052Z"
+    },
+    {
+      "id": "466144a7-ef47-4df8-b0b0-9d6cdbfa1b80",
+      "key": "redirect_link",
+      "value": " https://roblox.com",
+      "description": "Redirect link for bot transactions",
+      "category": "bot",
+      "createdAt": "2026-09-20T00:06:25.166Z",
+      "updatedAt": "2026-09-20T09:13:54.052Z"
+    },
+    {
+      "id": "28f0ecce-e710-44cd-8878-7e4e10f1e5bd",
+      "key": "deposit_fee_percentage",
+      "value": 0.02,
+      "description": "Deposit tax percentage",
+      "category": "taxes",
+      "createdAt": "2026-09-20T00:19:57.878Z",
+      "updatedAt": "2026-09-20T01:28:25.515Z"
+    },
+    {
+      "id": "f46d5cba-dfc5-4bdd-93e9-acb7b8d06553",
+      "key": "withdrawal_fee_percentage",
+      "value": 0.03,
+      "description": "Withdrawal tax percentage",
+      "category": "taxes",
+      "createdAt": "2026-09-20T00:19:57.878Z",
+      "updatedAt": "2026-09-20T01:28:25.515Z"
+    },
+    {
+      "id": "2ec67d64-6cb6-4157-a95b-b0a8c6e3acee",
+      "key": "tax_recipient",
+      "value": "POOpPANTSpro",
+      "description": "User (id or roblox username) that receives taxed items",
+      "category": "taxes",
+      "createdAt": "2026-09-20T01:28:25.515Z",
+      "updatedAt": "2026-09-20T14:53:57.154Z"
+    },
+    {
+      "id": "ad6870fd-38d2-4b94-a59c-81fc1c1bf4be",
+      "key": "tax_enabled",
+      "value": true,
+      "description": "Master tax switch",
+      "category": "taxes",
+      "createdAt": "2026-09-20T09:14:32.585Z",
+      "updatedAt": "2026-09-20T14:53:57.154Z"
+    },
+    {
+      "id": "eb2f3efc-8dc3-4969-b65a-be14c6a84e9f",
+      "key": "tax_percentage",
+      "value": 30,
+      "description": "House tax percentage (10-30)",
+      "category": "taxes",
+      "createdAt": "2026-09-20T09:14:32.585Z",
+      "updatedAt": "2026-09-20T14:53:57.154Z"
+    }
+  ],
+  "pendingTransactions": [],
+  "itemWithdrawals": [
+    {
+      "id": "c32e07bd-f18c-4925-ab05-f94e649919f1",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "robloxUsername": "POOpPANTSpro",
+      "displayName": "RXNDY",
+      "items": [
+        {
+          "itemId": "bot-1m",
+          "name": "Bot Treasure",
+          "value": 1000000,
+          "rarity": "mythic",
+          "image": "",
+          "quantity": 1
+        }
+      ],
+      "totalValue": 1000000,
+      "address": "Discord Server",
+      "status": "pending",
+      "createdAt": "2026-09-20T14:57:00.121Z",
+      "updatedAt": "2026-09-20T14:57:00.121Z"
+    }
+  ],
+  "giveaways": [
+    {
+      "id": "475029d6-8196-4c3f-9b32-6ce9b7fdb702",
+      "creatorId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "creatorRobloxUsername": "POOpPANTSpro",
+      "creatorName": "RXNDY",
+      "creatorAvatar": "https://tr.rbxcdn.com/30DAY-AvatarHeadshot-C221C37410A457469A781A10EE995168-Png/420/420/AvatarHeadshot/Png/noFilter",
+      "item": {
+        "itemId": "amvgg-167",
+        "name": "Bat Dragon",
+        "itemName": "Bat Dragon",
+        "value": 7230,
+        "rarity": "legendary",
+        "quantity": 1,
+        "image": "https://amvgg.net/wp-content/uploads/pets/Bat Dragon.webp",
+        "imageUrl": "https://amvgg.net/wp-content/uploads/pets/Bat Dragon.webp"
+      },
+      "escrow": {
+        "itemId": "amvgg-167",
+        "name": "Bat Dragon",
+        "itemName": "Bat Dragon",
+        "value": 7230,
+        "rarity": "legendary",
+        "quantity": 1,
+        "image": "https://amvgg.net/wp-content/uploads/pets/Bat Dragon.webp",
+        "imageUrl": "https://amvgg.net/wp-content/uploads/pets/Bat Dragon.webp"
+      },
+      "status": "ended",
+      "eligibleUserIds": [],
+      "entries": [],
+      "winnerId": null,
+      "winnerName": null,
+      "createdAt": "2026-09-20T14:51:03.047Z",
+      "endsAt": "2026-09-20T14:56:03.045Z",
+      "endedAt": "2026-09-20T14:54:48.620Z"
+    },
+    {
+      "id": "ba4bacc1-d194-420e-9d05-9e31ad635497",
+      "creatorId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "creatorRobloxUsername": "POOpPANTSpro",
+      "creatorName": "RXNDY",
+      "creatorAvatar": "https://tr.rbxcdn.com/30DAY-AvatarHeadshot-C221C37410A457469A781A10EE995168-Png/420/420/AvatarHeadshot/Png/noFilter",
+      "item": {
+        "itemId": "amvgg-167",
+        "name": "Bat Dragon",
+        "itemName": "Bat Dragon",
+        "value": 7230,
+        "rarity": "legendary",
+        "quantity": 1,
+        "image": "https://amvgg.net/wp-content/uploads/pets/Bat Dragon.webp",
+        "imageUrl": "https://amvgg.net/wp-content/uploads/pets/Bat Dragon.webp"
+      },
+      "escrow": {
+        "itemId": "amvgg-167",
+        "name": "Bat Dragon",
+        "itemName": "Bat Dragon",
+        "value": 7230,
+        "rarity": "legendary",
+        "quantity": 1,
+        "image": "https://amvgg.net/wp-content/uploads/pets/Bat Dragon.webp",
+        "imageUrl": "https://amvgg.net/wp-content/uploads/pets/Bat Dragon.webp"
+      },
+      "status": "ended",
+      "eligibleUserIds": [],
+      "entries": [],
+      "winnerId": null,
+      "winnerName": null,
+      "createdAt": "2026-09-20T14:48:13.729Z",
+      "endsAt": "2026-09-20T14:50:13.727Z",
+      "endedAt": "2026-09-20T14:50:18.344Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "20f3a663-647c-47b9-a18e-7da65bbd3572",
+      "userId": "2",
+      "type": "tip",
+      "title": "Tip received",
+      "message": "POOpPANTSpro tipped you Shadow Dragon!",
+      "imageUrl": "https://amvgg.net/wp-content/uploads/pets/Shadow Dragon.webp",
+      "read": false,
+      "createdAt": "2026-09-20T14:53:21.358Z"
+    },
+    {
+      "id": "7e17ac66-1522-4bd3-b6ba-b3782909c21d",
+      "userId": "3126638a-23eb-41dd-aa11-dafc61882b2f",
+      "type": "tip",
+      "title": "Tip received",
+      "message": "Treasury tipped you Bot Treasure!",
+      "imageUrl": "",
+      "read": true,
+      "createdAt": "2026-09-20T14:55:42.195Z"
+    }
+  ]
+}
