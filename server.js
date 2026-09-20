@@ -105,21 +105,7 @@ app.use(generalLimiter); // Apply general rate limit to other routes
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Serve frontend for all other routes
-// Only in production mode — only if the build actually exists
-const frontendBuild = path.join(__dirname, 'frontend', 'build');
-const indexHtml = path.join(frontendBuild, 'index.html');
-if (process.env.NODE_ENV === 'production' && fs.existsSync(indexHtml)) {
-  app.use(express.static(frontendBuild));
-  app.get('*', (req, res) => {
-    res.sendFile(indexHtml);
-  });
-} else {
-  // No frontend build (deployed separately) or dev mode — just return 404 for non-API routes
-  app.get('*', (req, res) => {
-    res.status(404).json({ message: 'Route not found' });
-  });
-}
+// Import routes
 const authRoutes = require('./backend/routes/auth');
 const userRoutes = require('./backend/routes/users');
 const itemRoutes = require('./backend/routes/items');
@@ -147,6 +133,20 @@ app.use('/api/giveaways', giveawayRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/stats', statsRoutes);
+
+// Serve frontend for all other routes — AFTER API routes
+const frontendBuild = path.join(__dirname, 'frontend', 'build');
+const indexHtml = path.join(frontendBuild, 'index.html');
+if (process.env.NODE_ENV === 'production' && fs.existsSync(indexHtml)) {
+  app.use(express.static(frontendBuild));
+  app.get('*', (req, res) => {
+    res.sendFile(indexHtml);
+  });
+} else {
+  app.get('*', (req, res) => {
+    res.status(404).json({ message: 'Route not found' });
+  });
+}
 
 // Socket.IO connection handling
 io.on('connection', (socket) => {
