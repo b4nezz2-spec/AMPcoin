@@ -10,10 +10,19 @@ require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
+
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  'https://ampcoin.co.uk',
+  'https://ampcoin.pages.dev',
+  'http://localhost:3000'
+].filter(Boolean);
+
 const io = socketIo(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
-    methods: ["GET", "POST"]
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
@@ -72,8 +81,13 @@ if (fs.existsSync(legacyInventoriesPath)) {
 }
 
 // Security middleware
-app.use(helmet());
-app.use(cors());
+app.use(helmet({ crossOriginResourcePolicy: false }));
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Rate limiting - general (socket.io transport polling is exempt: it is
 // long-lived realtime traffic, not API abuse, and shares the user's IP)
