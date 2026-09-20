@@ -152,35 +152,34 @@
 }
 .modal.enhanced .selected-chip {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   max-width: none;
   background: rgba(30, 41, 59, 0.9);
   border: 1px solid rgba(0, 212, 255, 0.25);
   border-radius: 10px;
-  padding: 8px 8px 6px;
+  padding: 6px 8px;
   position: relative;
-  text-align: center;
+  text-align: left;
 }
 .modal.enhanced .selected-chip .chip-img {
-  width: 30px;
-  height: 30px;
-  border-radius: 6px;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
   object-fit: cover;
   flex-shrink: 0;
 }
 .modal.enhanced .selected-chip .chip-name {
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   color: #e2e8f0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100%;
-  width: 100%;
+  max-width: 120px;
+  width: auto;
 }
 .modal.enhanced .selected-chip .chip-val {
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   font-weight: bold;
   color: #00d4ff;
   white-space: nowrap;

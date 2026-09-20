@@ -635,12 +635,46 @@ body {
 }
 .leaderboard-modal .player-avatar,
 .leaderboard-page .player-avatar {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
   background: rgba(30, 41, 59, 0.8);
+  border: 2px solid rgba(0, 212, 255, 0.3);
+}
+
+/* Rank badges */
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 0.8rem;
+  background: rgba(30, 41, 59, 0.8);
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.rank-badge.rank-1 {
+  background: linear-gradient(135deg, #ffd700, #f59e0b);
+  color: #1a1a2e;
+  border-color: #ffd700;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+}
+.rank-badge.rank-2 {
+  background: linear-gradient(135deg, #c0c0c0, #94a3b8);
+  color: #1a1a2e;
+  border-color: #c0c0c0;
+  box-shadow: 0 0 6px rgba(192, 192, 192, 0.3);
+}
+.rank-badge.rank-3 {
+  background: linear-gradient(135deg, #cd7f32, #b45309);
+  color: #1a1a2e;
+  border-color: #cd7f32;
+  box-shadow: 0 0 6px rgba(205, 127, 50, 0.3);
 }
 
 /* Chat panel styles - Full right side */

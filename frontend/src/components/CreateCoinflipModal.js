@@ -80,7 +80,7 @@ const CreateCoinflipModal = ({ onClose, onCreated, userId, socket, setBalance, u
             value: item.value || item.details?.value || 0
           })),
           sideChosen: selectedSide,
-          maxJoinPets: limitationsOn ? maxJoinPets : null
+          maxJoinPets: limitationsOn ? (maxJoinPets === 0 ? null : maxJoinPets) : null
         })
       });
 
@@ -346,11 +346,11 @@ const CreateCoinflipModal = ({ onClose, onCreated, userId, socket, setBalance, u
                   onClick={() => setLimitMenuOpen((o) => !o)}
                   aria-expanded={limitationsOn && limitMenuOpen}
                 >
-                  Max {maxJoinPets} pet{maxJoinPets === 1 ? '' : 's'}
+                  Max {maxJoinPets === 0 ? 'No Limit' : `${maxJoinPets} pet${maxJoinPets === 1 ? '' : 's'}`}
                   <span className="cf-limit-caret">▾</span>
                 </button>
                 <div className="cf-limit-menu" role="listbox">
-                  {Array.from({ length: 15 }, (_, i) => i + 1).map((n) => (
+                  {[0, ...Array.from({ length: 15 }, (_, i) => i + 1)].map((n) => (
                     <button
                       key={n}
                       type="button"
@@ -363,7 +363,7 @@ const CreateCoinflipModal = ({ onClose, onCreated, userId, socket, setBalance, u
                         setLimitMenuOpen(false);
                       }}
                     >
-                      {n}
+                      {n === 0 ? 'No Limit' : n}
                     </button>
                   ))}
                 </div>
