@@ -29,7 +29,8 @@ const socket = io(BACKEND_URL, {
 function AppContent() {
   const { user, loading, login, register, refreshUser } = useAuth();
   const [balance, setBalance] = useState(0);
-  const [notifications, setNotifications] = useState([]); // Add this line
+  const [notifications, setNotifications] = useState([]);
+  const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -68,8 +69,6 @@ function AppContent() {
       </div>
     );
   }
-
-  const [chatOpen, setChatOpen] = useState(false);
 
   return (
     <div className="app">
