@@ -14,7 +14,7 @@ function getFallbackAvatar(user) {
 }
 
 // NavLink组件 — disabled items show the "not available" popup instead of navigating
-const NavLink = ({ to, label, isActive, disabled, onDisabledClick }) => {
+const NavLink = ({ to, label, icon, isActive, disabled, onDisabledClick }) => {
   if (disabled) {
     return (
       <span
@@ -22,7 +22,8 @@ const NavLink = ({ to, label, isActive, disabled, onDisabledClick }) => {
         onClick={onDisabledClick}
         title="Not available yet"
       >
-        {label}
+        {icon && <span className="nav-icon">{icon}</span>}
+        <span className="nav-label">{label}</span>
       </span>
     );
   }
@@ -31,7 +32,8 @@ const NavLink = ({ to, label, isActive, disabled, onDisabledClick }) => {
       to={to}
       className={`nav-link ${isActive ? 'active' : ''}`}
     >
-      {label}
+      {icon && <span className="nav-icon">{icon}</span>}
+      <span className="nav-label">{label}</span>
     </Link>
   );
 };
@@ -45,6 +47,7 @@ const NavSection = ({ title, items, activePath, onDisabledClick }) => (
         key={item.path}
         to={item.path}
         label={item.label}
+        icon={item.icon}
         isActive={activePath === item.path}
         disabled={!!item.disabled}
         onDisabledClick={() => onDisabledClick && onDisabledClick(item)}
@@ -54,8 +57,9 @@ const NavSection = ({ title, items, activePath, onDisabledClick }) => (
 );
 
 NavLink.propTypes = {
-  to: PropTypes.string.isRequired,
+  to: PropTypes.string,
   label: PropTypes.string.isRequired,
+  icon: PropTypes.string,
   isActive: PropTypes.bool.isRequired,
   disabled: PropTypes.bool,
   onDisabledClick: PropTypes.func
@@ -82,8 +86,12 @@ const Sidebar = () => {
   };
 
   const navItems = [
-    { path: '/coinflip', label: 'Coinflip' },
-    { path: '/blackjack', label: 'Blackjack', disabled: true }
+    { path: '/coinflip', label: 'Coinflip', icon: '🪙' },
+    { path: '/blackjack', label: 'Blackjack', icon: '🃏', disabled: true }
+  ];
+
+  const adminItems = [
+    { path: '/admin', label: 'Admin', icon: '⚙️' }
   ];
 
   const handleDisabledClick = () => {
@@ -114,7 +122,7 @@ const Sidebar = () => {
         {user?.isAdmin && (
           <NavSection
             title="Admin"
-            items={[{ path: '/admin', label: 'Admin Panel' }]}
+            items={adminItems}
             activePath={location.pathname}
             onDisabledClick={handleDisabledClick}
           />

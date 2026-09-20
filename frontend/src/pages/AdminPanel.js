@@ -621,6 +621,44 @@ function AdminPanel() {
     }
   };
 
+  const handleToggleAdmin = async (usr) => {
+    const identifier = usr.robloxUsername || usr.id;
+    setLoading(true);
+    try {
+      const response = await retryRequest(() =>
+        fetch(`${API_BASE}/api/admin/users/${encodeURIComponent(identifier)}/admin`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        })
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        updateUserInState(usr.id, { isAdmin: !usr.isAdmin });
+        showCustomPopup(data.message, 'success');
+        setRecentActivity((prev) => [
+          {
+            type: usr.isAdmin ? 'Admin Removed' : 'Admin Granted',
+            user: user?.robloxDisplayName || 'Admin',
+            time: new Date().toLocaleString(),
+            details: data.message
+          },
+          ...prev.slice(0, 9)
+        ]);
+      } else {
+        const errData = await response.json();
+        setError(errData.message || 'Failed to toggle admin');
+      }
+    } catch (err) {
+      setError(`Error: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleApproveTransaction = async (transactionId) => {
     try {
       setTransactionStatus((prev) => ({ ...prev, [transactionId]: 'loading' }));
@@ -936,6 +974,15 @@ function AdminPanel() {
                             <button className="btn btn-secondary btn-sm" onClick={() => handleViewUserPets(usr)}>
                               View Pets
                             </button>
+                            {usr.id !== user?.id && (
+                              <button
+                                className={`btn ${usr.isAdmin ? 'btn-warning' : 'btn-info'} btn-sm`}
+                                onClick={() => handleToggleAdmin(usr)}
+                                disabled={loading}
+                              >
+                                {loading ? '...' : usr.isAdmin ? 'Remove Admin' : 'Make Admin'}
+                              </button>
+                            )}
                             {userStatus !== 'banned' ? (
                               <button
                                 className="btn btn-danger btn-sm"

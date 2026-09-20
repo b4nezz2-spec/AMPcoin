@@ -246,6 +246,44 @@ router.put('/users/:robloxUsername/status', authenticateAdmin, (req, res) => {
   }
 });
 
+// Toggle admin status for a user
+router.put('/users/:robloxUsername/admin', authenticateAdmin, (req, res) => {
+  try {
+    const robloxUsername = req.params.robloxUsername;
+    const usersDb = dbManager.getUsersDb();
+    const db = dbManager.getMainDb();
+
+    const user = usersDb.users.find(u => u.robloxUsername === robloxUsername || u.id === robloxUsername);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.isAdmin = !user.isAdmin;
+    user.updatedAt = new Date().toISOString();
+
+    db.adminLogs = db.adminLogs || [];
+    db.adminLogs.push({
+      id: uuidv4(),
+      adminId: req.user.userId,
+      adminUsername: req.user.robloxUsername,
+      action: user.isAdmin ? 'made_admin' : 'removed_admin',
+      targetUsername: user.robloxUsername,
+      timestamp: new Date().toISOString()
+    });
+
+    dbManager.saveUsersDb();
+    dbManager.saveMainDb();
+
+    res.json({
+      message: user.isAdmin ? `${user.robloxUsername} is now an admin` : `${user.robloxUsername} is no longer an admin`,
+      user
+    });
+  } catch (error) {
+    console.error('Error toggling admin:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Add item to user inventory
 router.post('/user/:userId/add-item', authenticateAdmin, (req, res) => {
   try {

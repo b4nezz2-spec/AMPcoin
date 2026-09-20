@@ -150,7 +150,7 @@ const GiveawayCard = ({ msg, user, onJoin, joining }) => {
   );
 };
 
-const ChatPanel = ({ socket }) => {
+const ChatPanel = ({ socket, chatOpen }) => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [onlineUsers, setOnlineUsers] = useState(0);
@@ -240,6 +240,7 @@ const ChatPanel = ({ socket }) => {
         );
       };
 
+      socket.on('chatMessage', onReceive);
       socket.on('receiveMessage', onReceive);
       socket.on('onlineCountUpdate', onOnline);
       socket.on('typingStart', onTypingStart);
@@ -250,6 +251,7 @@ const ChatPanel = ({ socket }) => {
       fetchOnlineCount();
 
       return () => {
+        socket.off('chatMessage', onReceive);
         socket.off('receiveMessage', onReceive);
         socket.off('onlineCountUpdate', onOnline);
         socket.off('typingStart', onTypingStart);
@@ -482,7 +484,7 @@ const ChatPanel = ({ socket }) => {
   };
 
   return (
-    <div className="chat-panel">
+    <div className={`chat-panel ${chatOpen ? 'chat-open' : ''}`}>
       <div className="chat-header">
         <h3 className="chat-title">💬 Live Chat</h3>
         <div className="chat-stats">

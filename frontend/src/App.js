@@ -69,6 +69,8 @@ function AppContent() {
     );
   }
 
+  const [chatOpen, setChatOpen] = useState(false);
+
   return (
     <div className="app">
       {user && <Sidebar />}
@@ -147,7 +149,12 @@ function AppContent() {
           </Routes>
         </div>
       </div>
-      {user && <ChatPanel socket={socket} />}
+      {user && <ChatPanel socket={socket} chatOpen={chatOpen} />}
+      {user && (
+        <button className="chat-toggle-btn" onClick={() => setChatOpen((v) => !v)}>
+          {chatOpen ? '✕' : '💬'}
+        </button>
+      )}
     </div>
   );
 }
