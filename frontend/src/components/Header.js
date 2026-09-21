@@ -137,7 +137,7 @@ const Header = ({ balance, notifications, socket }) => {
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.chatMessage) {
-        if (socket && socket.connected) socket.emit('chatMessage', data.chatMessage);
+        // Backend already broadcasts giveawayUpdate + inventoryUpdate via socket
         setGwModalOpen(false);
       } else {
         setGwNote(data.message || 'Failed to create giveaway');
@@ -220,13 +220,17 @@ const Header = ({ balance, notifications, socket }) => {
     socket.on('newCoinflip', refresh);
     socket.on('coinflipJoined', refresh);
     socket.on('coinflipResult', refresh);
+    socket.on('coinflipCancelled', refresh);
     socket.on('inventoryUpdate', refresh);
+    socket.on('giveawayUpdate', refresh);
     return () => {
       socket.off('balanceUpdate', refresh);
       socket.off('newCoinflip', refresh);
       socket.off('coinflipJoined', refresh);
       socket.off('coinflipResult', refresh);
+      socket.off('coinflipCancelled', refresh);
       socket.off('inventoryUpdate', refresh);
+      socket.off('giveawayUpdate', refresh);
     };
   }, [socket, fetchInventory]);
 
@@ -324,7 +328,7 @@ const Header = ({ balance, notifications, socket }) => {
       if (res.ok) {
         setSelectedUnits([]);
         fetchInventory();
-        if (socket) socket.emit('inventoryUpdate', { userId: user?.id });
+        // Backend broadcasts inventoryUpdate via socket
         setTradeModal({ kind: 'withdraw', items });
       } else {
         setModalMsg(data.message || 'Withdrawal failed');

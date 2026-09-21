@@ -224,6 +224,10 @@ router.post('/send', authenticateToken, async (req, res) => {
 
     dbManager.saveMainDb();
 
+    // Real-time: broadcast message to ALL connected users
+    const { emitToAll } = require('../realtime');
+    emitToAll('chatMessage', chatMessage);
+
     res.status(201).json(chatMessage);
   } catch (error) {
     console.error('Error sending chat message:', error);

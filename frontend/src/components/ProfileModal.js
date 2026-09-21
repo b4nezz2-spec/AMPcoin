@@ -126,7 +126,7 @@ const ProfileModal = ({ viewer, profileUser, isOwn, socket, onClose }) => {
             )
             .filter((it) => (it.quantity || 1) > 0)
         );
-        if (socket) socket.emit('inventoryUpdate', { userId: viewer.id });
+        // Backend already broadcasts inventoryUpdate to all users via socket
       } else {
         setTipNote(data.message || 'Tip failed');
       }

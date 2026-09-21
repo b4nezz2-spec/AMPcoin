@@ -63,7 +63,11 @@ router.post('/withdraw', authenticateToken, (req, res) => {
     
     dbManager.saveUsersDb();
     dbManager.saveMainDb();
-    
+
+    // Real-time: notify user balance changed
+    const { emitToAll } = require('../realtime');
+    emitToAll('inventoryUpdate', { userId });
+
     res.json({
       message: 'Withdrawal request submitted successfully',
       withdrawal
@@ -138,7 +142,11 @@ router.post('/withdraw-items', authenticateToken, (req, res) => {
     db.itemWithdrawals = db.itemWithdrawals || [];
     db.itemWithdrawals.push(itemWithdrawal);
     dbManager.saveMainDb();
-    
+
+    // Real-time: notify user inventory changed
+    const { emitToAll } = require('../realtime');
+    emitToAll('inventoryUpdate', { userId });
+
     res.json({
       message: 'Item withdrawal request submitted successfully',
       itemWithdrawal

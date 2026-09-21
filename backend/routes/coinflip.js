@@ -260,9 +260,10 @@ router.post('/', authenticateToken, (req, res) => {
     db.coinflips.unshift(newCoinflip);
     dbManager.saveMainDb();
 
-    // Real-time: notify creator inventory changed
+    // Real-time: notify creator inventory changed + broadcast new coinflip to lobby
     const { emitToAll } = require('../realtime');
     emitToAll('inventoryUpdate', { userId });
+    emitToAll('newCoinflip', formatCoinflip(newCoinflip));
 
     res.status(201).json(formatCoinflip(newCoinflip));
   } catch (error) {
@@ -512,6 +513,11 @@ router.delete('/:id', authenticateToken, (req, res) => {
 
     db.coinflips.splice(idx, 1);
     dbManager.saveMainDb();
+
+    // Real-time: broadcast cancel + inventory update to all users
+    const { emitToAll } = require('../realtime');
+    emitToAll('coinflipCancelled', { id: cf.id });
+    emitToAll('inventoryUpdate', { userId: cf.creatorId });
 
     res.json({ message: 'Bet cancelled — items refunded to your inventory' });
   } catch (error) {

@@ -287,6 +287,19 @@ const CoinflipPage = ({ socket, setBalance }) => {
         }
         setCoinflips(prev => prev.map(cf => cf.id === data.id ? data : cf));
       });
+
+      // Real-time: cancelled coinflip removed from lobby
+      socket.on('coinflipCancelled', (data) => {
+        if (data && data.id) {
+          setCoinflips(prev => prev.filter(cf => cf.id !== data.id));
+          setActiveCount(prev => Math.max(0, prev - 1));
+        }
+      });
+
+      // Real-time: inventory updated (coinflip win, cancel refund, tip, giveaway)
+      socket.on('inventoryUpdate', () => {
+        fetchInventory();
+      });
     }
 
     return () => {
@@ -294,6 +307,8 @@ const CoinflipPage = ({ socket, setBalance }) => {
         socket.off('newCoinflip');
         socket.off('coinflipJoined');
         socket.off('coinflipResult');
+        socket.off('coinflipCancelled');
+        socket.off('inventoryUpdate');
       }
     };
   }, [socket, user, fetchCoinflips, fetchInventory]);
@@ -629,7 +644,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
         setViewBet(null);
         showCustomPopup('Bet cancelled — items refunded!', 'success');
         fetchInventory();
-        if (socket) socket.emit('inventoryUpdate', { userId: user?.id });
+        // Backend broadcasts coinflipCancelled + inventoryUpdate via socket
       } else {
         showCustomPopup(data.message || 'Failed to cancel bet', 'error');
       }
@@ -711,10 +726,8 @@ const CoinflipPage = ({ socket, setBalance }) => {
         setShowJoinModal(false);
         playChipFlip(data);
 
-        if (socket) {
-          socket.emit('coinflipJoined', data);
-          socket.emit('coinflipResult', data);
-        }
+        // Backend already broadcasts coinflipResult + inventoryUpdate via socket
+        // No need to emit from client — it doesn't reach other users
 
         fetchInventory();
         fetchCoinflips();

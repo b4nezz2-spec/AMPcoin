@@ -87,11 +87,8 @@ const CreateCoinflipModal = ({ onClose, onCreated, userId, socket, setBalance, u
       const data = await response.json().catch(() => ({}));
 
       if (response.ok) {
-        // Notify others
-        if (socket) {
-          socket.emit('newCoinflip', data);
-          socket.emit('inventoryUpdate', { userId });
-        }
+        // Backend already broadcasts newCoinflip + inventoryUpdate via socket
+        // The onCreated callback inserts it into the lobby immediately for the creator
 
         // Guarantee the new bet posts in the current list even if the
         // socket event is missed (parent inserts it + refetches).

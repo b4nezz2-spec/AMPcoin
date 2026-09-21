@@ -459,9 +459,6 @@ const ChatPanel = ({ socket, chatOpen }) => {
     setInputMessage('');
 
     try {
-      if (socket && socket.connected) {
-        socket.emit('sendMessage', optimisticMsg);
-      }
       const response = await fetch(`${API_BASE}/api/chat/send`, {
         method: 'POST',
         headers: {
@@ -473,9 +470,7 @@ const ChatPanel = ({ socket, chatOpen }) => {
 
       if (response.ok) {
         const saved = await response.json();
-        if (socket && socket.connected) {
-          socket.emit('chatMessage', saved);
-        }
+        // Backend broadcasts chatMessage to all users via socket — no client emit needed
         setMessages((prev) =>
           prev.map((m) => (m.id === optimisticMsg.id ? saved : m))
         );
@@ -565,7 +560,7 @@ const ChatPanel = ({ socket, chatOpen }) => {
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.giveaway) {
-        if (socket) socket.emit('giveawayUpdate', data.giveaway);
+        // Backend already broadcasts giveawayUpdate via socket to all users
       } else {
         showGwError(data.message || 'Could not join the giveaway');
       }
