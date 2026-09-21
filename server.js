@@ -15,7 +15,12 @@ const allowedOrigins = [
   process.env.CLIENT_URL,
   'https://ampcoin.co.uk',
   'https://ampcoin.pages.dev',
-  'http://localhost:3000'
+  'http://localhost:3000',
+  // bunny.net CDN
+  'https://ampcoin.b-cdn.net',
+  'https://ampcoin.co.uk.b-cdn.net',
+  // Back4App backend (for socket.io same-origin connections)
+  'https://ampcoin-50q9kxt9.b4a.run'
 ].filter(Boolean);
 
 const io = socketIo(server, {
@@ -80,8 +85,11 @@ if (fs.existsSync(legacyInventoriesPath)) {
   fs.unlinkSync(legacyInventoriesPath);
 }
 
-// Security middleware
-app.use(helmet());
+// Security middleware — disable cross-origin isolation for socket.io
+app.use(helmet({
+  crossOriginResourcePolicy: false,
+  crossOriginEmbedderPolicy: false
+}));
 app.use(cors());
 
 // Rate limiting - general (socket.io transport polling is exempt: it is
@@ -159,45 +167,15 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     realtime.unregisterSocket(socket.id);
-  });
-
-  // Handle chat messages
-  socket.on('chatMessage', (data) => {
-    io.emit('chatMessage', data);
-  });
-
-  // Live giveaway updates (joins / winner drawn)
-  socket.on('giveawayUpdate', (data) => {
-    io.emit('giveawayUpdate', data);
-  });
-
-  // Handle coinflip updates
-  socket.on('newCoinflip', (data) => {
-    io.emit('newCoinflip', data);
-  });
-
-  // Handle coinflip join
-  socket.on('joinCoinflip', (data) => {
-    io.emit('coinflipJoined', data);
-  });
-
-  // Handle coinflip result
-  socket.on('coinflipResult', (data) => {
-    io.emit('coinflipResult', data);
-  });
-
-  // Handle blackjack game updates
-  socket.on('blackjackUpdate', (data) => {
-    io.emit('blackjackUpdate', data);
-  });
-
-  // Handle balance updates
-  socket.on('balanceUpdate', (data) => {
-    io.emit('balanceUpdate', data);
-  });
-
-  socket.on('disconnect', () => {
     console.log('A user disconnected:', socket.id);
+  });
+
+  // Typing indicators — relay to all other clients
+  socket.on('typingStart', (data) => {
+    socket.broadcast.emit('typingStart', data);
+  });
+  socket.on('typingStop', (data) => {
+    socket.broadcast.emit('typingStop', data);
   });
 });
 

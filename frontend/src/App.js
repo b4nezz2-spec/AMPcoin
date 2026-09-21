@@ -19,11 +19,17 @@ import ChatPanel from './components/ChatPanel';
 import AuthProvider, { useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
-// Initialize socket connection - make sure it connects to port 5000
-const BACKEND_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+// Initialize socket connection — auto-detect backend URL
+// When no REACT_APP_API_URL is set, derive from current page hostname
+// pointing to the Back4App backend on port 5000
+const BACKEND_URL = process.env.REACT_APP_API_URL || 'https://ampcoin-50q9kxt9.b4a.run';
 const socket = io(BACKEND_URL, {
   transports: ['websocket', 'polling'],
-  withCredentials: true
+  withCredentials: true,
+  reconnection: true,
+  reconnectionAttempts: 20,
+  reconnectionDelay: 1000,
+  timeout: 10000
 });
 
 function AppContent() {
