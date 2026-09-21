@@ -308,3 +308,136 @@
   font-weight: 600;
   margin: 4px 0;
 }
+
+/* ===== Persistent Giveaway Banner (top of chat) ===== */
+.gw-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.12));
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin: 6px 8px 8px;
+  flex-shrink: 0;
+  animation: gwBannerPulse 3s ease-in-out infinite;
+}
+
+@keyframes gwBannerPulse {
+  0%, 100% { border-color: rgba(139, 92, 246, 0.3); }
+  50% { border-color: rgba(139, 92, 246, 0.6); }
+}
+
+.gw-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.gw-banner-thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.gw-banner-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.gw-banner-title {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #a78bfa;
+  text-transform: uppercase;
+}
+
+.gw-banner-item {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #e8edf7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gw-banner-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.gw-banner-timer {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #c4b5fd;
+  font-variant-numeric: tabular-nums;
+}
+
+.gw-banner-entries {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.gw-banner-right {
+  flex-shrink: 0;
+}
+
+.gw-banner-join {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.gw-banner-join:hover { opacity: 0.9; transform: scale(1.04); }
+.gw-banner-join:disabled { opacity: 0.5; cursor: wait; }
+
+.gw-banner-status {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #94a3b8;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: rgba(148, 163, 184, 0.1);
+}
+
+.gw-banner-status.joined {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.gw-banner-status.locked {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.1);
+  font-size: 0.65rem;
+}
+
+/* Winner announcement banner at top of chat */
+.gw-winner-banner {
+  text-align: center;
+  color: #fbbf24;
+  font-weight: 800;
+  font-size: 0.82rem;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.12), rgba(245, 158, 11, 0.08));
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin: 6px 8px 8px;
+  flex-shrink: 0;
+}

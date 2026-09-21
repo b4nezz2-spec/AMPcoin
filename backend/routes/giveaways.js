@@ -247,6 +247,10 @@ router.post('/', authenticateToken, (req, res) => {
 
     dbManager.saveMainDb();
 
+    // Real-time: broadcast giveaway to all connected users
+    emitToAll('giveawayUpdate', publicGiveaway(giveaway));
+    emitToAll('inventoryUpdate', { userId: creatorId });
+
     res.status(201).json({ giveaway: publicGiveaway(giveaway), chatMessage });
   } catch (error) {
     console.error('Error creating giveaway:', error);
@@ -289,6 +293,9 @@ router.post('/:id/join', authenticateToken, (req, res) => {
     });
     dbManager.saveMainDb();
 
+    // Real-time: broadcast updated giveaway to all users
+    emitToAll('giveawayUpdate', publicGiveaway(gw));
+
     res.json({ giveaway: publicGiveaway(gw) });
   } catch (error) {
     console.error('Error joining giveaway:', error);
@@ -316,6 +323,9 @@ router.post('/:id/draw', authenticateToken, (req, res) => {
     const winMessage = finishGiveaway(db, gw);
 
     dbManager.saveMainDb();
+
+    // Real-time: broadcast ended giveaway to all users
+    emitToAll('giveawayUpdate', publicGiveaway(gw));
 
     res.json({ giveaway: publicGiveaway(gw), winMessage });
   } catch (error) {

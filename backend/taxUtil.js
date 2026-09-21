@@ -69,23 +69,34 @@ function cloneStack(st) {
 }
 
 // Split item stacks into winner stacks + randomly-picked tax stacks.
-// Units (single items) are shuffled, then taken until their value reaches
-// `rate` of the pot value. At least one unit is always left for the winner.
+// Only items whose individual unit value is 10%-30% of the total pot value
+// are eligible for taxation. Items outside that range are left for the winner.
 function collectItemTax(potStacks, rate) {
   const stacks = Array.isArray(potStacks) ? potStacks : [];
   const potValue = stacks.reduce((s, it) => s + ((it.value || 0) * (it.quantity || 1)), 0);
 
+  if (!stacks.length || !(rate > 0) || potValue <= 0) {
+    return { winnerStacks: stacks.map(cloneStack), taxStacks: [], taxAmount: 0, potValue };
+  }
+
+  // Build units with their stack index — only include items within 10-30% of total bet
   const units = [];
   stacks.forEach((st, si) => {
     const qty = Math.max(1, parseInt(st.quantity || 1, 10) || 1);
-    for (let k = 0; k < qty; k++) units.push(si);
+    const unitVal = st.value || 0;
+    const pctOfPot = potValue > 0 ? (unitVal / potValue) * 100 : 0;
+    // Only tax items that are between 10% and 30% of the whole bet
+    if (pctOfPot >= 10 && pctOfPot <= 30) {
+      for (let k = 0; k < qty; k++) units.push(si);
+    }
   });
 
-  if (!units.length || !(rate > 0) || potValue <= 0) {
+  if (!units.length) {
     return { winnerStacks: stacks.map(cloneStack), taxStacks: [], taxAmount: 0, potValue };
   }
 
   const target = potValue * rate;
+  // Shuffle eligible units
   for (let i = units.length - 1; i > 0; i--) {
     const j = crypto.randomInt(i + 1);
     const tmp = units[i];
@@ -98,7 +109,7 @@ function collectItemTax(potStacks, rate) {
   let takenUnits = 0;
   for (const si of units) {
     if (takenValue >= target) break;
-    if (takenUnits >= units.length - 1) break; // always leave 1 unit for the winner
+    if (takenUnits >= units.length - 1) break; // always leave 1 eligible unit for the winner
     takeQty[si] = (takeQty[si] || 0) + 1;
     takenValue += (stacks[si].value || 0);
     takenUnits += 1;

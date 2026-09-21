@@ -260,6 +260,10 @@ router.post('/', authenticateToken, (req, res) => {
     db.coinflips.unshift(newCoinflip);
     dbManager.saveMainDb();
 
+    // Real-time: notify creator inventory changed
+    const { emitToAll } = require('../realtime');
+    emitToAll('inventoryUpdate', { userId });
+
     res.status(201).json(formatCoinflip(newCoinflip));
   } catch (error) {
     console.error('Error creating coinflip:', error);
@@ -471,6 +475,12 @@ router.post('/:id/join', authenticateToken, (req, res) => {
     // Save DB
     dbManager.saveUsersDb();
     dbManager.saveMainDb();
+
+    // Real-time: notify both players their inventory changed
+    const { emitToAll } = require('../realtime');
+    emitToAll('inventoryUpdate', { userId: winnerId });
+    emitToAll('inventoryUpdate', { userId: loserId });
+    emitToAll('coinflipResult', formatCoinflip(coinflip));
 
     res.json(formatCoinflip(coinflip));
   } catch (error) {

@@ -150,6 +150,63 @@ const GiveawayCard = ({ msg, user, onJoin, joining }) => {
   );
 };
 
+// Compact giveaway banner — shown at the top of the chat as a persistent strip
+const GiveawayBanner = ({ giveaway, user, onJoin, joining }) => {
+  const gw = giveaway || {};
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    if (gw.status !== 'open') return;
+    const t = setInterval(() => setTick((x) => x + 1), 1000);
+    return () => clearInterval(t);
+  }, [gw.status]);
+
+  const isOpen = gw.status === 'open';
+  const joined = user && (gw.entries || []).some((e) => String(e.userId) === String(user.id));
+  const eligible = user && (gw.eligibleUserIds || []).map(String).includes(String(user.id));
+  const isCreator = user && String(gw.creatorId) === String(user.id);
+  const itemName = gw.item?.name || gw.item?.itemName || 'Item';
+  const itemImg = gw.item?.imageUrl || gw.item?.image || '';
+  const msLeft = gw.endsAt ? new Date(gw.endsAt).getTime() - Date.now() : 0;
+  const secsLeft = Math.max(0, Math.ceil(msLeft / 1000));
+  const timerText = `${String(Math.floor(secsLeft / 60)).padStart(2, '0')}:${String(secsLeft % 60).padStart(2, '0')}`;
+
+  return (
+    <div className="gw-banner">
+      <div className="gw-banner-left">
+        {itemImg && <img src={itemImg} alt={itemName} className="gw-banner-thumb" />}
+        <div className="gw-banner-info">
+          <span className="gw-banner-title">🎁 GIVEAWAY</span>
+          <span className="gw-banner-item">{itemName}</span>
+        </div>
+      </div>
+      <div className="gw-banner-center">
+        <span className="gw-banner-timer">{isOpen ? `⏱ ${timerText}` : '🔒 Ended'}</span>
+        <span className="gw-banner-entries">{(gw.entries || []).length} joined</span>
+      </div>
+      <div className="gw-banner-right">
+        {isOpen && (
+          isCreator ? (
+            <span className="gw-banner-status">Yours</span>
+          ) : joined ? (
+            <span className="gw-banner-status joined">✓ Joined</span>
+          ) : !eligible ? (
+            <span className="gw-banner-status locked">🔒 Locked</span>
+          ) : (
+            <button
+              className="gw-banner-join"
+              onClick={() => onJoin(gw.id)}
+              disabled={joining}
+            >
+              Join
+            </button>
+          )
+        )}
+      </div>
+    </div>
+  );
+};
+
 const ChatPanel = ({ socket, chatOpen }) => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
@@ -159,11 +216,14 @@ const ChatPanel = ({ socket, chatOpen }) => {
   const [sending, setSending] = useState(false);
   const [cooldownLeft, setCooldownLeft] = useState(0); // seconds left on 5s chat cooldown
   const [viewProfile, setViewProfile] = useState(null); // chat user profile modal
+  const [activeGiveaway, setActiveGiveaway] = useState(null); // persistent top banner
+  const [winnerBanner, setWinnerBanner] = useState(null); // winner announcement
 
   // Giveaway interaction state (creation lives in the header GW button;
   // the winner is drawn automatically by the server when the timer ends)
   const [joiningGw, setJoiningGw] = useState(false);
   const cooldownTimer = useRef(null);
+  const winnerTimer = useRef(null);
   const { user } = useAuth();
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -208,6 +268,8 @@ const ChatPanel = ({ socket, chatOpen }) => {
       socket.emit('joinChat', { userId: user?.id, username: user?.displayName || 'Anonymous' });
 
       const onReceive = (message) => {
+        // Skip giveaway messages — they live in the banner, not the message list
+        if (message && (message.type === 'giveaway' || message.type === 'giveaway_win')) return;
         // Dedup: our own optimistic/saved messages may echo back via broadcast
         setMessages((prev) =>
           message && message.id && prev.some((m) => m.id === message.id)
@@ -231,6 +293,21 @@ const ChatPanel = ({ socket, chatOpen }) => {
 
       const onGiveawayUpdate = (data) => {
         if (!data || !data.id) return;
+        if (data.status === 'ended' && data.winnerId) {
+          // Show winner banner for 5 min then clear
+          setWinnerBanner({
+            id: data.id,
+            winnerName: data.winnerName || 'Someone',
+            itemName: data.item?.name || 'Item',
+            creatorName: data.creatorName || 'Someone'
+          });
+          setActiveGiveaway(null);
+          if (winnerTimer.current) clearTimeout(winnerTimer.current);
+          winnerTimer.current = setTimeout(() => setWinnerBanner(null), 5 * 60 * 1000);
+        } else if (data.status === 'open') {
+          setActiveGiveaway(data);
+        }
+        // Also update any giveaway messages already in the chat
         setMessages((prev) =>
           prev.map((m) =>
             m.type === 'giveaway' && m.giveaway && m.giveaway.id === data.id
@@ -249,6 +326,7 @@ const ChatPanel = ({ socket, chatOpen }) => {
 
       fetchRecentMessages();
       fetchOnlineCount();
+      fetchActiveGiveaway();
 
       return () => {
         socket.off('chatMessage', onReceive);
@@ -289,10 +367,48 @@ const ChatPanel = ({ socket, chatOpen }) => {
       });
       if (response.ok) {
         const data = await response.json();
-        setMessages(data.messages || []);
+        // Filter giveaway messages out of regular chat — they live in the banner now
+        const regularMessages = (data.messages || []).filter(
+          (m) => m.type !== 'giveaway' && m.type !== 'giveaway_win'
+        );
+        setMessages(regularMessages);
       }
     } catch (error) {
       console.error('Error fetching chat messages:', error);
+    }
+  };
+
+  // Fetch active (open) giveaway from the server so the banner shows on load
+  const fetchActiveGiveaway = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/giveaways`);
+      if (res.ok) {
+        const data = await res.json();
+        const openGw = (data.giveaways || []).find((g) => g.status === 'open');
+        if (openGw) {
+          setActiveGiveaway(openGw);
+        } else {
+          // Check for recently ended giveaway to show winner banner
+          const ended = (data.giveaways || []).find((g) => g.status === 'ended' && g.winnerId && g.endedAt);
+          if (ended) {
+            const endedMs = new Date(ended.endedAt).getTime();
+            const fiveMinLater = endedMs + 5 * 60 * 1000;
+            if (Date.now() < fiveMinLater) {
+              setWinnerBanner({
+                id: ended.id,
+                winnerName: ended.winnerName || 'Someone',
+                itemName: ended.item?.name || 'Item',
+                creatorName: ended.creatorName || 'Someone'
+              });
+              const remaining = fiveMinLater - Date.now();
+              if (winnerTimer.current) clearTimeout(winnerTimer.current);
+              winnerTimer.current = setTimeout(() => setWinnerBanner(null), remaining);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Giveaway fetch error', e.message);
     }
   };
 
@@ -314,6 +430,7 @@ const ChatPanel = ({ socket, chatOpen }) => {
 
   useEffect(() => () => {
     if (cooldownTimer.current) clearInterval(cooldownTimer.current);
+    if (winnerTimer.current) clearTimeout(winnerTimer.current);
   }, []);
 
   const handleSendMessage = async (e) => {
@@ -494,7 +611,25 @@ const ChatPanel = ({ socket, chatOpen }) => {
       </div>
 
       <div className="chat-messages">
-        {messages.length === 0 ? (
+        {/* Persistent giveaway banner at top of chat */}
+        {activeGiveaway && activeGiveaway.status === 'open' && (
+          <GiveawayBanner
+            giveaway={activeGiveaway}
+            user={user}
+            onJoin={joinGiveaway}
+            joining={joiningGw}
+          />
+        )}
+        {/* Winner announcement banner (stays 5 min after draw) */}
+        {winnerBanner && (
+          <div className="gw-winner-banner">
+            🎉 <strong>{winnerBanner.winnerName}</strong> won{' '}
+            <strong>{winnerBanner.itemName}</strong> from{' '}
+            {winnerBanner.creatorName}'s giveaway!
+          </div>
+        )}
+
+        {messages.length === 0 && !activeGiveaway ? (
           <div className="chat-empty">No messages yet. Say hello! 👋</div>
         ) : (
           messages.map((msg, idx) => {

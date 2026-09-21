@@ -394,6 +394,11 @@ router.post('/tip', authenticateToken, (req, res) => {
       imageUrl: snapshot.imageUrl || snapshot.image || ''
     });
 
+    // Real-time: notify both users their inventory changed
+    const { emitToAll } = require('../realtime');
+    emitToAll('inventoryUpdate', { userId: senderId });
+    emitToAll('inventoryUpdate', { userId: recipient.id });
+
     res.json({ message: `Tipped ${snapshot.name} to ${recipient.displayName || recipient.robloxUsername}!` });
   } catch (error) {
     console.error('Error sending tip:', error);

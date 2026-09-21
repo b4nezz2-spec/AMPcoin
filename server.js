@@ -52,6 +52,25 @@ if (!fs.existsSync(itemsDbPath)) {
   fs.writeFileSync(itemsDbPath, JSON.stringify(defaultItems, null, 2));
 }
 
+// Reset all user inventories on startup (clear accidental bulk items)
+const inventoryResetPath = path.join(dbDir, '.inventory_reset_v2');
+if (!fs.existsSync(inventoryResetPath)) {
+  try {
+    const mainDbPath2 = path.join(dbDir, 'db.json');
+    if (fs.existsSync(mainDbPath2)) {
+      const db = JSON.parse(fs.readFileSync(mainDbPath2, 'utf8'));
+      if (db.inventories && db.inventories.length > 0) {
+        db.inventories = [];
+        fs.writeFileSync(mainDbPath2, JSON.stringify(db, null, 2));
+        console.log('Reset all user inventories');
+      }
+    }
+    fs.writeFileSync(inventoryResetPath, new Date().toISOString());
+  } catch (e) {
+    console.error('Inventory reset error:', e.message);
+  }
+}
+
 // Initialize main db.json if it doesn't exist
 const mainDbPath = path.join(dbDir, 'db.json');
 if (!fs.existsSync(mainDbPath)) {

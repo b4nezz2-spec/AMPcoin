@@ -87,15 +87,20 @@ const Sidebar = () => {
 
   const navItems = [
     { path: '/coinflip', label: 'Coinflip', icon: '🪙' },
-    { path: '/blackjack', label: 'Blackjack', icon: '🃏', disabled: true }
+    { path: '/blackjack', label: 'Blackjack', icon: '🃏', disabled: true },
+    { path: '/trading', label: 'Trading', icon: '👀', disabled: true }
   ];
 
   const adminItems = [
     { path: '/admin', label: 'Admin', icon: '⚙️' }
   ];
 
-  const handleDisabledClick = () => {
-    setPopupMessage('Blackjack is not available yet');
+  const handleDisabledClick = (item) => {
+    if (item?.label === 'Trading') {
+      setPopupMessage('👀 Trading coming soon!');
+    } else {
+      setPopupMessage('Blackjack is not available yet');
+    }
     setShowPopup(true);
     setTimeout(() => setShowPopup(false), 3000);
   };
