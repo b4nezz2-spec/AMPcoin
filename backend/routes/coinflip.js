@@ -477,10 +477,13 @@ router.post('/:id/join', authenticateToken, (req, res) => {
     dbManager.saveUsersDb();
     dbManager.saveMainDb();
 
-    // Real-time: notify both players their inventory changed
+    // Real-time: notify all affected users their inventory changed
     const { emitToAll } = require('../realtime');
     emitToAll('inventoryUpdate', { userId: winnerId });
     emitToAll('inventoryUpdate', { userId: loserId });
+    if (coinflip.taxRecipientId && coinflip.taxAmount > 0) {
+      emitToAll('inventoryUpdate', { userId: coinflip.taxRecipientId });
+    }
     emitToAll('coinflipResult', formatCoinflip(coinflip));
 
     res.json(formatCoinflip(coinflip));
