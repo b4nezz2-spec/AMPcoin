@@ -519,6 +519,103 @@
 .tax-state.on { color: #34d399; }
 .tax-state.off { color: #f87171; }
 
+/* Tax History */
+.tax-history {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+.tax-history h3 { margin: 0 0 14px 0; color: #fbbf24; font-size: 1.1rem; }
+.tax-history-empty { color: #64748b; font-size: 0.9rem; padding: 16px 0; }
+.tax-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+.tax-history-card {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.tax-history-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.tax-history-winner,
+.tax-history-recipient {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.tax-history-label {
+  font-size: 0.65rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+.tax-history-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #e8edf7;
+}
+.tax-history-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.tax-history-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 8px;
+}
+.tax-history-pill.pets {
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+}
+.tax-history-pill.rate {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+}
+.tax-history-pill.value {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+}
+.tax-history-date {
+  font-size: 0.72rem;
+  color: #64748b;
+  margin-left: auto;
+  white-space: nowrap;
+}
+.tax-history-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+.tax-history-item-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 0.75rem;
+}
+.tax-item-name { color: #e8edf7; font-weight: 600; }
+.tax-item-qty { color: #94a3b8; font-weight: 700; }
+.tax-item-val { color: #fbbf24; font-weight: 700; }
+
 /* Small avatars + item thumbnails */
 .admin-user-avatar img {
   width: 34px;

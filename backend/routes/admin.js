@@ -490,6 +490,46 @@ router.get('/blackjack', authenticateAdmin, (req, res) => {
   }
 });
 
+// Get tax collection history — enriched with coinflip details
+router.get('/tax-history', authenticateAdmin, (req, res) => {
+  try {
+    const db = dbManager.getMainDb();
+    const transactions = (db.transactions || []).filter(t => t.type === 'coinflip_tax');
+    const coinflips = db.coinflips || [];
+    const allCoinflips = [...coinflips]; // include completed ones from history
+
+    const taxRecords = transactions.map(t => {
+      const cf = allCoinflips.find(c => c.id === t.metadata?.coinflipId);
+      const totalPets = cf
+        ? ((cf.creatorItems || []).reduce((s, i) => s + (i.quantity || 1), 0) +
+           (cf.opponentItems || []).reduce((s, i) => s + (i.quantity || 1), 0))
+        : null;
+
+      return {
+        id: t.id,
+        coinflipId: t.metadata?.coinflipId || null,
+        winnerUsername: t.robloxUsername || t.userId,
+        winnerDisplayName: t.metadata?.winnerDisplayName || t.robloxUsername || t.userId,
+        taxRecipientUsername: t.metadata?.taxRecipientUsername || '—',
+        taxRate: t.metadata?.taxRate || 0,
+        totalPets,
+        taxItems: (t.metadata?.taxItems || []).map(i => ({
+          name: i.name || i.itemId,
+          quantity: i.quantity || 1,
+          value: i.value || 0
+        })),
+        taxValue: (t.metadata?.taxItems || []).reduce((s, i) => s + (i.value || 0) * (i.quantity || 1), 0),
+        timestamp: t.timestamp
+      };
+    }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    res.json({ taxRecords });
+  } catch (error) {
+    console.error('Error fetching tax history:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Get all transactions
 router.get('/transactions', authenticateAdmin, (req, res) => {
   try {

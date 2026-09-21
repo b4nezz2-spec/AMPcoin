@@ -78,6 +78,7 @@ function AdminPanel() {
   const [taxSettings, setTaxSettings] = useState({ taxEnabled: true, taxPercent: 15, taxRecipient: '' });
   const [taxLoading, setTaxLoading] = useState(false);
   const [taxSaving, setTaxSaving] = useState(false);
+  const [taxHistory, setTaxHistory] = useState([]);
 
   const { user } = useAuth();
 
@@ -254,6 +255,23 @@ function AdminPanel() {
           }
         } catch (err) {
           console.warn('Tax settings fetch error:', err.message);
+        }
+
+        await delay(200);
+
+        // Fetch tax collection history
+        try {
+          const taxHistRes = await retryRequest(() =>
+            fetch(`${API_BASE}/api/admin/tax-history`, {
+              headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            })
+          );
+          if (taxHistRes.ok) {
+            const taxHistData = await taxHistRes.json();
+            setTaxHistory(taxHistData.taxRecords || []);
+          }
+        } catch (err) {
+          console.warn('Tax history fetch error:', err.message);
         }
 
         await delay(200);
@@ -1447,6 +1465,56 @@ function AdminPanel() {
                     ? `Taking ~${Number(taxSettings.taxPercent || 0).toFixed(1)}% of every bet → ${taxSettings.taxRecipient || '— (no recipient: no item tax taken)'}`
                     : 'Tax is OFF — winners keep everything'}
                 </span>
+              </div>
+
+              {/* Taxed Items History */}
+              <div className="tax-history">
+                <h3>📋 Taxed Items History</h3>
+                {taxHistory.length === 0 ? (
+                  <p className="tax-history-empty">No tax collections yet.</p>
+                ) : (
+                  <div className="tax-history-list">
+                    {taxHistory.map((record) => (
+                      <div key={record.id} className="tax-history-card">
+                        <div className="tax-history-header">
+                          <div className="tax-history-winner">
+                            <span className="tax-history-label">Winner</span>
+                            <span className="tax-history-value">{record.winnerDisplayName}</span>
+                          </div>
+                          <div className="tax-history-meta">
+                            <span className="tax-history-pill pets">
+                              🪙 {record.totalPets ?? '?'} pets
+                            </span>
+                            <span className="tax-history-pill rate">
+                              {record.taxRate}% tax
+                            </span>
+                            <span className="tax-history-pill value">
+                              ◆ {record.taxValue.toLocaleString()} AMP
+                            </span>
+                          </div>
+                          <div className="tax-history-recipient">
+                            <span className="tax-history-label">To</span>
+                            <span className="tax-history-value">{record.taxRecipientUsername}</span>
+                          </div>
+                          <span className="tax-history-date">
+                            {new Date(record.timestamp).toLocaleString()}
+                          </span>
+                        </div>
+                        {record.taxItems.length > 0 && (
+                          <div className="tax-history-items">
+                            {record.taxItems.map((item, idx) => (
+                              <div key={idx} className="tax-history-item-chip">
+                                <span className="tax-item-name">{item.name}</span>
+                                {item.quantity > 1 && <span className="tax-item-qty">×{item.quantity}</span>}
+                                <span className="tax-item-val">{item.value.toLocaleString()}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
