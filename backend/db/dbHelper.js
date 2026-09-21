@@ -1,42 +1,143 @@
-const fs = require('fs');
-const path = require('path');
+const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
 
-const USERS_DB_PATH = path.join(__dirname, 'users.json');
-const ITEMS_DB_PATH = path.join(__dirname, 'items.json');
-const MAIN_DB_PATH = path.join(__dirname, 'db.json');
-const SETTINGS_DB_PATH = path.join(__dirname, 'settings.json');
-const COINFLIP_DB_PATH = path.join(__dirname, 'coinflip.json');
+// ─── PostgreSQL connection ───────────────────────────────────────────
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL && process.env.DATABASE_URL.includes('railway')
+    ? { rejectUnauthorized: false }
+    : false,
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000
+});
 
-function loadJSON(filePath, defaultContent) {
+pool.on('error', (err) => {
+  console.error('[PostgreSQL] Unexpected pool error:', err.message);
+});
+
+// ─── Schema init ─────────────────────────────────────────────────────
+async function initDatabase() {
+  const client = await pool.connect();
   try {
-    if (!fs.existsSync(filePath)) {
-      fs.writeFileSync(filePath, JSON.stringify(defaultContent, null, 2), 'utf8');
-      return JSON.parse(JSON.stringify(defaultContent));
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS store (
+        key TEXT PRIMARY KEY,
+        data JSONB NOT NULL DEFAULT '{}',
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `);
+
+    // Seed default rows if they don't exist
+    const defaults = {
+      users: { users: [] },
+      items: { items: [] },
+      main: {
+        coinflips: [],
+        inventories: [],
+        transactions: [],
+        deposits: [],
+        withdrawals: [],
+        itemWithdrawals: [],
+        pendingTransactions: [],
+        blackjackGames: [],
+        chatMessages: [],
+        giveaways: [],
+        notifications: [],
+        adminLogs: [],
+        settings: []
+      },
+      settings: {}
+    };
+
+    for (const [key, data] of Object.entries(defaults)) {
+      await client.query(
+        `INSERT INTO store (key, data) VALUES ($1, $2) ON CONFLICT (key) DO NOTHING`,
+        [key, JSON.stringify(data)]
+      );
     }
-    const raw = fs.readFileSync(filePath, 'utf8');
-    if (!raw || raw.trim() === '') {
-      fs.writeFileSync(filePath, JSON.stringify(defaultContent, null, 2), 'utf8');
-      return JSON.parse(JSON.stringify(defaultContent));
-    }
-    return JSON.parse(raw);
-  } catch (err) {
-    console.error(`[dbHelper] Error loading ${filePath}:`, err.message);
-    return JSON.parse(JSON.stringify(defaultContent));
+
+    console.log('[PostgreSQL] Database initialized');
+  } finally {
+    client.release();
   }
 }
 
-function saveJSON(filePath, data) {
+// ─── In-memory cache (same as the old JSON approach) ─────────────────
+let usersDb = { users: [] };
+let itemsDb = { items: [] };
+let db = {
+  coinflips: [],
+  inventories: [],
+  transactions: [],
+  deposits: [],
+  withdrawals: [],
+  itemWithdrawals: [],
+  pendingTransactions: [],
+  blackjackGames: [],
+  chatMessages: [],
+  giveaways: [],
+  notifications: [],
+  adminLogs: [],
+  settings: []
+};
+let settingsCache = {};
+
+let _loaded = false;
+
+async function loadFromDatabase() {
+  const client = await pool.connect();
   try {
-    const dir = path.dirname(filePath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+    const res = await client.query('SELECT key, data FROM store');
+    for (const row of res.rows) {
+      const data = row.data;
+      switch (row.key) {
+        case 'users':
+          usersDb = data && Array.isArray(data.users) ? data : { users: [] };
+          break;
+        case 'items':
+          itemsDb = data && Array.isArray(data.items) ? data : { items: [] };
+          break;
+        case 'main':
+          db = {
+            coinflips: data?.coinflips || [],
+            inventories: data?.inventories || [],
+            transactions: data?.transactions || [],
+            deposits: data?.deposits || [],
+            withdrawals: data?.withdrawals || [],
+            itemWithdrawals: data?.itemWithdrawals || [],
+            pendingTransactions: data?.pendingTransactions || [],
+            blackjackGames: data?.blackjackGames || [],
+            chatMessages: data?.chatMessages || [],
+            giveaways: data?.giveaways || [],
+            notifications: data?.notifications || [],
+            adminLogs: data?.adminLogs || [],
+            settings: data?.settings || {}
+          };
+          break;
+        case 'settings':
+          settingsCache = data || {};
+          break;
+      }
     }
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
-    return true;
-  } catch (err) {
-    console.error(`[dbHelper] Error saving ${filePath}:`, err.message);
-    return false;
+    _loaded = true;
+    console.log('[PostgreSQL] Loaded data into memory');
+  } finally {
+    client.release();
+  }
+}
+
+// ─── Save helpers ────────────────────────────────────────────────────
+async function saveToStore(key, data) {
+  const client = await pool.connect();
+  try {
+    await client.query(
+      `INSERT INTO store (key, data, updated_at) VALUES ($1, $2, NOW())
+       ON CONFLICT (key) DO UPDATE SET data = $2, updated_at = NOW()`,
+      [key, JSON.stringify(data)]
+    );
+  } finally {
+    client.release();
   }
 }
 
@@ -73,57 +174,20 @@ function normalizeUser(user) {
     updatedAt: user.updatedAt || now,
     inventorySyncedAt: user.inventorySyncedAt || 0
   };
-
   if (base.isBanned && base.status !== 'banned') base.status = 'banned';
   if (base.status === 'banned') base.isBanned = true;
   if (!base.isBanned && base.status === 'banned') base.status = 'active';
-
   return base;
 }
 
-let usersDb = loadJSON(USERS_DB_PATH, { users: [] });
-if (Array.isArray(usersDb.users)) {
-  usersDb.users = usersDb.users.map(normalizeUser);
-  saveJSON(USERS_DB_PATH, usersDb);
-} else {
-  usersDb = { users: [] };
-}
-
-let itemsDb = loadJSON(ITEMS_DB_PATH, { items: [] });
-if (!Array.isArray(itemsDb.items)) {
-  itemsDb = { items: [] };
-}
-
-const defaultMainDb = {
-  coinflips: [],
-  inventories: [],
-  transactions: [],
-  deposits: [],
-  withdrawals: [],
-  pendingTransactions: [],
-  blackjackGames: [],
-  settings: {}
-};
-let db = loadJSON(MAIN_DB_PATH, defaultMainDb);
-if (!db) db = JSON.parse(JSON.stringify(defaultMainDb));
-if (!Array.isArray(db.coinflips)) db.coinflips = [];
-if (!Array.isArray(db.inventories)) db.inventories = [];
-if (!Array.isArray(db.transactions)) db.transactions = [];
-if (!Array.isArray(db.deposits)) db.deposits = [];
-if (!Array.isArray(db.withdrawals)) db.withdrawals = [];
-if (!Array.isArray(db.pendingTransactions)) db.pendingTransactions = [];
-if (!Array.isArray(db.blackjackGames)) db.blackjackGames = [];
-if (!db.settings || typeof db.settings !== 'object') db.settings = {};
-
-if (!loadJSON.cacheHitMain) {
-  saveJSON(MAIN_DB_PATH, db);
-}
-loadJSON.cacheHitMain = true;
-
-loadJSON(SETTINGS_DB_PATH, {});
-loadJSON(COINFLIP_DB_PATH, { coinflips: [] });
-
+// ─── dbManager — same API as the old JSON version ────────────────────
 const dbManager = {
+  // Init: connect + load everything into memory
+  async init() {
+    await initDatabase();
+    await loadFromDatabase();
+  },
+
   getUsersDb() {
     return usersDb;
   },
@@ -144,15 +208,15 @@ const dbManager = {
         return norm;
       });
     }
-    return saveJSON(USERS_DB_PATH, usersDb);
+    return saveToStore('users', usersDb);
   },
 
   saveItemsDb() {
-    return saveJSON(ITEMS_DB_PATH, itemsDb);
+    return saveToStore('items', itemsDb);
   },
 
   saveMainDb() {
-    return saveJSON(MAIN_DB_PATH, db);
+    return saveToStore('main', db);
   },
 
   getUserInventory(userId) {
@@ -170,7 +234,7 @@ const dbManager = {
         updatedAt: new Date().toISOString()
       };
       db.inventories.push(inv);
-      saveJSON(MAIN_DB_PATH, db);
+      saveToStore('main', db);
     }
     if (!inv.items) inv.items = [];
     if (!inv.totalValue) inv.totalValue = 0;
@@ -216,7 +280,7 @@ const dbManager = {
       : 0;
     inv.updatedAt = new Date().toISOString();
 
-    saveJSON(MAIN_DB_PATH, db);
+    saveToStore('main', db);
     return inv;
   },
 
@@ -241,7 +305,7 @@ const dbManager = {
     inv.totalValue = inv.items.reduce((s, i) => s + ((i.value || 0) * (i.quantity || 1)), 0);
     inv.updatedAt = new Date().toISOString();
 
-    saveJSON(MAIN_DB_PATH, db);
+    saveToStore('main', db);
     return true;
   },
 

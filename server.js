@@ -8,6 +8,8 @@ const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
 
+const dbManager = require('./backend/db/dbHelper');
+
 const app = express();
 const server = http.createServer(app);
 
@@ -16,10 +18,8 @@ const allowedOrigins = [
   'https://ampcoin.co.uk',
   'https://ampcoin.pages.dev',
   'http://localhost:3000',
-  // bunny.net CDN
   'https://ampcoin.b-cdn.net',
   'https://ampcoin.co.uk.b-cdn.net',
-  // Back4App backend (for socket.io same-origin connections)
   'https://ampcoin-50q9kxt9.b4a.run'
 ].filter(Boolean);
 
@@ -31,84 +31,27 @@ const io = socketIo(server, {
   }
 });
 
-// Initialize database files if they don't exist
-const dbDir = path.join(__dirname, 'backend', 'db');
-
-// Create db directory if it doesn't exist
-if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true });
-}
-
-// Initialize users.json if it doesn't exist
-const usersDbPath = path.join(dbDir, 'users.json');
-if (!fs.existsSync(usersDbPath)) {
-  const defaultUsers = {
-    users: []
-  };
-  fs.writeFileSync(usersDbPath, JSON.stringify(defaultUsers, null, 2));
-}
-
-// Initialize items.json if it doesn't exist
-const itemsDbPath = path.join(dbDir, 'items.json');
-if (!fs.existsSync(itemsDbPath)) {
-  const defaultItems = {
-    items: []
-  };
-  fs.writeFileSync(itemsDbPath, JSON.stringify(defaultItems, null, 2));
-}
-
-// Initialize main db.json if it doesn't exist
-const mainDbPath = path.join(dbDir, 'db.json');
-if (!fs.existsSync(mainDbPath)) {
-  const defaultDb = {
-    transactions: [],
-    coinflips: [],
-    blackjackGames: [],
-    withdrawals: [],
-    deposits: [],
-    inventories: [],
-    chatMessages: [],
-    giveaways: [],
-    notifications: [],
-    adminLogs: [],
-    itemWithdrawals: [],
-    taxRecipients: [],
-    settings: []
-  };
-  fs.writeFileSync(mainDbPath, JSON.stringify(defaultDb, null, 2));
-}
-
-// Remove the separate inventories.json file as it conflicts with the main db.json approach
-const legacyInventoriesPath = path.join(dbDir, 'inventories.json');
-if (fs.existsSync(legacyInventoriesPath)) {
-  console.log('Removing legacy inventories.json file...');
-  fs.unlinkSync(legacyInventoriesPath);
-}
-
-// Security middleware — disable cross-origin isolation for socket.io
+// Security middleware
 app.use(helmet({
   crossOriginResourcePolicy: false,
   crossOriginEmbedderPolicy: false
 }));
 app.use(cors());
 
-// Rate limiting - general (socket.io transport polling is exempt: it is
-// long-lived realtime traffic, not API abuse, and shares the user's IP)
+// Rate limiting
 const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 1000,
   skip: (req) => req.path.startsWith('/socket.io')
 });
-
-// More lenient rate limiting for API routes (since admins may make many requests)
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 2000,
   skip: (req) => req.path.startsWith('/socket.io')
 });
 
-app.use('/api/', apiLimiter); // Apply more lenient rate limit to API routes
-app.use(generalLimiter); // Apply general rate limit to other routes
+app.use('/api/', apiLimiter);
+app.use(generalLimiter);
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -160,7 +103,6 @@ if (process.env.NODE_ENV === 'production' && fs.existsSync(indexHtml)) {
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 
-  // Track which user owns this socket so we can push notifications
   socket.on('joinChat', (data) => {
     realtime.registerUser(data && data.userId, socket.id);
   });
@@ -170,7 +112,6 @@ io.on('connection', (socket) => {
     console.log('A user disconnected:', socket.id);
   });
 
-  // Typing indicators — relay to all other clients
   socket.on('typingStart', (data) => {
     socket.broadcast.emit('typingStart', data);
   });
@@ -181,14 +122,20 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 5000;
 
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Initialize PostgreSQL then start server
+async function start() {
+  try {
+    await dbManager.init();
+    console.log('PostgreSQL connected and data loaded');
+  } catch (err) {
+    console.error('FATAL: Could not connect to PostgreSQL:', err.message);
+    console.error('Set DATABASE_URL environment variable to your Railway PostgreSQL connection string');
+    process.exit(1);
+  }
 
-// Initialize the database on startup
-try {
-  require('./backend/initDb');
-  console.log('Database initialized successfully');
-} catch (error) {
-  console.error('Error initializing database:', error);
+  server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 }
+
+start();
