@@ -1,0 +1,11 @@
+node_modules
+frontend
+.git
+.github
+*.md
+.env
+.env.*
+backend/db/*.json
+backend/db/backup-*
+.DS_Store
+Thumbs.db
