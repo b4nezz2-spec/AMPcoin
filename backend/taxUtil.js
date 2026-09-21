@@ -15,7 +15,6 @@ function readSetting(key) {
 }
 
 // Tax rate stored either as fraction (0.05) or percent (5) -> returns 0..1 fraction
-// (legacy per-game keys; new code should use getTaxConfig instead)
 function getTaxRate(key) {
   const v = parseFloat(readSetting(key));
   if (isNaN(v)) return 0;
@@ -23,13 +22,11 @@ function getTaxRate(key) {
   return v > 1 ? Math.min(v, 100) / 100 : Math.min(v, 1);
 }
 
-// Master tax switch + single percentage (10-30%). The tax takes random
-// items worth about that % of every bet whenever the pot allows it.
+// Master tax switch + single percentage (10-30%).
 function getTaxConfig() {
   const rawEnabled = readSetting('tax_enabled');
   let enabled;
   if (rawEnabled === undefined || rawEnabled === null || rawEnabled === '') {
-    // Migrate: enabled if any legacy fee rate was set above zero
     const legacy = parseFloat(readSetting('coinflip_fee_percentage'));
     enabled = !(isNaN(legacy)) && legacy > 0;
     if (readSetting('coinflip_fee_percentage') === undefined) enabled = true;
@@ -46,7 +43,7 @@ function getTaxConfig() {
   return { enabled: !!enabled, percent: pct, rate: enabled ? pct / 100 : 0 };
 }
 
-// Admin-configured account that receives taxed items. Setting holds a user id or roblox username.
+// Admin-configured account that receives taxed items.
 function getTaxRecipient() {
   try {
     const raw = readSetting('tax_recipient');
@@ -68,61 +65,68 @@ function cloneStack(st) {
   return { ...st };
 }
 
-// Split item stacks into winner stacks + randomly-picked tax stacks.
-// Only items whose individual unit value is 10%-30% of the total pot value
-// are eligible for taxation. Items outside that range are left for the winner.
+// Smart tax: max 3 items, each item must be worth 5%-10% of the whole pot.
+// - 3 or fewer total items: NO TAX
+// - Picks up to 3 items that are each worth 5%-10% of the pot
+// - If fewer than 3 items qualify, takes however many qualify (even 0)
+// - Winner always keeps the rest
 function collectItemTax(potStacks, rate) {
   const stacks = Array.isArray(potStacks) ? potStacks : [];
   const potValue = stacks.reduce((s, it) => s + ((it.value || 0) * (it.quantity || 1)), 0);
+  const totalItems = stacks.reduce((s, it) => s + Math.max(1, parseInt(it.quantity || 1, 10) || 1), 0);
 
-  if (!stacks.length || !(rate > 0) || potValue <= 0) {
+  // NO TAX for small bets (3 or fewer total items)
+  if (totalItems <= 3 || !stacks.length || !(rate > 0) || potValue <= 0) {
     return { winnerStacks: stacks.map(cloneStack), taxStacks: [], taxAmount: 0, potValue };
   }
 
-  // Build units with their stack index — only include items within 10-30% of total bet
-  const units = [];
+  // Find items where a single unit is worth 5%-10% of the pot
+  const eligibleUnits = []; // { stackIndex, unitValue }
   stacks.forEach((st, si) => {
     const qty = Math.max(1, parseInt(st.quantity || 1, 10) || 1);
     const unitVal = st.value || 0;
     const pctOfPot = potValue > 0 ? (unitVal / potValue) * 100 : 0;
-    // Only tax items that are between 10% and 30% of the whole bet
-    if (pctOfPot >= 10 && pctOfPot <= 30) {
-      for (let k = 0; k < qty; k++) units.push(si);
+    if (pctOfPot >= 5 && pctOfPot <= 10) {
+      for (let k = 0; k < qty; k++) eligibleUnits.push({ stackIndex: si, unitValue: unitVal });
     }
   });
 
-  if (!units.length) {
+  if (!eligibleUnits.length) {
     return { winnerStacks: stacks.map(cloneStack), taxStacks: [], taxAmount: 0, potValue };
   }
 
-  const target = potValue * rate;
   // Shuffle eligible units
-  for (let i = units.length - 1; i > 0; i--) {
+  for (let i = eligibleUnits.length - 1; i > 0; i--) {
     const j = crypto.randomInt(i + 1);
-    const tmp = units[i];
-    units[i] = units[j];
-    units[j] = tmp;
+    const tmp = eligibleUnits[i];
+    eligibleUnits[i] = eligibleUnits[j];
+    eligibleUnits[j] = tmp;
   }
 
-  const takeQty = {};
-  let takenValue = 0;
-  let takenUnits = 0;
-  for (const si of units) {
-    if (takenValue >= target) break;
-    if (takenUnits >= units.length - 1) break; // always leave 1 eligible unit for the winner
-    takeQty[si] = (takeQty[si] || 0) + 1;
-    takenValue += (stacks[si].value || 0);
-    takenUnits += 1;
+  // Take at most 3 items
+  const MAX_TAX_ITEMS = 3;
+  const takeQty = {}; // stackIndex -> how many to take
+  let taken = 0;
+
+  for (const { stackIndex } of eligibleUnits) {
+    if (taken >= MAX_TAX_ITEMS) break;
+    // Don't take more from one stack than it has
+    const stackQty = Math.max(1, parseInt(stacks[stackIndex].quantity || 1, 10) || 1);
+    if ((takeQty[stackIndex] || 0) >= stackQty) continue;
+    // Always leave at least 1 item in the stack for the winner
+    if ((takeQty[stackIndex] || 0) >= stackQty - 1) continue;
+    takeQty[stackIndex] = (takeQty[stackIndex] || 0) + 1;
+    taken += 1;
   }
 
   const winnerStacks = [];
   const taxStacks = [];
   stacks.forEach((st, si) => {
-    const taken = takeQty[si] || 0;
+    const take = takeQty[si] || 0;
     const total = Math.max(1, parseInt(st.quantity || 1, 10) || 1);
-    const left = total - taken;
+    const left = total - take;
     if (left > 0) winnerStacks.push({ ...st, quantity: left });
-    if (taken > 0) taxStacks.push({ ...st, quantity: taken });
+    if (take > 0) taxStacks.push({ ...st, quantity: take });
   });
 
   const taxAmount = taxStacks.reduce((s, it) => s + ((it.value || 0) * (it.quantity || 1)), 0);
