@@ -127,9 +127,58 @@ async function start() {
   try {
     await dbManager.init();
     console.log('PostgreSQL connected and data loaded');
+
+    // Auto-migrate: if no users exist, import from local JSON files if available
+    const users = dbManager.getUsersDb();
+    if (!users.users || users.users.length === 0) {
+      console.log('Empty database detected — attempting auto-migration from JSON...');
+      try {
+        const fs = require('fs');
+        const jsonUsersPath = path.join(__dirname, 'backend', 'db', 'users.json');
+        const jsonMainPath = path.join(__dirname, 'backend', 'db', 'db.json');
+        const jsonItemsPath = path.join(__dirname, 'backend', 'db', 'items.json');
+
+        if (fs.existsSync(jsonUsersPath)) {
+          const jsonUsers = JSON.parse(fs.readFileSync(jsonUsersPath, 'utf8'));
+          if (jsonUsers.users && jsonUsers.users.length > 0) {
+            for (const u of jsonUsers.users) {
+              users.users.push(dbManager.normalizeUser(u));
+            }
+            dbManager.saveUsersDb();
+            console.log(`Migrated ${jsonUsers.users.length} users`);
+          }
+        }
+
+        const mainDb = dbManager.getMainDb();
+        if (fs.existsSync(jsonMainPath)) {
+          const jsonMain = JSON.parse(fs.readFileSync(jsonMainPath, 'utf8'));
+          for (const key of Object.keys(jsonMain)) {
+            if (Array.isArray(jsonMain[key]) && jsonMain[key].length > 0 && Array.isArray(mainDb[key])) {
+              mainDb[key] = jsonMain[key];
+            }
+          }
+          dbManager.saveMainDb();
+          console.log('Migrated main database collections');
+        }
+
+        if (fs.existsSync(jsonItemsPath)) {
+          const jsonItems = JSON.parse(fs.readFileSync(jsonItemsPath, 'utf8'));
+          if (jsonItems.items && jsonItems.items.length > 0) {
+            const itemsDb = dbManager.getItemsDb();
+            itemsDb.items = jsonItems.items;
+            dbManager.saveItemsDb();
+            console.log(`Migrated ${jsonItems.items.length} items`);
+          }
+        }
+
+        console.log('Auto-migration complete!');
+      } catch (migErr) {
+        console.warn('Auto-migration skipped:', migErr.message);
+      }
+    }
   } catch (err) {
     console.error('FATAL: Could not connect to PostgreSQL:', err.message);
-    console.error('Set DATABASE_URL environment variable to your Railway PostgreSQL connection string');
+    console.error('Set DATABASE_URL to your Supabase PostgreSQL connection string');
     process.exit(1);
   }
 
