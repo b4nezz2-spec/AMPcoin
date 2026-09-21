@@ -6,7 +6,6 @@ node_modules/
 frontend/build/
 build/
 dist/
-backend/db/*.json
 backend/db/backup-*/
 .eslintcache
 .DS_Store
