@@ -45,7 +45,7 @@ function AdminPanel() {
   const [users, setUsers] = useState([]);
   const [items, setItems] = useState([]);
   const [newItem] = useState({ name: '', value: 0, rarity: 'common', type: 'pet' });
-  const [newPet, setNewPet] = useState({ name: '', value: 0, rarity: 'common' });
+  const [newPet, setNewPet] = useState({ name: '', value: 0, rarity: 'common', mods: [] });
   const [selectedUser, setSelectedUser] = useState(null);
   const [userPets, setUserPets] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -72,6 +72,7 @@ function AdminPanel() {
   const [selectedPetIds, setSelectedPetIds] = useState([]);
   const [addUserQty, setAddUserQty] = useState(1);
   const [addUserBusy, setAddUserBusy] = useState(false);
+  const [modBusyId, setModBusyId] = useState(null);
   const [petSearch, setPetSearch] = useState('');
   const [addUserPetSearch, setAddUserPetSearch] = useState('');
   const [viewTxItems, setViewTxItems] = useState(null); // item_withdrawal pets modal
@@ -349,6 +350,8 @@ function AdminPanel() {
     }
 
     try {
+      const newMods = Array.isArray(newPet.mods) ? newPet.mods.filter((m) => MOD_BONUS[m]) : [];
+      const computedValue = moddedValue(numericValue, newMods);
       const response = await retryRequest(() =>
         fetch(`${API_BASE}/api/items`, {
           method: 'POST',
@@ -358,7 +361,9 @@ function AdminPanel() {
           },
           body: JSON.stringify({
             ...newPet,
-            value: numericValue
+            mods: newMods,
+            baseValue: numericValue,
+            value: computedValue
           })
         })
       );
@@ -366,7 +371,7 @@ function AdminPanel() {
       if (response.ok) {
         const result = await response.json();
         setItems([...items, result.pet]);
-        setNewPet({ name: '', rarity: 'common', value: 0, imageUrl: '' });
+        setNewPet({ name: '', rarity: 'common', value: 0, imageUrl: '', mods: [] });
         showCustomPopup('Pet added successfully!', 'success');
       } else {
         const errorData = await response.json();
@@ -378,8 +383,67 @@ function AdminPanel() {
     }
   };
 
-  const handleRemovePet = async (petId) => {
+  // ---- Pet modifiers: F +5%, R +5%, M +20%, N +8% (stack on base value) ----
+  const MOD_BONUS = { F: 0.05, R: 0.05, M: 0.20, N: 0.08 };
+  const MOD_LABELS = { F: 'Fly', R: 'Ride', M: 'Mega', N: 'Neon' };
+
+  const petModsOf = (pet) => (Array.isArray(pet.mods) ? pet.mods.filter((m) => MOD_BONUS[m]) : []);
+  const petBaseOf = (pet) => {
+    const b = Number(pet.baseValue);
+    return !isNaN(b) && b >= 0 ? b : Number(pet.value || 0);
+  };
+  const moddedValue = (base, mods) => {
+    const mult = 1 + mods.reduce((s, m) => s + (MOD_BONUS[m] || 0), 0);
+    return Math.round(Number(base || 0) * mult);
+  };
+
+  const togglePetMod = async (pet, mod) => {
+    if (!MOD_BONUS[mod] || modBusyId) return;
+    const cur = petModsOf(pet);
+    const next = cur.includes(mod) ? cur.filter((m) => m !== mod) : [...cur, mod];
+    const base = petBaseOf(pet);
+    const value = moddedValue(base, next);
+    const petId = pet.id || pet.itemId;
+    setModBusyId(petId);
     try {
+      const response = await retryRequest(() =>
+        fetch(`${API_BASE}/api/items/${petId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({ mods: next, baseValue: base, value })
+        })
+      );
+      if (response.ok) {
+        const updated = await response.json();
+        setItems((prev) => prev.map((p) => ((p.id || p.itemId) === petId ? { ...p, ...updated } : p)));
+        showCustomPopup(
+          next.includes(mod)
+            ? `${MOD_LABELS[mod]} added — value now ${value.toLocaleString()} AMP`
+            : `${MOD_LABELS[mod]} removed — value now ${value.toLocaleString()} AMP`,
+          'success'
+        );
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        setError(errorData.message || 'Failed to update pet modifiers');
+      }
+    } catch (err) {
+      setError(`Error updating pet: ${err.message}`);
+    } finally {
+      setModBusyId(null);
+    }
+  };
+
+  const toggleNewPetMod = (mod) => {
+    setNewPet((prev) => {
+      const cur = Array.isArray(prev.mods) ? prev.mods : [];
+      return { ...prev, mods: cur.includes(mod) ? cur.filter((m) => m !== mod) : [...cur, mod] };
+    });
+  };
+
+  const handleRemovePet = async (petId) => {    try {
       const response = await retryRequest(() =>
         fetch(`${API_BASE}/api/items/${petId}`, {
           method: 'DELETE',
@@ -1142,7 +1206,7 @@ function AdminPanel() {
                     </select>
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Value (AMP)</label>
+                    <label className="form-label">Value (AMP) — base before modifiers</label>
                     <input
                       type="number"
                       className="form-control"
@@ -1150,6 +1214,28 @@ function AdminPanel() {
                       onChange={(e) => setNewPet({ ...newPet, value: parseInt(e.target.value) || 0 })}
                       required
                     />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Modifiers</label>
+                    <div className="mod-btn-row">
+                      {['F', 'R', 'M', 'N'].map((m) => {
+                        const active = (newPet.mods || []).includes(m);
+                        return (
+                          <button
+                            key={m}
+                            type="button"
+                            className={`mod-btn ${active ? 'active' : ''}`}
+                            title={`${MOD_LABELS[m]} (+${Math.round(MOD_BONUS[m] * 100)}%)`}
+                            onClick={() => toggleNewPetMod(m)}
+                          >
+                            {m}
+                          </button>
+                        );
+                      })}
+                      <span className="mod-preview">
+                        → {moddedValue(parseFloat(newPet.value) || 0, newPet.mods || []).toLocaleString()} AMP
+                      </span>
+                    </div>
                   </div>
                   <div className="form-group">
                     <label className="form-label">Image URL</label>
@@ -1189,7 +1275,29 @@ function AdminPanel() {
                         <div className="inventory-item-info">
                           <div className="item-name">{pet.name}</div>
                           <div className="item-value">{Number(pet.value || 0).toLocaleString()} AMP</div>
+                          {petModsOf(pet).length > 0 && (
+                            <div className="mod-active-row">
+                              {petModsOf(pet).map((m) => (
+                                <span key={m} className="mod-tag" title={`${MOD_LABELS[m]} (+${Math.round(MOD_BONUS[m] * 100)}%)`}>{m}</span>
+                              ))}
+                              <span className="mod-base">base {petBaseOf(pet).toLocaleString()}</span>
+                            </div>
+                          )}
                           <span className={`badge badge-${pet.rarity}`}>{pet.rarity}</span>
+                        </div>
+                        <div className="mod-btn-row">
+                          {['F', 'R', 'M', 'N'].map((m) => (
+                            <button
+                              key={m}
+                              type="button"
+                              className={`mod-btn small ${petModsOf(pet).includes(m) ? 'active' : ''}`}
+                              title={`${MOD_LABELS[m]} (+${Math.round(MOD_BONUS[m] * 100)}%)`}
+                              disabled={modBusyId === (pet.id || pet.itemId)}
+                              onClick={() => togglePetMod(pet, m)}
+                            >
+                              {m}
+                            </button>
+                          ))}
                         </div>
                         <button
                           className="btn btn-danger"

@@ -695,3 +695,78 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ---- Pet modifier buttons (F/R/M/N) ---- */
+.mod-btn-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0;
+  flex-wrap: wrap;
+}
+
+.mod-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid #30363d;
+  background: #21262d;
+  color: #8b949e;
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.mod-btn:hover:not(:disabled) {
+  border-color: #58a6ff;
+  color: #e6edf3;
+}
+
+.mod-btn.active {
+  background: linear-gradient(135deg, #00aaff, #0066ff);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 170, 255, 0.4);
+}
+
+.mod-btn.small {
+  width: 28px;
+  height: 28px;
+  font-size: 0.75rem;
+}
+
+.mod-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.mod-preview {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #58a6ff;
+  margin-left: 4px;
+}
+
+.mod-active-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 4px 0;
+  flex-wrap: wrap;
+}
+
+.mod-tag {
+  font-size: 0.65rem;
+  font-weight: 800;
+  background: rgba(0, 170, 255, 0.15);
+  border: 1px solid rgba(0, 170, 255, 0.4);
+  color: #58a6ff;
+  padding: 1px 6px;
+  border-radius: 6px;
+}
+
+.mod-base {
+  font-size: 0.68rem;
+  color: #484f58;
+}
