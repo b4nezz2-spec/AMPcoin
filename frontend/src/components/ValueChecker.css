@@ -270,3 +270,9 @@
   color: #8899aa;
   font-size: 0.85rem;
 }
+
+@media (max-width: 768px) {
+  .vc-modal { width: calc(100% - 16px) !important; }
+  .vc-rarity-tabs { flex-wrap: wrap; }
+  .vc-table { font-size: 0.78rem; }
+}

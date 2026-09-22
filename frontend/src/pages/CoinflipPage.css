@@ -1469,14 +1469,57 @@ a.cf-tab { text-decoration: none; }
 
 /* ─── Responsive ─── */
 @media (max-width: 768px) {
-  .cf-row { flex-wrap: wrap; gap: 8px; }
+  .cf-page { padding: 0; }
+
+  .cf-topbar { flex-wrap: wrap; gap: 8px; }
+  .cf-topbar-tabs { flex-wrap: wrap; }
+  .cf-tab { padding: 8px 12px; font-size: 0.82rem; }
+  .cf-topbar-right { margin-left: 0; flex-wrap: wrap; gap: 8px; width: 100%; }
+  .cf-topbar-btn { padding: 8px 12px; font-size: 0.78rem; }
+
+  .cf-row { flex-wrap: wrap; gap: 10px; padding: 10px 12px; }
   .cf-row-players { min-width: auto; }
-  .cf-row-items { flex-basis: 100%; }
+  .cf-row-items { flex-basis: 100%; order: 3; }
   .cf-row-total { min-width: auto; }
-  .cf-join-modal { max-width: 100%; }
+  .cf-row-action { margin-left: auto; }
+
+  .cf-modal-overlay { padding: 0; align-items: flex-end; }
+  .cf-join-modal, .cf-view-modal {
+    max-width: 100% !important;
+    width: 100% !important;
+    max-height: 94vh !important;
+    border-radius: 16px 16px 0 0 !important;
+  }
   .cf-join-content { flex-direction: column; }
-  .cf-join-left { width: 100%; min-width: auto; border-right: none; border-bottom: 1px solid #21262d; }
-  .cf-view-top { flex-direction: column; gap: 16px; }
+  .cf-join-left {
+    width: 100%; min-width: auto;
+    border-right: none; border-bottom: 1px solid #21262d;
+    max-height: 38vh;
+    padding: 14px;
+    gap: 10px;
+  }
+  .cf-join-bet-items-list { max-height: 140px; }
+  .cf-join-inv-grid {
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)) !important;
+    max-height: 30vh;
+  }
+  .cf-join-bottom { flex-wrap: wrap; gap: 10px; }
+  .cf-join-bottom-right { width: 100%; justify-content: stretch; }
+  .cf-join-bottom-right .cf-confirm-btn { flex: 1; }
+  .cf-create-filters { flex-wrap: wrap; padding: 0 12px 10px; }
+  .cf-create-select { flex: 1; min-width: 120px; }
+
+  .cf-view-top { gap: 12px; padding: 20px 16px 12px; }
+  .cf-view-avatar { width: 52px; height: 52px; }
+  .cf-view-avatar-empty { width: 52px; height: 52px; }
+  .cf-view-panels { flex-direction: column; gap: 8px; padding: 0 12px; }
+  .cf-view-items-split { flex-direction: column; padding: 12px; gap: 12px; }
+  .cf-view-items-col { padding: 0; }
+  .cf-view-footer { flex-wrap: wrap; gap: 8px; }
+
+  .cf-value-modal { max-width: 100% !important; }
+  .cf-history-modal { max-width: 100% !important; }
+  .cf-tip-pop { display: none !important; }
 }
 /* section: pet hover tooltip + legacy button texture */
 

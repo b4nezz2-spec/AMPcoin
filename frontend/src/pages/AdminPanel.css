@@ -780,3 +780,11 @@
 .give-mods {
   margin: 10px 0 4px;
 }
+
+@media (max-width: 768px) {
+  .admin-tabs { flex-wrap: wrap; }
+  .admin-table-wrap { overflow-x: auto; }
+  .add-pet-to-user { flex-direction: column; }
+  .mod-btn { width: 40px; height: 40px; }
+  .manage-pets { flex-direction: column; }
+}

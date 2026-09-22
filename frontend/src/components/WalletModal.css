@@ -269,3 +269,9 @@
 .wm-btn .wm-gem {
   color: #58a6ff;
 }
+
+@media (max-width: 768px) {
+  .wm-grid { grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)) !important; }
+  .wm-filters { flex-wrap: wrap; }
+  .wm-footer { flex-wrap: wrap; gap: 10px; }
+}

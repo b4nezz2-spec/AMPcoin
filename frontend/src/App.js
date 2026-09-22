@@ -42,6 +42,7 @@ function AppContent() {
   const { user, loading } = useAuth();
   const [balance, setBalance] = useState(0);
   const [notifications, setNotifications] = useState([]);
+  const [mobileChatOpen, setMobileChatOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -80,9 +81,15 @@ function AppContent() {
       {user && <Sidebar />}
       <div className="layout-columns">
         {user && (
-          <div className="chat-column">
-            <ChatPanel socket={socket} chatOpen={true} />
-          </div>
+          <>
+            <div
+              className={`chat-backdrop ${mobileChatOpen ? 'show' : ''}`}
+              onClick={() => setMobileChatOpen(false)}
+            />
+            <div className={`chat-column ${mobileChatOpen ? 'mobile-open' : ''}`}>
+              <ChatPanel socket={socket} chatOpen={true} />
+            </div>
+          </>
         )}
         <div className="main-content">
           {user && <Header balance={balance} setBalance={setBalance} notifications={notifications} socket={socket} />}
@@ -103,6 +110,15 @@ function AppContent() {
           </div>
         </div>
       </div>
+      {user && (
+        <button
+          className="mobile-chat-fab"
+          onClick={() => setMobileChatOpen((v) => !v)}
+          aria-label="Toggle chat"
+        >
+          {mobileChatOpen ? '✕' : '💬'}
+        </button>
+      )}
     </div>
   );
 }

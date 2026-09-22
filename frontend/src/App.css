@@ -236,14 +236,98 @@ body {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ─── Mobile ─── */
+.mobile-chat-fab { display: none; }
+.chat-backdrop { display: none; }
+
 @media (max-width: 768px) {
   .sidebar {
     height: 48px !important;
-    padding: 0 10px !important;
+    padding: 0 8px !important;
+    gap: 2px !important;
+  }
+  .sidebar-logo a {
+    font-size: 1rem !important;
+    margin-right: 8px !important;
+  }
+  .sidebar .nav-link {
+    padding: 7px 9px !important;
+    font-size: 0.78rem !important;
   }
   .sidebar .nav-link .nav-label { display: none !important; }
-  .chat-column { display: none !important; }
+  .sidebar-footer .user-name { display: none !important; }
+  .sidebar-footer .user-avatar { width: 28px !important; height: 28px !important; }
   .layout-columns { margin-top: 48px !important; }
+  .page-content { padding: 12px !important; }
+
+  /* Chat becomes a slide-over drawer */
+  .chat-column {
+    display: none;
+    position: fixed !important;
+    left: 0;
+    top: 48px !important;
+    bottom: 0;
+    height: calc(100vh - 48px) !important;
+    width: min(320px, 85vw) !important;
+    min-width: 0 !important;
+    max-width: 85vw !important;
+    z-index: 1500;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+  }
+  .chat-column.mobile-open { display: flex !important; }
+
+  .chat-backdrop.show {
+    display: block;
+    position: fixed;
+    top: 48px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1400;
+  }
+
+  /* Floating chat button (bottom-right) */
+  .mobile-chat-fab {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #00aaff, #0066ff);
+    color: #fff;
+    font-size: 1.4rem;
+    cursor: pointer;
+    z-index: 1600;
+    box-shadow: 0 4px 16px rgba(0, 170, 255, 0.45);
+    transition: transform 0.15s;
+  }
+  .mobile-chat-fab:active { transform: scale(0.92); }
+
+  /* Wallet + trade modals go full-screen */
+  .wallet-modal {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    border-radius: 0 !important;
+  }
+  .trade-modal {
+    width: calc(100% - 24px) !important;
+    padding: 20px !important;
+  }
+  .notification-dropdown {
+    position: fixed !important;
+    top: 52px !important;
+    right: 8px !important;
+    left: 8px !important;
+    width: auto !important;
+  }
+  .inventory-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)) !important; }
 }
 
 /* section */

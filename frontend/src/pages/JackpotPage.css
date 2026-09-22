@@ -353,4 +353,10 @@
   .jp-inventory-grid {
     grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
   }
+
+  .jp-tabs { flex-wrap: wrap; }
+  .jp-tab { padding: 8px 14px; font-size: 0.85rem; }
+  .jp-player-card { padding: 10px 12px; }
+  .jp-bottom-bar { flex-wrap: wrap; gap: 10px; }
+  .jp-btn-primary { flex: 1; text-align: center; }
 }
