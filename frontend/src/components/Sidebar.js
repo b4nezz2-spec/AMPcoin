@@ -41,7 +41,7 @@ function Sidebar() {
         <div className="sidebar-logo">
           <Link to="/coinflip">
             <span className="logo-icon">🔥</span>
-            <span className="logo-text">AMPcoin</span>
+            <span className="logo-text">AMPCOIN</span>
           </Link>
         </div>
 

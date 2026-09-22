@@ -385,7 +385,7 @@ function makeVerifyCode() {
   for (let i = 0; i < 4; i++) {
     words.push(VERIFY_WORDS[Math.floor(Math.random() * VERIFY_WORDS.length)]);
   }
-  return `AMPcoin | ${words.join(' ')}`;
+  return `AMPCOIN | ${words.join(' ')}`;
 }
 
 // Step 2: confirm "is this u?" -> backend issues the bio code.

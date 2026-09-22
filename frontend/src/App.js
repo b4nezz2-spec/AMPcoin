@@ -63,7 +63,7 @@ function AppContent() {
     return (
       <div className="loading-container">
         <div className="loading-spinner"></div>
-        <p>Loading AMPcoin...</p>
+        <p>Loading AMPCOIN...</p>
       </div>
     );
   }
