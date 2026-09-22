@@ -1,6 +1,4 @@
-/* ══════════════════════════════════════════════════════════════════════════
-   AMPCOIN — Layout: horizontal top navbar, chat left, main right
-   ══════════════════════════════════════════════════════════════════════════ */
+/* section */
 
 /* Reset */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -244,9 +242,7 @@ body {
   .layout-columns { margin-top: 48px !important; }
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   NOTIFICATION DROPDOWN
-   ══════════════════════════════════════════════════════════════════════════ */
+/* section */
 .notification-dropdown {
   position: absolute;
   top: 100%;
@@ -293,9 +289,7 @@ body {
 .notification-item-time { font-size: 0.7rem; color: #484f58; margin-top: 4px; }
 .notification-empty { padding: 20px; text-align: center; color: #484f58; }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   WALLET MODAL
-   ══════════════════════════════════════════════════════════════════════════ */
+/* section */
 .wallet-modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -385,7 +379,7 @@ body {
 .item-details { text-align: center; }
 .item-details h4 { font-size: 0.75rem; color: #e6edf3; font-weight: 500; }
 .item-value { font-size: 0.7rem; color: #58a6ff; }
-.no-items { grid-column: 1/-1; text-align: center; padding: 30px; color: #484f58; }
+.no-items { grid-column: 1 / -1; text-align: center; padding: 30px; color: #484f58; }
 
 .wallet-modal-footer {
   padding: 12px 20px;
@@ -448,9 +442,7 @@ body {
 .wallet-modal-msg { color: #f85149; font-size: 0.85rem; margin-bottom: 8px; }
 .wallet-modal-error { color: #f85149; font-size: 0.85rem; margin-bottom: 8px; }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   TRADE MODAL
-   ══════════════════════════════════════════════════════════════════════════ */
+/* section */
 .trade-modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -526,9 +518,7 @@ body {
 
 .trade-close { position: absolute; top: 14px; right: 14px; }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   BADGES
-   ══════════════════════════════════════════════════════════════════════════ */
+/* section */
 .badge {
   display: inline-block;
   padding: 2px 8px;
@@ -559,9 +549,7 @@ body {
 .btn-primary { background: #58a6ff; color: #fff; }
 .btn-primary:hover { background: #79c0ff; }
 
-/* ??????????????????????????????????????????????????????????????????????????
-   CHAT PANEL STYLES
-   ?????????????????????????????????????????????????????????????????????????? */
+/* section */
 
 .chat-panel {
   background: #0d1117 !important;
@@ -593,13 +581,10 @@ body {
 .chat-stats {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
 }
 
 .online-count {
-  display: flex;
-  align-items: center;
-  gap: 5px;
   font-size: 0.78rem;
   color: #8b949e;
 }
@@ -625,40 +610,76 @@ body {
   font-size: 0.85rem;
 }
 
-/* Message bubbles */
-.bubble-content {
+/* Message rows */
+.chat-message-row {
   display: flex;
-  gap: 10px;
-  padding: 6px 14px;
+  gap: 8px;
+  padding: 5px 14px;
+  align-items: flex-start;
   transition: background 0.1s;
 }
 
-.bubble-content:hover {
+.chat-message-row:hover {
   background: rgba(255,255,255,0.02);
+}
+
+.chat-message-row.own-row {
+  flex-direction: row-reverse;
 }
 
 .chat-avatar-wrap {
   flex-shrink: 0;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  max-width: 32px;
+  max-height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
 }
 
 .chat-avatar {
-  width: 34px;
-  height: 34px;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  max-width: 32px !important;
+  max-height: 32px !important;
   border-radius: 50%;
   object-fit: cover;
+  display: block;
+}
+
+/* Message bubbles */
+.chat-bubble {
+  flex: 1;
+  min-width: 0;
+  max-width: 85%;
+}
+
+.chat-message-row.own-row .chat-bubble {
+  text-align: right;
 }
 
 .bubble-header {
-  flex: 1;
-  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 1px;
+}
+
+.chat-message-row.own-row .bubble-header {
+  justify-content: flex-end;
 }
 
 .bubble-username {
   font-weight: 600;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   color: #e6edf3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bubble-username-clickable {
@@ -670,35 +691,43 @@ body {
 }
 
 .bubble-timestamp {
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   color: #484f58;
-  margin-left: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.bubble-content .chat-msg-text,
-.bubble-content p {
+.bubble-content {
   font-size: 0.82rem;
   color: #b1bac4;
   line-height: 1.4;
   word-break: break-word;
-  margin-top: 2px;
 }
 
-/* Chat input */
-.chat-input-wrap {
-  padding: 10px 12px;
-  border-top: 1px solid #161b22;
-  flex-shrink: 0;
-}
-
+/* Chat input form */
 .chat-input-form {
   display: flex;
   align-items: center;
   gap: 6px;
+  padding: 10px 12px;
+  border-top: 1px solid #161b22;
+  flex-shrink: 0;
+  background: #0d1117;
+}
+
+.chat-input-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
   background: #161b22;
   border: 1px solid #21262d;
   border-radius: 10px;
-  padding: 4px 6px 4px 12px;
+  padding: 0 8px 0 12px;
+  min-width: 0;
+}
+
+.chat-input-wrap:focus-within {
+  border-color: #58a6ff;
 }
 
 .chat-input {
@@ -708,39 +737,48 @@ body {
   color: #e6edf3;
   font-size: 0.85rem;
   outline: none;
-  padding: 6px 0;
+  padding: 9px 0;
+  min-width: 0;
 }
 
 .chat-input::placeholder { color: #484f58; }
 
 .chat-char-count {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   color: #484f58;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .send-button {
   background: #21262d;
   border: none;
   color: #8b949e;
-  width: 32px;
-  height: 32px;
+  min-width: 60px;
+  height: 34px;
+  padding: 0 12px;
   border-radius: 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 4px;
   transition: all 0.12s;
   flex-shrink: 0;
 }
 
-.send-button:hover {
+.send-button:hover:not(:disabled) {
   background: #30363d;
   color: #58a6ff;
 }
 
-.send-icon { font-size: 0.9rem; }
-.send-text { font-size: 0.75rem; font-weight: 600; }
+.send-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.send-icon { font-size: 0.85rem; }
+.send-text { font-size: 0.72rem; font-weight: 600; }
 .send-spinner {
   width: 14px;
   height: 14px;
@@ -753,19 +791,36 @@ body {
 /* Typing indicator */
 .typing-indicator {
   padding: 4px 14px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: #484f58;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .typing-users-wrap { display: inline; }
 .typing-user { font-weight: 600; color: #8b949e; }
-.typing-dots { animation: blink 1.2s infinite; }
-@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-/* ??????????????????????????????????????????????????????????????????????????
-   GIVEAWAY BANNER (compact, at top of chat)
-   ?????????????????????????????????????????????????????????????????????????? */
+.typing-dots {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.typing-dots span {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #484f58;
+  animation: tblink 1.2s infinite;
+}
+
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes tblink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+/* GIVEAWAY BANNER */
+
 
 .gw-banner {
   display: flex;
@@ -863,9 +918,7 @@ body {
 .gw-banner-status.joined { color: #3fb950; }
 .gw-banner-status.locked { color: #484f58; }
 
-/* ??????????????????????????????????????????????????????????????????????????
-   GIVEAWAY CARD (in-chat message)
-   ?????????????????????????????????????????????????????????????????????????? */
+/* section */
 
 .gw-card-row {
   padding: 6px 14px;
