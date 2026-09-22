@@ -198,26 +198,39 @@
   height: 44px;
 }
 
-.cf-row-avatar {
+.cf-row-avatar-ring {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  object-fit: cover;
   border: 2px solid #21262d;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ring-heads { border-color: #f08800; }
+.ring-tails { border-color: #1f6feb; }
+.ring-winner { border-color: #3fb950 !important; box-shadow: 0 0 8px rgba(63,185,80,0.4); }
+
+.cf-row-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .cf-row-avatar-empty {
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: #21262d;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #484f58;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  border: 2px solid #30363d;
 }
 
 .cf-row-side-badge {
@@ -299,6 +312,23 @@
   font-weight: 600;
   padding: 0 4px;
 }
+
+/* Small coin result badge for completed rows */
+.cf-row-result-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.result-heads { background: #f08800; }
+.result-tails { background: #1f6feb; }
 
 /* Value area */
 .cf-row-total {

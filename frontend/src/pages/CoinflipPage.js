@@ -846,25 +846,24 @@ const CoinflipPage = ({ socket, setBalance }) => {
 
                 {/* Item thumbnails */}
                 <div className="cf-row-items">
-                  {meta.isCompleted ? (
-                    <CoinSpinner result={meta.resultSide} size={40} />
-                  ) : (
-                    <>
-                      {meta.thumbs.slice(0, 6).map((item, idx) => (
-                        <div key={idx} className="cf-row-thumb-wrap" title={`${item.name || item.itemName || 'Item'} — ${(item.value || 0).toLocaleString()} AMP`}>
-                          <img
-                            src={item.image || item.imageUrl || '/default-item.png'}
-                            alt={item.name || item.itemName || 'item'}
-                            className="cf-row-thumb"
-                            onError={(e) => { e.target.src = '/default-item.png'; }}
-                          />
-                          <span className="cf-row-thumb-rarity" style={{ background: getRarityColor(item.rarity) }}></span>
-                        </div>
-                      ))}
-                      {meta.thumbs.length > 6 && (
-                        <span className="cf-row-more">+{meta.thumbs.length - 6}</span>
-                      )}
-                    </>
+                  {meta.thumbs.slice(0, 8).map((item, idx) => (
+                    <div key={idx} className="cf-row-thumb-wrap" title={`${item.name || item.itemName || 'Item'} — ${(item.value || 0).toLocaleString()} AMP`}>
+                      <img
+                        src={item.image || item.imageUrl || '/default-item.png'}
+                        alt={item.name || item.itemName || 'item'}
+                        className="cf-row-thumb"
+                        onError={(e) => { e.target.src = '/default-item.png'; }}
+                      />
+                      <span className="cf-row-thumb-rarity" style={{ background: getRarityColor(item.rarity) }}></span>
+                    </div>
+                  ))}
+                  {meta.thumbs.length > 8 && (
+                    <span className="cf-row-more">+{meta.thumbs.length - 8}</span>
+                  )}
+                  {meta.isCompleted && (
+                    <span className={`cf-row-result-badge ${meta.resultSide === 'heads' ? 'result-heads' : 'result-tails'}`}>
+                      {meta.resultSide === 'heads' ? 'H' : 'T'}
+                    </span>
                   )}
                 </div>
 
