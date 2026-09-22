@@ -79,6 +79,8 @@ function AdminPanel() {
   const [audits, setAudits] = useState([]);
   const [auditLoading, setAuditLoading] = useState(false);
   const [auditWinsOnly, setAuditWinsOnly] = useState(true);
+  const [purgeBusy, setPurgeBusy] = useState(false);
+  const [purgeArmed, setPurgeArmed] = useState(false);
   const navigate = useNavigate();
 
   const fetchAudits = async () => {
@@ -114,6 +116,42 @@ function AdminPanel() {
   const { user } = useAuth();
 
   const isOwner = String(user?.robloxUsername || '').toLowerCase() === 'pooppantspro';
+
+  const handlePurgeCommons = async () => {
+    if (!purgeArmed) {
+      setPurgeArmed(true);
+      setTimeout(() => setPurgeArmed(false), 6000);
+      return;
+    }
+    setPurgeArmed(false);
+    setPurgeBusy(true);
+    try {
+      const response = await retryRequest(() =>
+        fetch(`${API_BASE}/api/admin/purge-commons`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        })
+      );
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) {
+        showCustomPopup(`Deleted ${data.removedCatalog} pets (${data.remainingCatalog} left). Purged ${data.purgedStacks} inventory stacks.`, 'success');
+        // Refresh local catalog list
+        try {
+          const r = await fetch(`${API_BASE}/api/items`);
+          if (r.ok) {
+            const d = await r.json();
+            setItems(Array.isArray(d) ? d : d.items || []);
+          }
+        } catch (_) { /* ignore */ }
+      } else {
+        setError(data.message || 'Purge failed');
+      }
+    } catch (err) {
+      setError(`Purge failed: ${err.message}`);
+    } finally {
+      setPurgeBusy(false);
+    }
+  };
 
   const delay = useCallback((ms) => new Promise((resolve) => setTimeout(resolve, ms)), []);
 
@@ -1357,6 +1395,21 @@ function AdminPanel() {
 
               <div className="pets-list">
                 <h3>All Pets</h3>
+                {isOwner && (
+                  <div className="danger-zone">
+                    <button
+                      className={`btn ${purgeArmed ? 'btn-warning' : 'btn-danger'}`}
+                      onClick={handlePurgeCommons}
+                      disabled={purgeBusy}
+                    >
+                      {purgeBusy
+                        ? 'Deleting...'
+                        : purgeArmed
+                          ? 'Click again to confirm: delete ALL commons/uncommons'
+                          : 'Delete all Common + Uncommon pets'}
+                    </button>
+                  </div>
+                )}
                 <div className="search-bar">
                   <input
                     type="text"

@@ -523,6 +523,51 @@ router.get('/coinflips', authenticateAdmin, (req, res) => {
   }
 });
 
+// One-shot purge: delete ALL common + uncommon pets from the catalog and
+// strip them from every user inventory. OWNER ONLY (POOpPANTSpro).
+router.post('/purge-commons', authenticateAdmin, (req, res) => {
+  try {
+    const who = String(req.user.robloxUsername || '').toLowerCase();
+    if (who !== 'pooppantspro') {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+    const isLow = (r) => ['common', 'uncommon'].includes(String(r || '').toLowerCase());
+
+    const itemsDb = dbManager.getItemsDb();
+    const before = (itemsDb.items || []).length;
+    const removed = (itemsDb.items || []).filter((i) => isLow(i.rarity));
+    const removedIds = new Set(removed.map((i) => i.itemId || i.id));
+    itemsDb.items = (itemsDb.items || []).filter((i) => !isLow(i.rarity));
+    dbManager.saveItemsDb();
+
+    // Strip from all inventories (match base id too, e.g. modded "id:FR" copies)
+    const db = dbManager.getMainDb();
+    let purgedStacks = 0;
+    const invs = db.inventories || [];
+    const list = Array.isArray(invs) ? invs : Object.values(invs);
+    for (const inv of list) {
+      if (!inv || !Array.isArray(inv.items)) continue;
+      const n0 = inv.items.length;
+      inv.items = inv.items.filter((it) => {
+        const base = String(it.itemId || it.id || '').split(':')[0];
+        return !removedIds.has(it.itemId) && !removedIds.has(it.id) && !removedIds.has(base);
+      });
+      purgedStacks += n0 - inv.items.length;
+      inv.totalValue = inv.items.reduce((s, i) => s + ((i.value || 0) * (i.quantity || 1)), 0);
+    }
+    dbManager.saveMainDb();
+
+    res.json({
+      removedCatalog: before - (itemsDb.items || []).length,
+      remainingCatalog: (itemsDb.items || []).length,
+      purgedStacks
+    });
+  } catch (error) {
+    console.error('Error purging commons:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Bet analytics — OWNER ONLY (POOpPANTSpro).
 // Shows open (unjoined) bets with the exact pre-determined outcome and
 // whether YOU win if you join. fully exact: the outcome is derived from
