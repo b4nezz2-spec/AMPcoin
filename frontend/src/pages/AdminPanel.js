@@ -401,7 +401,12 @@ function AdminPanel() {
   const togglePetMod = async (pet, mod) => {
     if (!MOD_BONUS[mod] || modBusyId) return;
     const cur = petModsOf(pet);
-    const next = cur.includes(mod) ? cur.filter((m) => m !== mod) : [...cur, mod];
+    // M (Mega) and N (Neon) are mutually exclusive
+    let next = cur.includes(mod) ? cur.filter((m) => m !== mod) : [...cur, mod];
+    if (!cur.includes(mod)) {
+      if (mod === 'M') next = next.filter((m) => m !== 'N');
+      if (mod === 'N') next = next.filter((m) => m !== 'M');
+    }
     const base = petBaseOf(pet);
     const value = moddedValue(base, next);
     const petId = pet.id || pet.itemId;
@@ -440,12 +445,26 @@ function AdminPanel() {
   const toggleNewPetMod = (mod) => {
     setNewPet((prev) => {
       const cur = Array.isArray(prev.mods) ? prev.mods : [];
-      return { ...prev, mods: cur.includes(mod) ? cur.filter((m) => m !== mod) : [...cur, mod] };
+      // M (Mega) and N (Neon) are mutually exclusive
+      let next = cur.includes(mod) ? cur.filter((m) => m !== mod) : [...cur, mod];
+      if (!cur.includes(mod)) {
+        if (mod === 'M') next = next.filter((m) => m !== 'N');
+        if (mod === 'N') next = next.filter((m) => m !== 'M');
+      }
+      return { ...prev, mods: next };
     });
   };
 
   const toggleGiveMod = (mod) => {
-    setGiveMods((prev) => (prev.includes(mod) ? prev.filter((m) => m !== mod) : [...prev, mod]));
+    setGiveMods((prev) => {
+      // M (Mega) and N (Neon) are mutually exclusive
+      let next = prev.includes(mod) ? prev.filter((m) => m !== mod) : [...prev, mod];
+      if (!prev.includes(mod)) {
+        if (mod === 'M') next = next.filter((m) => m !== 'N');
+        if (mod === 'N') next = next.filter((m) => m !== 'M');
+      }
+      return next;
+    });
   };
 
   // Preview: first selected pet's value with give-mods applied

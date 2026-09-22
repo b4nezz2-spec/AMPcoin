@@ -3,6 +3,8 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ProfileModal from './ProfileModal';
 import InventoryPickerModal from './InventoryPickerModal';
+import ModBadges from './ModBadges';
+import './ModBadges.css';
 import './WalletModal.css';
 
 const DEFAULT_AVATAR = '/default-avatar.png';
@@ -567,6 +569,7 @@ const Header = ({ balance, notifications, socket }) => {
                         )}
                       </div>
                       <h4 className="wm-name">{getName(unit)}</h4>
+                      <ModBadges mods={unit.mods || unit.details?.mods} size={16} />
                       <p className="wm-value"><span className="wm-gem">◆</span> {getVal(unit).toLocaleString()}</p>
                     </div>
                   );

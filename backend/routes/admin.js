@@ -307,7 +307,8 @@ router.post('/user/:userId/add-item', authenticateAdmin, (req, res) => {
     // Modded copies get a distinct itemId suffix so they stack separately
     // from unmodded copies in the user's inventory.
     const MOD_BONUS = { F: 0.05, R: 0.05, M: 0.20, N: 0.08 };
-    const cleanMods = Array.isArray(mods) ? [...new Set(mods)].filter((m) => MOD_BONUS[m]) : [];
+    let cleanMods = Array.isArray(mods) ? [...new Set(mods)].filter((m) => MOD_BONUS[m]) : [];
+    if (cleanMods.includes('M') && cleanMods.includes('N')) cleanMods = cleanMods.filter((m) => m !== 'N'); // M and N mutually exclusive, Mega wins
     let itemToGive = item;
     if (cleanMods.length > 0) {
       const base = Number(item.baseValue);
@@ -375,7 +376,8 @@ router.post('/user/:userId/add-pet', authenticateAdmin, (req, res) => {
   }
 
   const MOD_BONUS = { F: 0.05, R: 0.05, M: 0.20, N: 0.08 };
-  const cleanMods = Array.isArray(mods) ? [...new Set(mods)].filter((m) => MOD_BONUS[m]) : [];
+  let cleanMods = Array.isArray(mods) ? [...new Set(mods)].filter((m) => MOD_BONUS[m]) : [];
+    if (cleanMods.includes('M') && cleanMods.includes('N')) cleanMods = cleanMods.filter((m) => m !== 'N'); // M and N mutually exclusive, Mega wins
   let itemToGive = item;
   if (cleanMods.length > 0) {
     const base = Number(item.baseValue);

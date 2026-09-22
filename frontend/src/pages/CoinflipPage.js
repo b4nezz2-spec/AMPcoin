@@ -5,7 +5,9 @@ import CreateCoinflipModal from '../components/CreateCoinflipModal';
 import LeaderboardModal from '../components/LeaderboardModal';
 import AnimatedPopup from '../components/AnimatedPopup';
 import { CoinChip, CoinFlipAnimation } from '../components/CoinChip';
+import ModBadges from '../components/ModBadges';
 import '../components/CoinChip.css';
+import '../components/ModBadges.css';
 import './CoinflipPage.css';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -180,6 +182,7 @@ function PetTooltip({ item }) {
         <span className="pet-tip-badge badge-r">R</span>
       </div>
       <div className="pet-tip-name">{name}{qty > 1 ? ` ×${qty}` : ''}</div>
+      <ModBadges mods={item.mods} size={16} />
       <div className="pet-tip-val"><span className="cf-diamond-sm">💎</span> {(unitVal * qty).toLocaleString()}</div>
       <div className={`pet-tip-rarity rarity-${rarity}`}>{rarity.replace('_', ' ')}</div>
     </div>
@@ -1017,6 +1020,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
                     <div key={i} className="cf-view-item-row cf-tip-host" data-tip={item.name || item.itemName || 'Item'}>
                       <img src={item.image || item.imageUrl || '/default-item.png'} alt={item.name || 'item'} className="cf-view-item-icon" onError={(e) => { e.target.src = '/default-item.png'; }} />
                       <span className="cf-view-item-name">{item.name || item.itemName || 'Item'}{(item.quantity || 1) > 1 ? ` ×${item.quantity}` : ''}</span>
+                      <ModBadges mods={item.mods} size={15} />
                       <span className="cf-view-item-val"><span className="cf-diamond-sm">💎</span> {((item.value || 0) * (item.quantity || 1)).toLocaleString()}</span>
                       <span className="cf-tip-pop"><PetTooltip item={item} /></span>
                     </div>
@@ -1027,6 +1031,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
                     <div key={i} className="cf-view-item-row cf-tip-host" data-tip={item.name || item.itemName || 'Item'}>
                       <img src={item.image || item.imageUrl || '/default-item.png'} alt={item.name || 'item'} className="cf-view-item-icon" onError={(e) => { e.target.src = '/default-item.png'; }} />
                       <span className="cf-view-item-name">{item.name || item.itemName || 'Item'}{(item.quantity || 1) > 1 ? ` ×${item.quantity}` : ''}</span>
+                      <ModBadges mods={item.mods} size={15} />
                       <span className="cf-view-item-val"><span className="cf-diamond-sm">💎</span> {((item.value || 0) * (item.quantity || 1)).toLocaleString()}</span>
                       <span className="cf-tip-pop"><PetTooltip item={item} /></span>
                     </div>
@@ -1167,6 +1172,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
                             value: item.value || item.details?.value || 0,
                             quantity: 1,
                             rarity: item.rarity || item.details?.rarity || 'common',
+                            mods: item.mods || item.details?.mods || [],
                             image: item.details?.imageUrl || item.image || item.imageUrl
                           };
                           arr.push(
@@ -1177,6 +1183,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
                             >
                               <img src={item.details?.imageUrl || item.image || item.imageUrl || '/default-item.png'} alt="" className="cf-inv-img" onError={(e) => { e.target.src = '/default-item.png'; }} />
                               <div className="cf-inv-name">{item.details?.name || item.name}</div>
+                              <ModBadges mods={item.mods || item.details?.mods} size={15} />
                               <div className="cf-inv-val"><span className="cf-diamond-xs">💎</span>{(item.value || item.details?.value || 0).toLocaleString()}</div>
                               <span className="cf-tip-pop"><PetTooltip item={tileItem} /></span>
                             </div>
