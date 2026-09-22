@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Icon from '../components/Icon';
 
 const ProvablyFairPage = () => {
   const [activeTab, setActiveTab] = useState('coinflip');
@@ -18,9 +19,9 @@ const ProvablyFairPage = () => {
       const calculatedHash = btoa(combined).substring(0, 32); // Simple base64 encoding for demo
       
       if (calculatedHash === hash) {
-        setVerificationResult('✅ Verification successful! The game result is provably fair.');
+        setVerificationResult('VERIFIED_OK|Verification successful! The game result is provably fair.');
       } else {
-        setVerificationResult('❌ Verification failed! The game result may have been tampered with.');
+        setVerificationResult('VERIFIED_FAIL|Verification failed! The game result may have been tampered with.');
       }
     }
   };
@@ -205,11 +206,15 @@ const ProvablyFairPage = () => {
                 Verify Game
               </button>
             </div>
-            {verificationResult && (
-              <div className={`verification-result ${verificationResult.includes('✅') ? 'success' : 'error'}`}>
-                {verificationResult}
-              </div>
-            )}
+            {verificationResult && (() => {
+              const ok = verificationResult.startsWith('VERIFIED_OK|');
+              const text = verificationResult.split('|').slice(1).join('|');
+              return (
+                <div className={`verification-result ${ok ? 'success' : 'error'}`}>
+                  <Icon name={ok ? 'check' : 'close'} size={16} /> {text}
+                </div>
+              );
+            })()}
           </div>
         )}
       </div>

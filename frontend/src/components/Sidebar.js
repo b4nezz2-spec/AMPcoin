@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AnimatedPopup from './AnimatedPopup';
+import Icon from './Icon';
 
 const DEFAULT_AVATAR = '/default-avatar.png';
 
@@ -26,14 +27,14 @@ function Sidebar() {
   };
 
   const navItems = [
-    { path: '/coinflip', label: 'Coinflip', icon: '🪙' },
-    { path: '/jackpot', label: 'Jackpot', icon: '🎰' },
-    { path: '/trading', label: 'Trading', icon: '👀', disabled: true },
-    { action: 'values', label: 'Values', icon: '💎' },
+    { path: '/coinflip', label: 'Coinflip', icon: 'coin' },
+    { path: '/jackpot', label: 'Jackpot', icon: 'jackpot' },
+    { path: '/trading', label: 'Trading', icon: 'eye', disabled: true },
+    { action: 'values', label: 'Values', icon: 'diamond' },
   ];
 
   const adminItems = [
-    { path: '/admin', label: 'Admin Panel', icon: '⚙️' },
+    { path: '/admin', label: 'Admin Panel', icon: 'gear' },
   ];
 
   return (
@@ -41,7 +42,7 @@ function Sidebar() {
       <nav className="sidebar">
         <div className="sidebar-header">
           <Link to="/coinflip" className="sidebar-logo">
-            <span className="logo-icon">🔥</span>
+            <span className="logo-icon"><Icon name="fire" size={22} /></span>
             <span className="logo-text">AMPCOIN</span>
           </Link>
         </div>
@@ -54,7 +55,7 @@ function Sidebar() {
                 className="nav-link"
                 onClick={() => window.dispatchEvent(new CustomEvent('ampcoin:open-values'))}
               >
-                <span className="nav-icon">{item.icon}</span>
+                <span className="nav-icon"><Icon name={item.icon} size={18} /></span>
                 <span className="nav-label">{item.label}</span>
               </span>
             ) : item.disabled ? (
@@ -63,7 +64,7 @@ function Sidebar() {
                 className="nav-link nav-disabled"
                 onClick={() => handleDisabledClick(item.label)}
               >
-                <span className="nav-icon">{item.icon}</span>
+                <span className="nav-icon"><Icon name={item.icon} size={18} /></span>
                 <span className="nav-label">{item.label}</span>
               </span>
             ) : (
@@ -72,7 +73,7 @@ function Sidebar() {
                 to={item.path}
                 className={`nav-link ${location.pathname === item.path ? 'active' : ''}`}
               >
-                <span className="nav-icon">{item.icon}</span>
+                <span className="nav-icon"><Icon name={item.icon} size={18} /></span>
                 <span className="nav-label">{item.label}</span>
               </Link>
             )
@@ -88,7 +89,7 @@ function Sidebar() {
                 to={item.path}
                 className={`nav-link ${location.pathname === item.path ? 'active' : ''}`}
               >
-                <span className="nav-icon">{item.icon}</span>
+                <span className="nav-icon"><Icon name={item.icon} size={18} /></span>
                 <span className="nav-label">{item.label}</span>
               </Link>
             ))}
@@ -108,7 +109,7 @@ function Sidebar() {
               {user.isAdmin && <span className="admin-badge">Admin</span>}
             </div>
           </div>
-          <button className="logout-btn" onClick={logout} title="Log out">🚪</button>
+          <button className="logout-btn" onClick={logout} title="Log out"><Icon name="door" size={18} /></button>
         </div>
       </nav>
 

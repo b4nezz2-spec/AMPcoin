@@ -31,3 +31,18 @@ code {
 ::-webkit-scrollbar-thumb:hover {
   background: #00aaff;
 }
+
+/* Game-name font: Chakra Petch for logo, game tabs, and headings */
+.sidebar-logo .logo-text,
+.auth-logo-text,
+.cf-tab-label,
+.jp-tab,
+.cf-history-title,
+.vc-header h2,
+.jp-pot-value,
+.auth-title {
+  font-family: 'Chakra Petch', 'Segoe UI', sans-serif;
+  letter-spacing: 0.3px;
+}
+
+.amp-icon { display: inline-block; }

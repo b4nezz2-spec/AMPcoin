@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import AnimatedPopup from '../components/AnimatedPopup';
+import Icon from '../components/Icon';
 import './WalletPage.css';
 
 const WalletPage = () => {
@@ -277,7 +278,7 @@ const WalletPage = () => {
                                 }}
                               />
                             ) : (
-                              <div className="default-item-icon">💎</div>
+                              <div className="default-item-icon"><Icon name="diamond" size={24} /></div>
                             )}
                           </div>
                           <div className="item-details">
@@ -292,7 +293,7 @@ const WalletPage = () => {
                     })
                   ) : (
                     <div className="no-items-placeholder">
-                      <div className="empty-icon">🎒</div>
+                      <div className="empty-icon"><Icon name="bag" size={32} /></div>
                       <p className="no-items-text">No items in your inventory</p>
                       <p className="no-items-subtext">Start playing games to earn items!</p>
                     </div>

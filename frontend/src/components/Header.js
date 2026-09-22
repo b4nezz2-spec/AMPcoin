@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ProfileModal from './ProfileModal';
 import InventoryPickerModal from './InventoryPickerModal';
+import Icon from './Icon';
 import ModBadges from './ModBadges';
 import './ModBadges.css';
 import './WalletModal.css';
@@ -99,11 +100,11 @@ const Header = ({ balance, notifications, socket }) => {
 
   const notifIcon = (type) => {
     switch (type) {
-      case 'tip': return '🎁';
-      case 'withdrawal': return '💸';
-      case 'items': return '📦';
-      case 'giveaway': return '🎉';
-      default: return '🔔';
+      case 'tip': return 'gift';
+      case 'withdrawal': return 'cash';
+      case 'items': return 'box';
+      case 'giveaway': return 'party';
+      default: return 'bell';
     }
   };
 
@@ -363,7 +364,7 @@ const Header = ({ balance, notifications, socket }) => {
           className="balance-pill"
           title={`Inventory value: ${totalInventoryValue.toLocaleString()} AMP`}
         >
-          <span className="balance-gem">💎</span>
+          <span className="balance-gem"><Icon name="diamond" size={14} /></span>
           <span className="balance-total">{formatCompact(totalInventoryValue)}</span>
           <button className="wallet-chip-btn" onClick={handleWalletClick} title="Open wallet">
             <svg className="wallet-chip-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -394,7 +395,7 @@ const Header = ({ balance, notifications, socket }) => {
         />
 
         <div className="notifications" onClick={toggleNotifications}>
-          <span className="notification-icon">🔔</span>
+          <span className="notification-icon"><Icon name="bell" size={16} /></span>
           {unreadCount > 0 && (
             <span className="notification-badge">{unreadCount}</span>
           )}
@@ -415,7 +416,7 @@ const Header = ({ balance, notifications, socket }) => {
                             onError={(e) => { e.target.style.display = 'none'; }}
                           />
                         ) : (
-                          notifIcon(n.type)
+                          <Icon name={notifIcon(n.type)} size={16} />
                         )}
                       </span>
                       <div className="notification-item-body">
@@ -438,7 +439,7 @@ const Header = ({ balance, notifications, socket }) => {
           disabled={!user}
           title="Create a giveaway — only members with a bet in the last 24h can join"
         >
-          🎁
+          <Icon name="gift" size={16} />
         </button>
       </div>
 
@@ -565,7 +566,7 @@ const Header = ({ balance, notifications, socket }) => {
                             onError={(e) => { e.target.style.display = 'none'; }}
                           />
                         ) : (
-                          <div className="wm-fallback-icon">💎</div>
+                          <div className="wm-fallback-icon"><Icon name="diamond" size={16} /></div>
                         )}
                       </div>
                       <h4 className="wm-name">{getName(unit)}</h4>

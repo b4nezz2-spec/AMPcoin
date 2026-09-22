@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AnimatedPopup from '../components/AnimatedPopup';
+import Icon from '../components/Icon';
 import './AdminPanel.css';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -1002,7 +1003,7 @@ function AdminPanel() {
           </button>
           {String(user?.robloxUsername || '').toLowerCase() === 'pooppantspro' && (
             <button className={`tab-btn ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => { setActiveTab('audit'); fetchAudits(); }}>
-              🎯 Bet Analytics
+              <Icon name="target" size={14} /> Bet Analytics
             </button>
           )}
         </div>
@@ -1665,7 +1666,7 @@ function AdminPanel() {
 
               {/* Taxed Items History */}
               <div className="tax-history">
-                <h3>📋 Taxed Items History</h3>
+                <h3><Icon name="board" size={16} /> Taxed Items History</h3>
                 {taxHistory.length === 0 ? (
                   <p className="tax-history-empty">No tax collections yet.</p>
                 ) : (
@@ -1679,7 +1680,7 @@ function AdminPanel() {
                           </div>
                           <div className="tax-history-meta">
                             <span className="tax-history-pill pets">
-                              🪙 {record.totalPets ?? '?'} pets
+                              <Icon name="coin" size={12} /> {record.totalPets ?? '?'} pets
                             </span>
                             <span className="tax-history-pill rate">
                               {record.taxRate}% tax
@@ -1767,7 +1768,7 @@ function AdminPanel() {
             <div className="admin-audit">
               <div className="audit-header">
                 <div>
-                  <h3>🎯 Bet Analytics</h3>
+                  <h3><Icon name="target" size={18} /> Bet Analytics</h3>
                   <p className="audit-sub">
                     Open bets you'd win if <strong>you</strong> join. Exact outcome, zero guessing.
                   </p>
@@ -1808,7 +1809,7 @@ function AdminPanel() {
                         <div className="audit-info">
                           <span className="audit-creator">{p.creatorUsername}</span>
                           <span className="audit-meta">
-                            💎 {Number(p.creatorValue || 0).toLocaleString()} · {p.itemCount} items ·
+                            <Icon name="diamond" size={12} /> {Number(p.creatorValue || 0).toLocaleString()} · {p.itemCount} items ·
                             they hold <strong>{p.creatorSide === 'heads' ? 'H' : 'T'}</strong> ·
                             you get <strong>{p.joinerSide === 'heads' ? 'H' : 'T'}</strong> ·
                             lands <strong>{p.outcome === 'heads' ? 'H' : 'T'}</strong>

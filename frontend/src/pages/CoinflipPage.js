@@ -6,6 +6,7 @@ import LeaderboardModal from '../components/LeaderboardModal';
 import AnimatedPopup from '../components/AnimatedPopup';
 import { CoinChip, CoinFlipAnimation } from '../components/CoinChip';
 import ModBadges from '../components/ModBadges';
+import Icon from '../components/Icon';
 import '../components/CoinChip.css';
 import '../components/ModBadges.css';
 import './CoinflipPage.css';
@@ -184,7 +185,7 @@ function PetTooltip({ item }) {
       </div>
       <div className="pet-tip-name">{name}{qty > 1 ? ` ×${qty}` : ''}</div>
       <ModBadges mods={item.mods} size={16} />
-      <div className="pet-tip-val"><span className="cf-diamond-sm">💎</span> {(unitVal * qty).toLocaleString()}</div>
+      <div className="pet-tip-val"><span className="cf-diamond-sm"><Icon name="diamond" size={11} /></span> {(unitVal * qty).toLocaleString()}</div>
       <div className={`pet-tip-rarity rarity-${rarity}`}>{rarity.replace('_', ' ')}</div>
     </div>
   );
@@ -749,19 +750,19 @@ const CoinflipPage = ({ socket, setBalance }) => {
       <div className="cf-topbar">
         <div className="cf-topbar-tabs">
           <button className="cf-tab cf-tab-active">
-            <span className="cf-tab-label">🪙 Coinflip</span>
+            <span className="cf-tab-label"><Icon name="coin" size={12} /> Coinflip</span>
             <span className="cf-tab-count">{activeCount}</span>
           </button>
           <Link to="/jackpot" className="cf-tab">
-            <span className="cf-tab-label">🎰 Jackpot</span>
+            <span className="cf-tab-label"><Icon name="jackpot" size={12} /> Jackpot</span>
             <span className="cf-tab-count">{jackpotCount}</span>
           </Link>
           <span className="cf-tab-divider" />
           <button className="cf-tab cf-tab-disabled" disabled title="Coming soon">
-            <span className="cf-tab-label">🏪 Market</span>
+            <span className="cf-tab-label"><Icon name="shop" size={12} /> Market</span>
           </button>
           <button className="cf-tab cf-tab-disabled" disabled title="Coming soon">
-            <span className="cf-tab-label">🏁 Race</span>
+            <span className="cf-tab-label"><Icon name="flag" size={12} /> Race</span>
           </button>
         </div>
         <div className="cf-topbar-right">
@@ -779,11 +780,11 @@ const CoinflipPage = ({ socket, setBalance }) => {
             )}
           </div>
           <div className="cf-topbar-stat">
-            <span className="cf-dice-icon">🎲</span>
+            <span className="cf-dice-icon"><Icon name="dice" size={12} /></span>
             <span>{visibleGames.length}</span>
           </div>
           <div className="cf-topbar-stat">
-            <span className="cf-diamond-icon">💎</span>
+            <span className="cf-diamond-icon"><Icon name="diamond" size={12} /></span>
             <span>{formatCompact(totalInGames)}</span>
           </div>
           <button className="cf-topbar-btn cf-topbar-btn-gold" onClick={handleCreateBet}>
@@ -805,7 +806,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
       <div className="cf-lobby">
         {visibleGames.length === 0 ? (
           <div className="cf-empty">
-            <div className="cf-empty-icon">🪙</div>
+            <div className="cf-empty-icon"><Icon name="coin" size={12} /></div>
             <p>No active coinflips</p>
             <p className="cf-empty-sub">Create a bet to get started!</p>
           </div>
@@ -891,7 +892,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
                 {/* Value */}
                 <div className="cf-row-value">
                   <div className="cf-row-total">
-                    <span className="cf-diamond-sm">💎</span> {formatCompact(meta.total)}
+                    <span className="cf-diamond-sm"><Icon name="diamond" size={11} /></span> {formatCompact(meta.total)}
                   </div>
                   <div className="cf-row-range">
                     {formatCompact(meta.creatorVal)} - {formatCompact(meta.oppVal || meta.creatorVal)}
@@ -991,11 +992,11 @@ const CoinflipPage = ({ socket, setBalance }) => {
               <div className="cf-view-panels">
                 <div className="cf-view-panel">
                   <span className="cf-panel-pct">{sidePct(meta.creatorVal, meta.total)}</span>
-                  <span className="cf-panel-val"><span className="cf-diamond-sm">💎</span> {meta.creatorVal.toLocaleString()}</span>
+                  <span className="cf-panel-val"><span className="cf-diamond-sm"><Icon name="diamond" size={11} /></span> {meta.creatorVal.toLocaleString()}</span>
                 </div>
                 <div className="cf-view-panel">
                   <span className="cf-panel-pct">{sidePct(meta.oppVal, meta.total)}</span>
-                  <span className="cf-panel-val"><span className="cf-diamond-sm">💎</span> {meta.oppVal.toLocaleString()}</span>
+                  <span className="cf-panel-val"><span className="cf-diamond-sm"><Icon name="diamond" size={11} /></span> {meta.oppVal.toLocaleString()}</span>
                 </div>
               </div>
 
@@ -1007,7 +1008,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
                       <img src={item.image || item.imageUrl || '/default-item.png'} alt={item.name || 'item'} className="cf-view-item-icon" onError={(e) => { e.target.src = '/default-item.png'; }} />
                       <span className="cf-view-item-name">{item.name || item.itemName || 'Item'}{(item.quantity || 1) > 1 ? ` ×${item.quantity}` : ''}</span>
                       <ModBadges mods={item.mods} size={15} />
-                      <span className="cf-view-item-val"><span className="cf-diamond-sm">💎</span> {((item.value || 0) * (item.quantity || 1)).toLocaleString()}</span>
+                      <span className="cf-view-item-val"><span className="cf-diamond-sm"><Icon name="diamond" size={11} /></span> {((item.value || 0) * (item.quantity || 1)).toLocaleString()}</span>
                       <span className="cf-tip-pop"><PetTooltip item={item} /></span>
                     </div>
                   )) : <div className="cf-view-noitems">No items</div>}
@@ -1018,7 +1019,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
                       <img src={item.image || item.imageUrl || '/default-item.png'} alt={item.name || 'item'} className="cf-view-item-icon" onError={(e) => { e.target.src = '/default-item.png'; }} />
                       <span className="cf-view-item-name">{item.name || item.itemName || 'Item'}{(item.quantity || 1) > 1 ? ` ×${item.quantity}` : ''}</span>
                       <ModBadges mods={item.mods} size={15} />
-                      <span className="cf-view-item-val"><span className="cf-diamond-sm">💎</span> {((item.value || 0) * (item.quantity || 1)).toLocaleString()}</span>
+                      <span className="cf-view-item-val"><span className="cf-diamond-sm"><Icon name="diamond" size={11} /></span> {((item.value || 0) * (item.quantity || 1)).toLocaleString()}</span>
                       <span className="cf-tip-pop"><PetTooltip item={item} /></span>
                     </div>
                   )) : <div className="cf-view-waiting">Waiting for the opponent to join...</div>}
@@ -1028,7 +1029,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
               {/* Completed result line */}
               {isCompleted && (
                 <div className="cf-view-result-text">
-                  🏆 <strong>{viewBet.winnerUsername || 'Someone'}</strong> won <span className="cf-highlight">{meta.total.toLocaleString()} AMP</span>
+                  <Icon name="trophy" size={12} /> <strong>{viewBet.winnerUsername || 'Someone'}</strong> won <span className="cf-highlight">{meta.total.toLocaleString()} AMP</span>
                 </div>
               )}
 
@@ -1084,7 +1085,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
                       </div>
                     </div>
                     <div className="cf-join-vs-total">
-                      <span className="cf-diamond-sm">💎</span> {formatCompact(meta.total)}
+                      <span className="cf-diamond-sm"><Icon name="diamond" size={11} /></span> {formatCompact(meta.total)}
                       <span className="cf-join-vs-sub">{meta.thumbs.length} items in pot</span>
                     </div>
                   </div>
@@ -1102,7 +1103,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
                             onError={(e) => { e.target.src = '/default-item.png'; }}
                           />
                           <span className="cf-join-bet-item-name">{item.name || item.itemName || 'Item'}{(item.quantity || 1) > 1 ? ` ×${item.quantity}` : ''}</span>
-                          <span className="cf-join-bet-item-val"><span className="cf-diamond-sm">💎</span> {Number(item.value || 0).toLocaleString()}</span>
+                          <span className="cf-join-bet-item-val"><span className="cf-diamond-sm"><Icon name="diamond" size={11} /></span> {Number(item.value || 0).toLocaleString()}</span>
                         </div>
                       ))}
                       {(!selectedBet.creatorItems || selectedBet.creatorItems.length === 0) && (
@@ -1117,7 +1118,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
                       <img src={meta.creatorAvatar} alt="" className="cf-join-pcard-avatar" onError={(e) => { e.target.src = '/default-avatar.png'; }} />
                       <div className="cf-join-pcard-info">
                         <span className="cf-join-pcard-name">{meta.creatorName}</span>
-                        <span className="cf-join-pcard-val"><span className="cf-diamond-sm">💎</span> {meta.creatorVal.toLocaleString()}</span>
+                        <span className="cf-join-pcard-val"><span className="cf-diamond-sm"><Icon name="diamond" size={11} /></span> {meta.creatorVal.toLocaleString()}</span>
                       </div>
                       <span className="cf-join-pcard-pct">{sidePct(meta.creatorVal, meta.total)}</span>
                     </div>
@@ -1125,7 +1126,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
                       <img src={user?.avatar || '/default-avatar.png'} alt="" className="cf-join-pcard-avatar" onError={(e) => { e.target.src = '/default-avatar.png'; }} />
                       <div className="cf-join-pcard-info">
                         <span className="cf-join-pcard-name">{user?.robloxDisplayName || user?.displayName || 'You'}</span>
-                        <span className="cf-join-pcard-val"><span className="cf-diamond-sm">💎</span> {totalVal.toLocaleString()}</span>
+                        <span className="cf-join-pcard-val"><span className="cf-diamond-sm"><Icon name="diamond" size={11} /></span> {totalVal.toLocaleString()}</span>
                       </div>
                       <span className="cf-join-pcard-pct">{totalVal > 0 ? sidePct(totalVal, meta.total) : '0.00%'}</span>
                     </div>
@@ -1169,7 +1170,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
                               <img src={item.details?.imageUrl || item.image || item.imageUrl || '/default-item.png'} alt="" className="cf-inv-img" onError={(e) => { e.target.src = '/default-item.png'; }} />
                               <div className="cf-inv-name">{item.details?.name || item.name}</div>
                               <ModBadges mods={item.mods || item.details?.mods} size={15} />
-                              <div className="cf-inv-val"><span className="cf-diamond-xs">💎</span>{(item.value || item.details?.value || 0).toLocaleString()}</div>
+                              <div className="cf-inv-val"><span className="cf-diamond-xs"><Icon name="diamond" size={10} /></span>{(item.value || item.details?.value || 0).toLocaleString()}</div>
                               <span className="cf-tip-pop"><PetTooltip item={tileItem} /></span>
                             </div>
                           );
@@ -1184,7 +1185,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
                             >
                               <div className="cf-inv-extra-num">+{extra}</div>
                               <div className="cf-inv-name">{item.details?.name || item.name}</div>
-                              <div className="cf-inv-val"><span className="cf-diamond-xs">💎</span>{(item.value || item.details?.value || 0).toLocaleString()}</div>
+                              <div className="cf-inv-val"><span className="cf-diamond-xs"><Icon name="diamond" size={10} /></span>{(item.value || item.details?.value || 0).toLocaleString()}</div>
                             </div>
                           );
                         }
@@ -1302,7 +1303,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
                               title="View game"
                               onClick={() => { setShowHistory(false); setViewBet(bet); }}
                             >
-                              👁
+                              <Icon name="eye" size={12} />
                             </button>
                           </div>
                         );

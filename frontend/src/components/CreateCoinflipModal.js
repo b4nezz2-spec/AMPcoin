@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import AnimatedPopup from './AnimatedPopup';
 import { CoinChip } from './CoinChip';
 import ModBadges from './ModBadges';
+import Icon from './Icon';
 import './CoinChip.css';
 import './ModBadges.css';
 import '../pages/CoinflipPage.css';
@@ -201,7 +202,7 @@ const CreateCoinflipModal = ({ onClose, onCreated, userId, socket, setBalance, u
             <div className="cf-join-vs-head">
               <span className="cf-join-vs-label">CREATE BET</span>
               <div className="cf-join-vs-total">
-                <span className="cf-diamond-sm">💎</span> {getTotalValue().toLocaleString()}
+                <span className="cf-diamond-sm"><Icon name="diamond" size={11} /></span> {getTotalValue().toLocaleString()}
                 <span className="cf-join-vs-sub">{selectedCount} items selected</span>
               </div>
             </div>
@@ -306,7 +307,7 @@ const CreateCoinflipModal = ({ onClose, onCreated, userId, socket, setBalance, u
                         onError={(e) => { e.target.src = '/default-item.png'; }}
                       />
                       <span className="cf-join-bet-item-name">{item.details?.name || item.name}{qty > 1 ? ` ×${qty}` : ''}</span>
-                      <span className="cf-join-bet-item-val"><span className="cf-diamond-sm">💎</span> {((item.value || item.details?.value || 0) * qty).toLocaleString()}</span>
+                      <span className="cf-join-bet-item-val"><span className="cf-diamond-sm"><Icon name="diamond" size={11} /></span> {((item.value || item.details?.value || 0) * qty).toLocaleString()}</span>
                       <button className="cf-bet-item-x" onClick={() => clearStack(stackKeyOf(item))} title="Remove">×</button>
                     </div>
                   ))
@@ -379,7 +380,7 @@ const CreateCoinflipModal = ({ onClose, onCreated, userId, socket, setBalance, u
                       />
                       <div className="cf-inv-name">{item.details?.name || item.name}</div>
                       <ModBadges mods={item.mods || item.details?.mods} size={15} />
-                      <div className="cf-inv-val"><span className="cf-diamond-xs">💎</span>{(item.value || item.details?.value || 0).toLocaleString()}</div>
+                      <div className="cf-inv-val"><span className="cf-diamond-xs"><Icon name="diamond" size={10} /></span>{(item.value || item.details?.value || 0).toLocaleString()}</div>
                     </div>
                   );
                 });
@@ -395,7 +396,7 @@ const CreateCoinflipModal = ({ onClose, onCreated, userId, socket, setBalance, u
         <div className="cf-join-bottom">
           <div className="cf-join-bottom-left">
             <span className="cf-join-selected-info">
-              {selectedCount} items · <span className="cf-diamond-sm">💎</span> {getTotalValue().toLocaleString()} AMP
+              {selectedCount} items · <span className="cf-diamond-sm"><Icon name="diamond" size={11} /></span> {getTotalValue().toLocaleString()} AMP
             </span>
           </div>
           <div className="cf-join-bottom-right">

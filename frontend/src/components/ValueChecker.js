@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import Icon from './Icon';
 import './ValueChecker.css';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -85,7 +86,7 @@ const ValueChecker = ({ isOpen, onClose }) => {
         </div>
 
         <div className="vc-search-wrap">
-          <span className="vc-search-icon">🔍</span>
+          <span className="vc-search-icon"><Icon name="search" size={14} /></span>
           <input
             type="text"
             className="vc-search"
@@ -168,13 +169,13 @@ const ValueChecker = ({ isOpen, onClose }) => {
                           </div>
                         </td>
                         <td className="vc-val-cell">
-                          <span className="vc-diamond">💎</span> {normalVal.toLocaleString()}
+                          <span className="vc-diamond"><Icon name="diamond" size={12} /></span> {normalVal.toLocaleString()}
                         </td>
                         <td className="vc-val-cell">
-                          <span className="vc-diamond">💎</span> {neonVal.toLocaleString()}
+                          <span className="vc-diamond"><Icon name="diamond" size={12} /></span> {neonVal.toLocaleString()}
                         </td>
                         <td className="vc-val-cell">
-                          <span className="vc-diamond">💎</span> {megaVal.toLocaleString()}
+                          <span className="vc-diamond"><Icon name="diamond" size={12} /></span> {megaVal.toLocaleString()}
                         </td>
                       </tr>
                     );

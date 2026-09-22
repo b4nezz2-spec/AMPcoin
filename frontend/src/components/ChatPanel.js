@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import ProfileModal from './ProfileModal';
+import Icon from './Icon';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 const DEFAULT_AVATAR = '/default-avatar.png';
@@ -95,13 +96,13 @@ const GiveawayCard = ({ msg, user, onJoin, joining }) => {
     if (isCreator) {
       action = <div className="gw-join-big locked">Waiting for timer... {(gw.entries || []).length} joined</div>;
     } else if (joined) {
-      action = <div className="gw-join-big joined">✓ Joined</div>;
+      action = <div className="gw-join-big joined"><Icon name="check" size={14} /> Joined</div>;
     } else if (!eligible) {
-      action = <div className="gw-join-big locked">🔒 Need 1 bet in the last 24h to join</div>;
+      action = <div className="gw-join-big locked"><Icon name="lock" size={14} /> Need 1 bet in the last 24h to join</div>;
     } else {
       action = (
         <button className="gw-join-big" onClick={() => onJoin(gw.id)} disabled={joining}>
-          🎁 Join
+          <Icon name="gift" size={16} /> Join
         </button>
       );
     }
@@ -110,8 +111,8 @@ const GiveawayCard = ({ msg, user, onJoin, joining }) => {
   return (
     <div className={`gw-card ${isOpen ? '' : 'ended'}`}>
       <div className="gw-header">
-        <span className="gw-title">🎁 Giveaway</span>
-        {isOpen && <span className="gw-timer">⏱ {timerText}</span>}
+        <span className="gw-title"><Icon name="gift" size={16} /> Giveaway</span>
+        {isOpen && <span className="gw-timer"><Icon name="history" size={14} /> {timerText}</span>}
       </div>
       <div className="gw-body">
         <img
@@ -138,7 +139,7 @@ const GiveawayCard = ({ msg, user, onJoin, joining }) => {
       </div>
       {gw.status === 'ended' ? (
         gw.winnerId ? (
-          <div className="gw-winner-banner">🏆 Winner: {gw.winnerName}</div>
+          <div className="gw-winner-banner"><Icon name="trophy" size={16} /> Winner: {gw.winnerName}</div>
         ) : (
           <div className="gw-refund-banner">No entries — item returned to {gw.creatorName}</div>
         )
@@ -176,12 +177,12 @@ const GiveawayBanner = ({ giveaway, user, onJoin, joining }) => {
       <div className="gw-banner-left">
         {itemImg && <img src={itemImg} alt={itemName} className="gw-banner-thumb" />}
         <div className="gw-banner-info">
-          <span className="gw-banner-title">🎁 GIVEAWAY</span>
+          <span className="gw-banner-title"><Icon name="gift" size={14} /> GIVEAWAY</span>
           <span className="gw-banner-item">{itemName}</span>
         </div>
       </div>
       <div className="gw-banner-center">
-        <span className="gw-banner-timer">{isOpen ? `⏱ ${timerText}` : '🔒 Ended'}</span>
+        <span className="gw-banner-timer">{isOpen ? <><Icon name="history" size={14} /> {timerText}</> : <><Icon name="lock" size={14} /> Ended</>}</span>
         <span className="gw-banner-entries">{(gw.entries || []).length} joined</span>
       </div>
       <div className="gw-banner-right">
@@ -189,9 +190,9 @@ const GiveawayBanner = ({ giveaway, user, onJoin, joining }) => {
           isCreator ? (
             <span className="gw-banner-status">Yours</span>
           ) : joined ? (
-            <span className="gw-banner-status joined">✓ Joined</span>
+            <span className="gw-banner-status joined"><Icon name="check" size={14} /> Joined</span>
           ) : !eligible ? (
-            <span className="gw-banner-status locked">🔒 Locked</span>
+            <span className="gw-banner-status locked"><Icon name="lock" size={14} /> Locked</span>
           ) : (
             <button
               className="gw-banner-join"
@@ -600,7 +601,7 @@ const ChatPanel = ({ socket, chatOpen }) => {
   return (
     <div className={`chat-panel ${chatOpen ? 'chat-open' : ''}`}>
       <div className="chat-header">
-        <h3 className="chat-title">💬 Live Chat</h3>
+        <h3 className="chat-title"><Icon name="chat" size={16} /> Live Chat</h3>
         <div className="chat-stats">
           <span className="online-dot" />
           <span className="online-count">{onlineUsers} online</span>
@@ -620,14 +621,14 @@ const ChatPanel = ({ socket, chatOpen }) => {
         {/* Winner announcement banner (stays 5 min after draw) */}
         {winnerBanner && (
           <div className="gw-winner-banner">
-            🎉 <strong>{winnerBanner.winnerName}</strong> won{' '}
+            <Icon name="party" size={16} /> <strong>{winnerBanner.winnerName}</strong> won{' '}
             <strong>{winnerBanner.itemName}</strong> from{' '}
             {winnerBanner.creatorName}'s giveaway!
           </div>
         )}
 
         {messages.length === 0 && !activeGiveaway ? (
-          <div className="chat-empty">No messages yet. Say hello! 👋</div>
+          <div className="chat-empty">No messages yet. Say hello! <Icon name="wave" size={16} /></div>
         ) : (
           messages.map((msg, idx) => {
             if (msg.type === 'giveaway') {
@@ -649,7 +650,7 @@ const ChatPanel = ({ socket, chatOpen }) => {
             }
             if (msg.type === 'giveaway_error') {
               return (
-                <div key={msg.id || idx} className="gw-error-line">⚠ {msg.message}</div>
+                <div key={msg.id || idx} className="gw-error-line"><Icon name="warn" size={14} /> {msg.message}</div>
               );
             }
             const resolved = getResolved(msg);
@@ -731,7 +732,7 @@ const ChatPanel = ({ socket, chatOpen }) => {
             </>
           ) : (
             <>
-              <span className="send-icon">➤</span>
+              <span className="send-icon"><Icon name="send" size={16} /></span>
               <span className="send-text">Send</span>
             </>
           )}

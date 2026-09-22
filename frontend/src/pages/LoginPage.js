@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Icon from '../components/Icon';
 import './AuthPage.css';
 
 const LoginPage = () => {
@@ -72,7 +73,7 @@ const LoginPage = () => {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-logo">
-          <span className="auth-logo-fire">🔥</span>
+          <span className="auth-logo-fire"><Icon name="fire" size={22} /></span>
           <span className="auth-logo-text">AMPCOIN</span>
         </div>
 
@@ -109,7 +110,7 @@ const LoginPage = () => {
 
             <div className="auth-code-box" onClick={copyCode} title="Click to copy">
               <span className="auth-code">{code}</span>
-              <span className="auth-copy">📋</span>
+              <span className="auth-copy"><Icon name="board" size={14} /></span>
             </div>
 
             <ol className="auth-steps">

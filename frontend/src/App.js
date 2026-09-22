@@ -19,6 +19,7 @@ import ChatPanel from './components/ChatPanel';
 import ValueChecker from './components/ValueChecker';
 import AuthProvider, { useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import Icon from './components/Icon';
 
 const BACKEND_URL = process.env.REACT_APP_API_URL || 'https://ampcoin-50q9kxt9.b4a.run';
 const socket = io(BACKEND_URL, {
@@ -34,8 +35,8 @@ function TopNav() {
   const openValues = () => window.dispatchEvent(new CustomEvent('ampcoin:open-values'));
   return (
     <nav className="top-nav">
-      <span className="top-nav-item" onClick={openValues}>💎 Values</span>
-      <a href="/leaderboard">🏆 Leaderboard</a>
+      <span className="top-nav-item" onClick={openValues}><Icon name="diamond" size={14} /> Values</span>
+      <a href="/leaderboard"><Icon name="trophy" size={14} /> Leaderboard</a>
     </nav>
   );
 }
@@ -126,7 +127,7 @@ function AppContent() {
           onClick={() => setMobileChatOpen((v) => !v)}
           aria-label="Toggle chat"
         >
-          {mobileChatOpen ? '✕' : '💬'}
+          {mobileChatOpen ? '✕' : <Icon name="chat" size={18} />}
         </button>
       )}
       <ValueChecker isOpen={valuesOpen} onClose={() => setValuesOpen(false)} />

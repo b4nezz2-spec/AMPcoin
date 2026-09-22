@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import AnimatedPopup from '../components/AnimatedPopup';
+import Icon from '../components/Icon';
 import './JackpotPage.css';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -189,10 +190,10 @@ const JackpotPage = ({ socket, setBalance }) => {
       {/* Top Tabs */}
       <div className="jp-tabs">
         <button className={`jp-tab ${activeTab === 'active' ? 'active' : ''}`} onClick={() => setActiveTab('active')}>
-          🎰 Jackpot {jackpot?.entries?.length ? `(${jackpot.entries.length})` : ''}
+          <Icon name="jackpot" size={15} /> Jackpot {jackpot?.entries?.length ? `(${jackpot.entries.length})` : ''}
         </button>
         <button className={`jp-tab ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>
-          📜 History
+          <Icon name="board" size={15} /> History
         </button>
       </div>
 
@@ -203,7 +204,7 @@ const JackpotPage = ({ socket, setBalance }) => {
             <div className="jp-wheel">
               <div className="jp-wheel-inner">
                 <div className="jp-pot-value">
-                  <span className="jp-diamond">💎</span> {totalPotValue.toLocaleString()}
+                  <span className="jp-diamond"><Icon name="diamond" size={16} /></span> {totalPotValue.toLocaleString()}
                 </div>
                 <div className="jp-pot-info">
                   {jackpot?.entries?.length || 0} players · {timer !== null ? `${timer}s` : 'Waiting...'}
@@ -253,7 +254,7 @@ const JackpotPage = ({ socket, setBalance }) => {
                   <div className="jp-player-info">
                     <span className="jp-player-name">{entry.username}</span>
                     <span className="jp-player-value">
-                      💎 {entry.value.toLocaleString()} · {entry.itemCount} items
+                      <Icon name="diamond" size={12} /> {entry.value.toLocaleString()} · {entry.itemCount} items
                     </span>
                   </div>
                   <span className="jp-player-chance">
@@ -272,7 +273,7 @@ const JackpotPage = ({ socket, setBalance }) => {
             <div className="jp-select-actions">
               <button className="jp-btn-secondary" onClick={selectAll}>Select All</button>
               <button className="jp-btn-secondary" onClick={() => setSelectedItems([])}>Clear</button>
-              <span className="jp-selected-value">💎 {selectedValue.toLocaleString()}</span>
+              <span className="jp-selected-value"><Icon name="diamond" size={13} /> {selectedValue.toLocaleString()}</span>
             </div>
             <div className="jp-inventory-grid">
               {inventory.length > 0 ? inventory.map((item) => {
@@ -282,7 +283,7 @@ const JackpotPage = ({ socket, setBalance }) => {
                     key={item.itemId}
                     className={`jp-inv-tile ${isSelected ? 'selected' : ''}`}
                     onClick={() => toggleItem(item)}
-                    title={`${item.name} — 💎 ${(item.value || 0).toLocaleString()}`}
+                    title={`${item.name} — ${(item.value || 0).toLocaleString()} AMP`}
                   >
                     <img
                       src={item.imageUrl || item.image || '/default-item.png'}
@@ -290,7 +291,7 @@ const JackpotPage = ({ socket, setBalance }) => {
                       onError={(e) => { e.target.src = '/default-item.png'; }}
                     />
                     <span className="jp-inv-name">{item.name}</span>
-                    <span className="jp-inv-value">💎 {(item.value || 0).toLocaleString()}</span>
+                    <span className="jp-inv-value"><Icon name="diamond" size={11} /> {(item.value || 0).toLocaleString()}</span>
                   </div>
                 );
               }) : (
@@ -316,7 +317,7 @@ const JackpotPage = ({ socket, setBalance }) => {
           {history.length > 0 ? history.map((jp) => (
             <div key={jp.id} className="jp-history-item">
               <div className="jp-history-winner">
-                🏆 {jp.winnerUsername || 'Unknown'} won 💎 {(jp.totalValue || 0).toLocaleString()}
+                <Icon name="trophy" size={14} /> {jp.winnerUsername || 'Unknown'} won <Icon name="diamond" size={12} /> {(jp.totalValue || 0).toLocaleString()}
               </div>
               <div className="jp-history-details">
                 {jp.playerCount} players · {jp.entries?.reduce((s, e) => s + e.itemCount, 0) || 0} items

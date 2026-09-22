@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
+import Icon from '../components/Icon';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 const DEFAULT_AVATAR = '/default-avatar.png';
@@ -147,7 +148,7 @@ const ProfilePage = () => {
             disabled={refreshing || !profile.robloxUsername}
             style={{ marginRight: '10px' }}
           >
-            {refreshing ? '🔄 Refreshing...' : '🔄 Refresh from Roblox'}
+            {refreshing ? <><Icon name="refresh" size={14} /> Refreshing...</> : <><Icon name="refresh" size={14} /> Refresh from Roblox</>}
           </button>
           <button className="btn btn-primary" onClick={handleEditToggle}>
             {editing ? 'Cancel' : 'Edit Profile'}
