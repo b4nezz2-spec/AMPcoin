@@ -366,14 +366,24 @@ const Header = ({ balance, notifications, socket }) => {
         >
           <span className="balance-gem"><Icon name="diamond" size={14} /></span>
           <span className="balance-total">{formatCompact(totalInventoryValue)}</span>
-          <button className="wallet-chip-btn" onClick={handleWalletClick} title="Open wallet">
-            <svg className="wallet-chip-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 7H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1z" fill="currentColor" stroke="none" opacity="0.95" />
-              <path d="M3 7V6a2 2 0 0 1 2-2h14" />
-              <circle cx="17" cy="13.5" r="1.2" fill="#0b5ed7" stroke="none" />
-            </svg>
-          </button>
         </div>
+        <button className="header-wallet-btn" onClick={handleWalletClick} title="Open wallet">
+          <Icon name="wallet" size={14} /> Wallet
+        </button>
+        <button
+          className="header-deposit-btn"
+          onClick={() => setTradeModal({ kind: 'deposit' })}
+          title="Deposit items via trade bot"
+        >
+          <Icon name="plus" size={13} /> Deposit
+        </button>
+        <button
+          className="header-withdraw-btn"
+          onClick={handleWalletClick}
+          title="Withdraw items to your Roblox account"
+        >
+          Withdraw
+        </button>
       </div>
 
       <div className="header-right">

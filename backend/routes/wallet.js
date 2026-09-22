@@ -3,6 +3,7 @@ const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { authenticateToken } = require('../middleware/auth');
 const dbManager = require('../db/dbHelper');
+const { addNotification } = require('../notificationService');
 
 // Public bot info for withdrawals (bot username + join link from admin settings)
 router.get('/bot', (req, res) => {
@@ -146,6 +147,23 @@ router.post('/withdraw-items', authenticateToken, (req, res) => {
     // Real-time: notify user inventory changed
     const { emitToAll } = require('../realtime');
     emitToAll('inventoryUpdate', { userId });
+
+    // Notify all admins of the withdrawal request
+    try {
+      const admins = (usersDb.users || []).filter((u) => u.isAdmin && u.id !== userId);
+      const who = user.displayName || user.robloxDisplayName || user.robloxUsername || 'Someone';
+      for (const admin of admins) {
+        addNotification({
+          userId: admin.id,
+          type: 'withdrawal',
+          title: 'Withdrawal request',
+          message: `${who} requested withdrawal of ${itemWithdrawal.items.length} item(s) worth ${Number(itemWithdrawal.totalValue || 0).toLocaleString()} AMP`,
+          imageUrl: ''
+        });
+      }
+    } catch (e) {
+      console.error('Admin withdraw notify failed:', e.message);
+    }
 
     res.json({
       message: 'Item withdrawal request submitted successfully',
