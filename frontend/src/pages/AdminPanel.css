@@ -777,6 +777,14 @@
   color: #8b949e;
 }
 
+.displayname-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.displayname-row .form-control { flex: 1; }
+
 .danger-zone { margin-bottom: 12px; }
 
 .give-mods {

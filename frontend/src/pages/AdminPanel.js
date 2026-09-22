@@ -73,6 +73,8 @@ function AdminPanel() {
   const [statusActions, setStatusActions] = useState({});
   const [selectedPetIds, setSelectedPetIds] = useState([]);
   const [giveMods, setGiveMods] = useState([]);
+  const [editDisplayName, setEditDisplayName] = useState('');
+  const [savingName, setSavingName] = useState(false);
   const [addUserQty, setAddUserQty] = useState(1);
   const [addUserBusy, setAddUserBusy] = useState(false);
   const [modBusyId, setModBusyId] = useState(null);
@@ -660,6 +662,7 @@ function AdminPanel() {
 
   const handleViewUserPets = async (usr) => {
     setSelectedUser(usr);
+    setEditDisplayName(usr.displayName || usr.robloxDisplayName || '');
     try {
       const response = await retryRequest(() =>
         fetch(`${API_BASE}/api/users/inventory/${usr.id}`, {
@@ -683,6 +686,41 @@ function AdminPanel() {
       console.error('Error fetching user pets:', err);
       setUserPets([]);
       setError(`Error fetching user pets: ${err.message}`);
+    }
+  };
+
+  const handleSaveDisplayName = async () => {
+    if (!selectedUser || savingName) return;
+    const name = editDisplayName.trim();
+    if (!name) {
+      setError('Display name cannot be empty');
+      return;
+    }
+    setSavingName(true);
+    try {
+      const response = await retryRequest(() =>
+        fetch(`${API_BASE}/api/users/${selectedUser.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({ displayName: name })
+        })
+      );
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) {
+        const patch = { displayName: data.displayName || name, robloxDisplayName: data.displayName || name };
+        setSelectedUser((prev) => (prev ? { ...prev, ...patch } : prev));
+        setUsers((prev) => prev.map((u) => (u.id === selectedUser.id ? { ...u, ...patch } : u)));
+        showCustomPopup(`Display name set to ${name}`, 'success');
+      } else {
+        setError(data.message || 'Failed to update display name');
+      }
+    } catch (err) {
+      setError(`Error updating display name: ${err.message}`);
+    } finally {
+      setSavingName(false);
     }
   };
 
@@ -1223,6 +1261,23 @@ function AdminPanel() {
               {selectedUser && (
                 <div className="user-pets-section">
                   <h3>Inventory for {displayUser(selectedUser)}</h3>
+                  <div className="displayname-row">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Display name"
+                      value={editDisplayName}
+                      onChange={(e) => setEditDisplayName(e.target.value)}
+                      maxLength={32}
+                    />
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      onClick={handleSaveDisplayName}
+                      disabled={savingName}
+                    >
+                      {savingName ? 'Saving...' : 'Set Name'}
+                    </button>
+                  </div>
                   <div className="inventory-grid">
                     {userPets.length > 0 ? (
                       userPets.map((item) => (
