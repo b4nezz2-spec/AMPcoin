@@ -370,20 +370,6 @@ const Header = ({ balance, notifications, socket }) => {
         <button className="header-wallet-btn" onClick={handleWalletClick} title="Open wallet">
           <Icon name="wallet" size={14} /> Wallet
         </button>
-        <button
-          className="header-deposit-btn"
-          onClick={() => setTradeModal({ kind: 'deposit' })}
-          title="Deposit items via trade bot"
-        >
-          <Icon name="plus" size={13} /> Deposit
-        </button>
-        <button
-          className="header-withdraw-btn"
-          onClick={handleWalletClick}
-          title="Withdraw items to your Roblox account"
-        >
-          Withdraw
-        </button>
       </div>
 
       <div className="header-right">
@@ -594,7 +580,14 @@ const Header = ({ balance, notifications, socket }) => {
                 {selectedUnits.length === unitTiles.length && unitTiles.length > 0 ? 'Deselect All' : 'Select All'}
               </button>
               <button
-                className="wm-btn"
+                className="wm-btn wm-btn-deposit"
+                onClick={() => setTradeModal({ kind: 'deposit' })}
+                title="Deposit items via trade bot"
+              >
+                <Icon name="plus" size={12} /> Deposit
+              </button>
+              <button
+                className="wm-btn wm-btn-withdraw"
                 onClick={handleWithdraw}
                 disabled={selectedUnits.length === 0 || withdrawBusy}
               >

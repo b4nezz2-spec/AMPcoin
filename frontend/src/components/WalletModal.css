@@ -270,6 +270,11 @@
   color: #58a6ff;
 }
 
+.wm-btn-deposit { border-color: rgba(63, 185, 80, 0.5) !important; }
+.wm-btn-deposit:hover:not(:disabled) { border-color: #3fb950 !important; color: #3fb950 !important; background: rgba(63, 185, 80, 0.08) !important; }
+.wm-btn-withdraw { border-color: rgba(240, 136, 0, 0.5) !important; }
+.wm-btn-withdraw:hover:not(:disabled) { border-color: #f08800 !important; color: #f08800 !important; background: rgba(240, 136, 0, 0.08) !important; }
+
 @media (max-width: 768px) {
   .wm-grid { grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)) !important; }
   .wm-filters { flex-wrap: wrap; }

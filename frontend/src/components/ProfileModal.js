@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import InventoryPickerModal from './InventoryPickerModal';
 import Icon from './Icon';
 import './ProfileModal.css';
@@ -152,7 +153,7 @@ const ProfileModal = ({ viewer, profileUser, isOwn, socket, onClose }) => {
     { label: 'LOST', value: formatCompact(stats.lost), cls: '' }
   ];
 
-  return (
+  return createPortal(
     <div className="profile-modal-overlay" onClick={onClose}>
       <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
         <div className="profile-banner">
@@ -215,7 +216,8 @@ const ProfileModal = ({ viewer, profileUser, isOwn, socket, onClose }) => {
           />
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

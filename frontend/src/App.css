@@ -218,12 +218,11 @@ body {
   align-items: center;
   gap: 14px;
   padding: 10px 20px;
-  background: rgba(13, 17, 23, 0.92);
+  background: #0d1117;
   border-bottom: 1px solid #161b22;
   position: sticky;
   top: 56px;
   z-index: 900;
-  backdrop-filter: blur(8px);
   flex-wrap: wrap;
 }
 
@@ -285,26 +284,6 @@ body {
   transform: translateY(-1px);
   box-shadow: 0 4px 14px rgba(0, 170, 255, 0.45);
 }
-
-.header-deposit-btn,
-.header-withdraw-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 14px;
-  border-radius: 8px;
-  border: 1px solid #30363d;
-  background: #21262d;
-  color: #e6edf3;
-  font-size: 0.8rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-}
-
-.header-deposit-btn:hover { border-color: #3fb950; color: #3fb950; }
-.header-withdraw-btn:hover { border-color: #f08800; color: #f08800; }
 
 .header-right {
   margin-left: auto;
