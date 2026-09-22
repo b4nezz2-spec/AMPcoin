@@ -171,6 +171,8 @@ function PetTooltip({ item }) {
   const unitVal = Number(item.value || 0);
   const qty = parseInt(item.quantity || 1, 10) || 1;
   const itemMods = Array.isArray(item.mods) ? item.mods : [];
+  const showF = itemMods.includes('F') || itemMods.includes('M') || itemMods.includes('N');
+  const showR = itemMods.includes('R') || itemMods.includes('M') || itemMods.includes('N');
   return (
     <div className="pet-tip">
       <div className="pet-tip-img-wrap">
@@ -180,8 +182,8 @@ function PetTooltip({ item }) {
           className="pet-tip-img"
           onError={(e) => { e.target.src = '/default-item.png'; }}
         />
-        {itemMods.includes('F') && <span className="pet-tip-badge badge-f">F</span>}
-        {itemMods.includes('R') && <span className="pet-tip-badge badge-r">R</span>}
+        {showF && <span className="pet-tip-badge badge-f">F</span>}
+        {showR && <span className="pet-tip-badge badge-r">R</span>}
       </div>
       <div className="pet-tip-name">{name}{qty > 1 ? ` ×${qty}` : ''}</div>
       <ModBadges mods={item.mods} size={16} />

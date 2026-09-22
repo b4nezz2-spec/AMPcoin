@@ -308,14 +308,20 @@ router.post('/user/:userId/add-item', authenticateAdmin, (req, res) => {
     // from unmodded copies in the user's inventory.
     const MOD_BONUS = { F: 0.05, R: 0.05, M: 0.20, N: 0.08 };
     let cleanMods = Array.isArray(mods) ? [...new Set(mods)].filter((m) => MOD_BONUS[m]) : [];
-    if (cleanMods.includes('M') && cleanMods.includes('N')) cleanMods = cleanMods.filter((m) => m !== 'N'); // M and N mutually exclusive, Mega wins
+    // M = Mega+Fly+Ride, N = Neon+Fly+Ride; M and N mutually exclusive (Mega wins)
+    if (cleanMods.includes('M')) cleanMods = [...cleanMods.filter((m) => m !== 'N'), 'M', 'F', 'R'];
+    else if (cleanMods.includes('N')) cleanMods = [...cleanMods, 'N', 'F', 'R'];
+    cleanMods = [...new Set(cleanMods)];
+    // Display order: M/N first, then F, then R (e.g. MFR, NFR)
+    const ORDER = { M: 0, N: 0, F: 1, R: 2 };
+    cleanMods.sort((a, b) => (ORDER[a] ?? 3) - (ORDER[b] ?? 3));
     let itemToGive = item;
     if (cleanMods.length > 0) {
       const base = Number(item.baseValue);
       const baseValue = (!isNaN(base) && base >= 0) ? base : Number(item.value || 0);
       const mult = 1 + cleanMods.reduce((s, m) => s + MOD_BONUS[m], 0);
       const moddedValue = Math.round(baseValue * mult);
-      const suffix = cleanMods.slice().sort().join('');
+      const suffix = cleanMods.join('');
       itemToGive = {
         ...item,
         itemId: `${item.itemId || item.id}:${suffix}`,
@@ -377,14 +383,20 @@ router.post('/user/:userId/add-pet', authenticateAdmin, (req, res) => {
 
   const MOD_BONUS = { F: 0.05, R: 0.05, M: 0.20, N: 0.08 };
   let cleanMods = Array.isArray(mods) ? [...new Set(mods)].filter((m) => MOD_BONUS[m]) : [];
-    if (cleanMods.includes('M') && cleanMods.includes('N')) cleanMods = cleanMods.filter((m) => m !== 'N'); // M and N mutually exclusive, Mega wins
+    // M = Mega+Fly+Ride, N = Neon+Fly+Ride; M and N mutually exclusive (Mega wins)
+    if (cleanMods.includes('M')) cleanMods = [...cleanMods.filter((m) => m !== 'N'), 'M', 'F', 'R'];
+    else if (cleanMods.includes('N')) cleanMods = [...cleanMods, 'N', 'F', 'R'];
+    cleanMods = [...new Set(cleanMods)];
+    // Display order: M/N first, then F, then R (e.g. MFR, NFR)
+    const ORDER = { M: 0, N: 0, F: 1, R: 2 };
+    cleanMods.sort((a, b) => (ORDER[a] ?? 3) - (ORDER[b] ?? 3));
   let itemToGive = item;
   if (cleanMods.length > 0) {
     const base = Number(item.baseValue);
     const baseValue = (!isNaN(base) && base >= 0) ? base : Number(item.value || 0);
     const mult = 1 + cleanMods.reduce((s, m) => s + MOD_BONUS[m], 0);
     const moddedValue = Math.round(baseValue * mult);
-    const suffix = cleanMods.slice().sort().join('');
+    const suffix = cleanMods.join('');
     itemToGive = {
       ...item,
       itemId: `${item.itemId || item.id}:${suffix}`,

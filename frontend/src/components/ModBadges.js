@@ -17,10 +17,21 @@ const MOD_TITLES = {
 
 /**
  * Little circle badges for pet modifiers.
+ * Mega implies fly+ride (displays M F R), Neon implies fly+ride (N F R).
  * Usage: <ModBadges mods={item.mods} />
  */
+const expandMods = (mods) => {
+  const out = [];
+  const push = (m) => { if (!out.includes(m)) out.push(m); };
+  const clean = Array.isArray(mods) ? mods : [];
+  if (clean.includes('M')) { push('M'); push('F'); push('R'); }
+  if (clean.includes('N')) { push('N'); push('F'); push('R'); }
+  clean.forEach((m) => { if (MOD_COLORS[m]) push(m); });
+  return out;
+};
+
 const ModBadges = ({ mods, size = 18 }) => {
-  const clean = Array.isArray(mods) ? mods.filter((m) => MOD_COLORS[m]) : [];
+  const clean = expandMods(mods);
   if (clean.length === 0) return null;
   return (
     <span className="mod-badges" style={{ '--mod-size': `${size}px` }}>

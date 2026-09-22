@@ -431,12 +431,19 @@ function AdminPanel() {
   const togglePetMod = async (pet, mod) => {
     if (!MOD_BONUS[mod] || modBusyId) return;
     const cur = petModsOf(pet);
-    // M (Mega) and N (Neon) are mutually exclusive
-    let next = cur.includes(mod) ? cur.filter((m) => m !== mod) : [...cur, mod];
-    if (!cur.includes(mod)) {
-      if (mod === 'M') next = next.filter((m) => m !== 'N');
-      if (mod === 'N') next = next.filter((m) => m !== 'M');
+    // M = Mega+Fly+Ride, N = Neon+Fly+Ride (mutually exclusive with each other)
+    let next;
+    if (cur.includes(mod)) {
+      next = cur.filter((m) => m !== mod);
+      if (mod === 'M' || mod === 'N') next = next.filter((m) => m !== 'F' && m !== 'R');
+    } else if (mod === 'M') {
+      next = [...cur.filter((m) => m !== 'N'), 'M', 'F', 'R'];
+    } else if (mod === 'N') {
+      next = [...cur.filter((m) => m !== 'M'), 'N', 'F', 'R'];
+    } else {
+      next = [...cur, mod];
     }
+    next = [...new Set(next)];
     const base = petBaseOf(pet);
     const value = moddedValue(base, next);
     const petId = pet.id || pet.itemId;
@@ -475,25 +482,35 @@ function AdminPanel() {
   const toggleNewPetMod = (mod) => {
     setNewPet((prev) => {
       const cur = Array.isArray(prev.mods) ? prev.mods : [];
-      // M (Mega) and N (Neon) are mutually exclusive
-      let next = cur.includes(mod) ? cur.filter((m) => m !== mod) : [...cur, mod];
-      if (!cur.includes(mod)) {
-        if (mod === 'M') next = next.filter((m) => m !== 'N');
-        if (mod === 'N') next = next.filter((m) => m !== 'M');
+      let next;
+      if (cur.includes(mod)) {
+        next = cur.filter((m) => m !== mod);
+        if (mod === 'M' || mod === 'N') next = next.filter((m) => m !== 'F' && m !== 'R');
+      } else if (mod === 'M') {
+        next = [...cur.filter((m) => m !== 'N'), 'M', 'F', 'R'];
+      } else if (mod === 'N') {
+        next = [...cur.filter((m) => m !== 'M'), 'N', 'F', 'R'];
+      } else {
+        next = [...cur, mod];
       }
-      return { ...prev, mods: next };
+      return { ...prev, mods: [...new Set(next)] };
     });
   };
 
   const toggleGiveMod = (mod) => {
     setGiveMods((prev) => {
-      // M (Mega) and N (Neon) are mutually exclusive
-      let next = prev.includes(mod) ? prev.filter((m) => m !== mod) : [...prev, mod];
-      if (!prev.includes(mod)) {
-        if (mod === 'M') next = next.filter((m) => m !== 'N');
-        if (mod === 'N') next = next.filter((m) => m !== 'M');
+      let next;
+      if (prev.includes(mod)) {
+        next = prev.filter((m) => m !== mod);
+        if (mod === 'M' || mod === 'N') next = next.filter((m) => m !== 'F' && m !== 'R');
+      } else if (mod === 'M') {
+        next = [...prev.filter((m) => m !== 'N'), 'M', 'F', 'R'];
+      } else if (mod === 'N') {
+        next = [...prev.filter((m) => m !== 'M'), 'N', 'F', 'R'];
+      } else {
+        next = [...prev, mod];
       }
-      return next;
+      return [...new Set(next)];
     });
   };
 
