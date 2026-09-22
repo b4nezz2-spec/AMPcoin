@@ -631,6 +631,11 @@ function discordConfigured() {
   return !!(process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET && process.env.DISCORD_REDIRECT_URI);
 }
 
+// Public status check (no secrets leaked): open this URL to verify setup
+router.get('/discord/status', (req, res) => {
+  res.json({ configured: discordConfigured() });
+});
+
 // Step 1: logged-in user hits this (JWT in query since redirects can't send headers)
 router.get('/discord', async (req, res) => {
   try {
