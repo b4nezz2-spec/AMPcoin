@@ -201,6 +201,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [historyItems, setHistoryItems] = useState([]);
+  const [historyPage, setHistoryPage] = useState(1);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [sortBy, setSortBy] = useState('newest');
   const [loading, setLoading] = useState(true);
@@ -397,6 +398,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
 
   const openHistory = async () => {
     setShowHistory(true);
+    setHistoryPage(1);
     setHistoryLoading(true);
     try {
       const identifier = user?.id || user?.robloxUsername;
@@ -1345,28 +1347,85 @@ const CoinflipPage = ({ socket, setBalance }) => {
                   <p>No bet history yet</p>
                   <p className="cf-history-empty-sub">Place or join a bet to start tracking</p>
                 </div>
-              ) : (
-                <div className="cf-history-list">
-                  {historyItems.map((bet, index) => {
-                    const isWinner = bet.winnerId === user?.id;
-                    const isCreator = bet.creatorId === user?.id;
-                    const opponentName = isCreator
-                      ? (bet.opponentUsername || bet.opponent?.displayName || 'Unknown')
-                      : (bet.creatorUsername || bet.creator?.displayName || 'Unknown');
-                    return (
-                      <div key={bet.id || index} className={`cf-history-row ${isWinner ? 'history-won' : 'history-lost'}`}>
-                        <span className={`cf-history-result ${isWinner ? 'result-won' : 'result-lost'}`}>
-                          {isWinner ? 'WON' : 'LOST'}
-                        </span>
-                        <span className="cf-history-opponent">vs {opponentName}</span>
-                        <span className="cf-history-amount"><span className="cf-diamond-sm">💎</span> {(bet.totalValue || 0).toLocaleString()}</span>
-                        <span className="cf-history-side">Result: {bet.result ? bet.result.toUpperCase() : 'N/A'}</span>
-                        <span className="cf-history-date">{new Date(bet.completedAt || bet.updatedAt).toLocaleString()}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+              ) : (() => {
+                const perPage = 8;
+                const totalPages = Math.max(1, Math.ceil(historyItems.length / perPage));
+                const safePage = Math.min(Math.max(1, historyPage), totalPages);
+                const pageBets = historyItems.slice((safePage - 1) * perPage, safePage * perPage);
+                return (
+                  <>
+                    <div className="cf-history-list">
+                      {pageBets.map((bet, index) => {
+                        const hmeta = getBetMeta(bet);
+                        const winnerIsCreator = bet.winnerId && bet.winnerId === bet.creatorId;
+                        const winnerAvatar = winnerIsCreator ? hmeta.creatorAvatar : hmeta.oppAvatar;
+                        const winnerName = winnerIsCreator ? hmeta.creatorName : (hmeta.oppName || 'Unknown');
+                        const winnerSide = winnerIsCreator ? hmeta.creatorSide : hmeta.opponentSide;
+                        const loserAvatar = winnerIsCreator ? hmeta.oppAvatar : hmeta.creatorAvatar;
+                        const loserSide = winnerIsCreator ? hmeta.opponentSide : hmeta.creatorSide;
+                        const potItems = [...(bet.creatorItems || []), ...(bet.opponentItems || [])];
+                        const shown = potItems.slice(0, 5);
+                        const extra = potItems.length - shown.length;
+                        return (
+                          <div key={bet.id || index} className="cf-history-row">
+                            <div className="cf-history-avatars">
+                              <div className="cf-history-avatar-wrap winner">
+                                <img src={winnerAvatar} alt={winnerName} className="cf-history-avatar" onError={(e) => { e.target.src = '/default-avatar.png'; }} />
+                                <span className="cf-history-chip"><CoinChip side={winnerSide} size={18} /></span>
+                              </div>
+                              <div className="cf-history-avatar-wrap loser">
+                                <img src={loserAvatar} alt="" className="cf-history-avatar" onError={(e) => { e.target.src = '/default-avatar.png'; }} />
+                                <span className="cf-history-chip"><CoinChip side={loserSide} size={18} /></span>
+                              </div>
+                            </div>
+                            <div className="cf-history-items">
+                              {shown.map((item, i) => (
+                                <div key={i} className="cf-history-thumb-col">
+                                  <img
+                                    src={item.image || item.imageUrl || '/default-item.png'}
+                                    alt={item.name || item.itemName || 'item'}
+                                    className="cf-history-thumb"
+                                    onError={(e) => { e.target.src = '/default-item.png'; }}
+                                  />
+                                  <ModBadges mods={item.mods} size={13} />
+                                </div>
+                              ))}
+                              {extra > 0 && <span className="cf-history-more">+{extra}</span>}
+                            </div>
+                            <span className="cf-history-chip-big" title={`Landed ${hmeta.resultSide}`}>
+                              <CoinChip side={hmeta.resultSide} size={42} />
+                            </span>
+                            <button
+                              className="cf-history-view"
+                              title="View game"
+                              onClick={() => { setShowHistory(false); setViewBet(bet); }}
+                            >
+                              👁
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="cf-history-pager">
+                      <button
+                        className="cf-history-page-btn"
+                        disabled={safePage <= 1}
+                        onClick={() => setHistoryPage(safePage - 1)}
+                      >
+                        ‹
+                      </button>
+                      <span className="cf-history-page-info">Page {safePage} of {totalPages} · {historyItems.length} flips</span>
+                      <button
+                        className="cf-history-page-btn"
+                        disabled={safePage >= totalPages}
+                        onClick={() => setHistoryPage(safePage + 1)}
+                      >
+                        ›
+                      </button>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           </div>
         </div>

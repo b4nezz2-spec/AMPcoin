@@ -1226,58 +1226,173 @@ a.cf-tab { text-decoration: none; }
   border: 1px solid #21262d;
   border-radius: 16px;
   width: 100%;
-  max-width: 500px;
-  max-height: 80vh;
+  max-width: 640px;
+  max-height: 85vh;
   overflow-y: auto;
+  position: relative;
 }
 
 .cf-history-title {
-  padding: 16px 20px;
-  font-size: 1rem;
-  font-weight: 700;
+  padding: 18px 22px;
+  font-size: 1.15rem;
+  font-weight: 800;
   color: #e6edf3;
-  border-bottom: 1px solid #21262d;
 }
+
+.cf-history-body { padding: 0 14px 14px; }
 
 .cf-history-list {
-  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.cf-history-body {
+/* History game row */
+.cf-history-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 20px;
-  border-bottom: 1px solid #21262d;
-  transition: background 0.1s;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #0d1117;
+  border: 1px solid #21262d;
+  border-radius: 12px;
+  transition: border-color 0.12s;
 }
 
-.cf-history-body:hover { background: rgba(255,255,255,0.02); }
+.cf-history-row:hover { border-color: #30363d; }
 
-.cf-history-side {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 8px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: #fff;
+.cf-history-avatars {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
-.cf-history-opponent {
+.cf-history-avatar-wrap {
+  position: relative;
+  border-radius: 50%;
+}
+
+.cf-history-avatar-wrap.winner .cf-history-avatar {
+  width: 42px;
+  height: 42px;
+  border: 2px solid #58a6ff;
+  box-shadow: 0 0 8px rgba(88, 166, 255, 0.5);
+}
+
+.cf-history-avatar-wrap.loser .cf-history-avatar {
+  width: 34px;
+  height: 34px;
+  border: 2px solid #21262d;
+  filter: brightness(0.55);
+}
+
+.cf-history-avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.cf-history-chip {
+  position: absolute;
+  bottom: -4px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  z-index: 2;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6));
+}
+
+.cf-history-items {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   flex: 1;
-  font-size: 0.85rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.cf-history-thumb-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.cf-history-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #161b22;
+  border: 1px solid #21262d;
+}
+
+.cf-history-more {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #8b949e;
+  flex-shrink: 0;
+}
+
+.cf-history-chip-big {
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+}
+
+.cf-history-view {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #21262d;
+  border: 1px solid #30363d;
+  color: #8b949e;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s;
+}
+
+.cf-history-view:hover {
+  background: #30363d;
   color: #e6edf3;
 }
 
-.cf-history-amount {
-  font-size: 0.85rem;
-  color: #58a6ff;
-  font-weight: 600;
+/* Pager */
+.cf-history-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 14px 0 4px;
 }
 
-.cf-history-date {
-  font-size: 0.72rem;
-  color: #484f58;
+.cf-history-page-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #21262d;
+  border: 1px solid #30363d;
+  color: #e6edf3;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s;
+}
+
+.cf-history-page-btn:hover:not(:disabled) { background: #30363d; }
+.cf-history-page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.cf-history-page-info {
+  font-size: 0.82rem;
+  color: #8b949e;
+  font-weight: 600;
 }
 
 .cf-history-empty {
