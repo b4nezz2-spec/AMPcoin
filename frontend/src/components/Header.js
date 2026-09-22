@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ProfileModal from './ProfileModal';
 import InventoryPickerModal from './InventoryPickerModal';
+import './WalletModal.css';
 
 const DEFAULT_AVATAR = '/default-avatar.png';
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -23,6 +24,9 @@ const Header = ({ balance, notifications, socket }) => {
   const [invLoading, setInvLoading] = useState(false);
   const [selectedUnits, setSelectedUnits] = useState([]);
   const [withdrawBusy, setWithdrawBusy] = useState(false);
+  const [wmSearch, setWmSearch] = useState('');
+  const [wmSort, setWmSort] = useState('high-low');
+  const [wmFilter, setWmFilter] = useState('all');
   const [modalMsg, setModalMsg] = useState('');
   const [invError, setInvError] = useState('');
   const [botInfo, setBotInfo] = useState(null); // { botUser, redirectLink, botEnabled, avatar }
@@ -460,97 +464,133 @@ const Header = ({ balance, notifications, socket }) => {
         />
       )}
 
-      {showWalletModal && (
-        <div className="wallet-modal-overlay wallet-modal-overlay-lg" onClick={() => setShowWalletModal(false)}>
-          <div className="wallet-modal wallet-modal-lg" onClick={(e) => e.stopPropagation()}>
-            <div className="wallet-modal-header">
-              <div className="modal-title-section">
-                <h2>💼 Wallet & Inventory</h2>
-                <p className="modal-balance">
-                  {unitTiles.length} item{unitTiles.length === 1 ? '' : 's'}
-                </p>
-              </div>
+      {showWalletModal && (() => {
+        const getVal = (u) => num(u.value || u.details?.value);
+        const getName = (u) => u.name || u.details?.name || u.itemName || 'Unknown';
+        const getRarity = (u) => u.rarity || u.details?.rarity || 'common';
+        const anyWithdrawOnly = unitTiles.some((u) => u.withdrawOnly === true || u.details?.withdrawOnly === true);
+        const rarities = [...new Set(unitTiles.map(getRarity))];
+        const q = wmSearch.trim().toLowerCase();
+        let visible = unitTiles.filter((u) => {
+          if (q && !getName(u).toLowerCase().includes(q)) return false;
+          if (wmFilter !== 'all' && getRarity(u) !== wmFilter) return false;
+          return true;
+        });
+        visible = [...visible].sort((a, b) => wmSort === 'low-high' ? getVal(a) - getVal(b) : getVal(b) - getVal(a));
+        return (
+        <div className="wm-overlay" onClick={() => setShowWalletModal(false)}>
+          <div className="wm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="wm-header">
+              <h2 className="wm-title">
+                <span className="wm-coins-icon">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <ellipse cx="12" cy="5" rx="9" ry="3" />
+                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                  </svg>
+                </span>
+                Your Items
+              </h2>
               <button
-                className="modal-close-btn"
+                className="wm-add-btn"
+                onClick={() => setTradeModal({ kind: 'deposit' })}
+                title="Deposit items"
+              >
+                +
+              </button>
+              <button
+                className="wm-close"
                 onClick={() => setShowWalletModal(false)}
               >
                 ×
               </button>
             </div>
-            <div className="wallet-modal-content">
-              <div className="inventory-section">
-                <div className="section-header">
-                  <h3>Your Items</h3>
-                  <span className="items-count">{unitTiles.length} items</span>
-                </div>
-                {modalMsg && <div className="wallet-modal-msg">{modalMsg}</div>}
-                {invError && <div className="wallet-modal-error">{invError}</div>}
-                <div className="inventory-grid wallet-inventory-grid">
-                  {invLoading ? (
-                    <div className="no-items">Loading inventory...</div>
-                  ) : unitTiles.length > 0 ? (
-                    unitTiles.map((unit) => {
-                      const isSelected = selectedUnits.includes(unit.unitKey);
-                      return (
-                        <div
-                          key={unit.unitKey}
-                          className={`inventory-item wallet-inventory-item ${isSelected ? 'selected' : ''}`}
-                          onClick={() => toggleUnit(unit.unitKey)}
-                        >
-                          <div className="item-image">
-                            {unit.image || unit.imageUrl || unit.details?.imageUrl ? (
-                              <img
-                                src={unit.image || unit.imageUrl || unit.details?.imageUrl}
-                                alt={unit.name || unit.details?.name || 'item'}
-                                onError={(e) => { e.target.style.display = 'none'; }}
-                              />
-                            ) : (
-                              <div className="default-item-icon">💎</div>
-                            )}
-                          </div>
-                          <div className="item-details">
-                            <h4>{unit.name || unit.details?.name || unit.itemName || 'Unknown'}</h4>
-                            <p className="item-value">
-                              {(unit.value || unit.details?.value || 0).toLocaleString()} AMP
-                            </p>
-                            <span className={`badge badge-${unit.rarity || unit.details?.rarity || 'common'}`}>
-                              {unit.rarity || unit.details?.rarity || 'common'}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <div className="no-items">No items in your inventory</div>
-                  )}
-                </div>
-              </div>
+            <div className="wm-controls">
+              <input
+                className="wm-search"
+                type="text"
+                placeholder="Search for items"
+                value={wmSearch}
+                onChange={(e) => setWmSearch(e.target.value)}
+              />
+              <select
+                className="wm-select"
+                value={wmSort}
+                onChange={(e) => setWmSort(e.target.value)}
+              >
+                <option value="high-low">High to low</option>
+                <option value="low-high">Low to high</option>
+              </select>
+              <select
+                className="wm-select"
+                value={wmFilter}
+                onChange={(e) => setWmFilter(e.target.value)}
+              >
+                <option value="all">All items</option>
+                {rarities.map((r) => (
+                  <option key={r} value={r}>{r}</option>
+                ))}
+              </select>
             </div>
-
-            <div className="wallet-modal-footer">
-              <div className="wallet-footer-actions">
-                <button className="select-all-btn" onClick={toggleSelectAll}>
-                  {selectedUnits.length === unitTiles.length && unitTiles.length > 0 ? 'Deselect All' : 'Select All'}
-                </button>
-                <button
-                  className={`withdraw-bottom-btn ${selectedUnits.length === 0 ? 'is-disabled-black' : ''}`}
-                  onClick={handleWithdraw}
-                  disabled={selectedUnits.length === 0 || withdrawBusy}
-                >
-                  {withdrawBusy ? 'Sending...' : `Withdraw (${selectedUnits.length})${selectedValue > 0 ? ` • ${selectedValue.toLocaleString()}` : ''}`}
-                </button>
-              </div>
-              <div className="wallet-total-box">
-                <span className="wallet-total-label">Total inventory value</span>
-                <span className="wallet-total-value">{totalInventoryValue.toLocaleString()} AMP</span>
-                <button className="deposit-inside-btn" onClick={() => setTradeModal({ kind: 'deposit' })}>
-                  + Deposit
-                </button>
-              </div>
+            <div className="wm-stats">
+              <span>Selected: <span className="wm-gem">◆</span> <strong>{selectedValue.toLocaleString()}</strong></span>
+              <span>Inventory Value: <span className="wm-gem">◆</span> <strong>{totalInventoryValue.toLocaleString()}</strong></span>
+            </div>
+            {modalMsg && <div className="wm-msg">{modalMsg}</div>}
+            {invError && <div className="wm-msg-error">{invError}</div>}
+            <div className="wm-grid">
+              {invLoading ? (
+                <div className="wm-empty">Loading inventory...</div>
+              ) : visible.length > 0 ? (
+                visible.map((unit) => {
+                  const isSelected = selectedUnits.includes(unit.unitKey);
+                  const flagged = unit.withdrawOnly === true || unit.details?.withdrawOnly === true;
+                  const showBadge = anyWithdrawOnly ? flagged : true;
+                  return (
+                    <div
+                      key={unit.unitKey}
+                      className={`wm-card ${isSelected ? 'is-selected' : ''}`}
+                      onClick={() => toggleUnit(unit.unitKey)}
+                    >
+                      {showBadge && (
+                        <span className="wm-badge">ⓘ Withdraw only</span>
+                      )}
+                      <div className="wm-img-wrap">
+                        {unit.image || unit.imageUrl || unit.details?.imageUrl ? (
+                          <img
+                            src={unit.image || unit.imageUrl || unit.details?.imageUrl}
+                            alt={getName(unit)}
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                          />
+                        ) : (
+                          <div className="wm-fallback-icon">💎</div>
+                        )}
+                      </div>
+                      <h4 className="wm-name">{getName(unit)}</h4>
+                      <p className="wm-value"><span className="wm-gem">◆</span> {getVal(unit).toLocaleString()}</p>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="wm-empty">No items in your inventory</div>
+              )}
+            </div>
+            <div className="wm-footer">
+              <button className="wm-btn" onClick={toggleSelectAll}>
+                {selectedUnits.length === unitTiles.length && unitTiles.length > 0 ? 'Deselect All' : 'Select All'}
+              </button>
+              <button
+                className="wm-btn"
+                onClick={handleWithdraw}
+                disabled={selectedUnits.length === 0 || withdrawBusy}
+              >
+                {withdrawBusy ? 'Sending...' : (<>Withdraw <span className="wm-gem">◆</span> {selectedValue.toLocaleString()}</>)}
+              </button>
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {tradeModal && (
         <div className="trade-modal-overlay" onClick={() => setTradeModal(null)}>

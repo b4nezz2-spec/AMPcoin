@@ -1048,28 +1048,48 @@ const CoinflipPage = ({ socket, setBalance }) => {
               <button className="cf-modal-close" onClick={() => setShowJoinModal(false)}>×</button>
 
               <div className="cf-join-content">
-                {/* Left: Wheel preview */}
+                {/* Left: who you're joining + what's in the bet */}
                 <div className="cf-join-left">
-                  <div className={`cf-wheel ${meta.hasOpponent ? 'wheel-full' : 'wheel-one'}`}>
-                    <div className="cf-wheel-ring"></div>
-                    <div className="cf-wheel-center">
-                      <div className="cf-wheel-value"><span className="cf-diamond-sm">💎</span> {formatCompact(meta.total)}</div>
-                      <div className="cf-wheel-info">{meta.thumbs.length} items · {meta.hasOpponent ? '2' : '1'} players</div>
-                    </div>
-                    {/* Player positions on the wheel */}
-                    <div className="cf-wheel-avatar cf-wheel-avatar-1">
-                      <img src={meta.creatorAvatar} alt="" onError={(e) => { e.target.src = '/default-avatar.png'; }} />
-                      <span className={`cf-wheel-badge side-${meta.creatorSide}`}>{meta.creatorSide === 'heads' ? 'H' : 'T'}</span>
-                    </div>
-                    {meta.hasOpponent && (
-                      <div className="cf-wheel-avatar cf-wheel-avatar-2">
-                        <img src={meta.oppAvatar} alt="" onError={(e) => { e.target.src = '/default-avatar.png'; }} />
-                        <span className={`cf-wheel-badge side-${meta.opponentSide}`}>{meta.opponentSide === 'heads' ? 'H' : 'T'}</span>
+                  <div className="cf-join-vs-head">
+                    <span className="cf-join-vs-label">JOINING</span>
+                    <div className="cf-join-vs-user">
+                      <img src={meta.creatorAvatar} alt={meta.creatorName} className="cf-join-vs-avatar" onError={(e) => { e.target.src = '/default-avatar.png'; }} />
+                      <div className="cf-join-vs-meta">
+                        <span className="cf-join-vs-name">{meta.creatorName}</span>
+                        <span className={`cf-join-vs-side side-${meta.creatorSide}`}>
+                          {meta.creatorSide === 'heads' ? 'H · Heads' : 'T · Tails'}
+                        </span>
                       </div>
-                    )}
+                    </div>
+                    <div className="cf-join-vs-total">
+                      <span className="cf-diamond-sm">💎</span> {formatCompact(meta.total)}
+                      <span className="cf-join-vs-sub">{meta.thumbs.length} items in pot</span>
+                    </div>
                   </div>
 
-                  {/* Player cards below wheel */}
+                  {/* Items in this bet */}
+                  <div className="cf-join-bet-items">
+                    <div className="cf-join-bet-items-title">ITEMS IN THIS BET</div>
+                    <div className="cf-join-bet-items-list">
+                      {(selectedBet.creatorItems || []).map((item, idx) => (
+                        <div key={idx} className="cf-join-bet-item" title={`${item.name || item.itemName || 'Item'}`}>
+                          <img
+                            src={item.image || item.imageUrl || '/default-item.png'}
+                            alt={item.name || item.itemName || 'item'}
+                            className="cf-join-bet-item-img"
+                            onError={(e) => { e.target.src = '/default-item.png'; }}
+                          />
+                          <span className="cf-join-bet-item-name">{item.name || item.itemName || 'Item'}{(item.quantity || 1) > 1 ? ` ×${item.quantity}` : ''}</span>
+                          <span className="cf-join-bet-item-val"><span className="cf-diamond-sm">💎</span> {Number(item.value || 0).toLocaleString()}</span>
+                        </div>
+                      ))}
+                      {(!selectedBet.creatorItems || selectedBet.creatorItems.length === 0) && (
+                        <div className="cf-join-no-items">No items</div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Player cards: them vs you */}
                   <div className="cf-join-player-cards">
                     <div className="cf-join-pcard">
                       <img src={meta.creatorAvatar} alt="" className="cf-join-pcard-avatar" onError={(e) => { e.target.src = '/default-avatar.png'; }} />

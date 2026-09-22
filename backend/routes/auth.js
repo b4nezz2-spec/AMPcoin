@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 const dbManager = require('../db/dbHelper');
 
@@ -396,10 +397,8 @@ router.post('/verify-request', async (req, res) => {
     if (!robloxUsername) return res.status(400).json({ message: 'Username required' });
 
     const usersDb = dbManager.getUsersDb();
-    const taken = Array.isArray(usersDb.users)
-      ? usersDb.users.find((u) => safeToLower(u.robloxUsername) === safeToLower(robloxUsername))
-      : null;
-    if (taken) return res.status(400).json({ message: 'This Roblox account is already registered' });
+    // NOTE: already-registered users are allowed — the same code flow
+    // handles both first-time registration and returning-user login.
 
     // Re-resolve live from Roblox so the code binds to the real account
     const https = require('https');
@@ -442,24 +441,20 @@ router.post('/verify-request', async (req, res) => {
   }
 });
 
-// Step 3: verify the bio contains the code -> create the account.
+// Step 3: verify the bio contains the code -> log in existing user or create account.
+// Passwordless: the Roblox bio code is the only credential.
 router.post('/verify-and-register', async (req, res) => {
   try {
     const body = req.body || {};
     const robloxUsername = typeof body.robloxUsername === 'string' ? body.robloxUsername.trim() : '';
-    const password = typeof body.password === 'string' ? body.password : '';
-    if (!robloxUsername || !password) {
-      return res.status(400).json({ message: 'Username and password are required' });
-    }
-    if (password.length < 6) {
-      return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+    if (!robloxUsername) {
+      return res.status(400).json({ message: 'Username is required' });
     }
 
     const usersDb = dbManager.getUsersDb();
-    const taken = Array.isArray(usersDb.users)
+    const existing = Array.isArray(usersDb.users)
       ? usersDb.users.find((u) => safeToLower(u.robloxUsername) === safeToLower(robloxUsername))
       : null;
-    if (taken) return res.status(400).json({ message: 'User already exists' });
 
     const pending = pendingVerifications.get(safeToLower(robloxUsername));
     if (!pending || pending.expires < Date.now()) {
@@ -488,9 +483,32 @@ router.post('/verify-and-register', async (req, res) => {
 
     let hashedPassword;
     try {
-      hashedPassword = await bcrypt.hash(password, 10);
+      // No password collected — store a random unusable hash so the
+      // legacy password-login path can never match.
+      hashedPassword = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10);
     } catch (err) {
       return res.status(500).json({ message: 'Unable to create account at this time' });
+    }
+
+    // Returning user? Bio verified — just log them in.
+    if (existing) {
+      existing.lastLogin = new Date().toISOString();
+      existing.updatedAt = new Date().toISOString();
+      if (pending.displayName && !existing.displayName) existing.displayName = pending.displayName;
+      if (pending.robloxUserId && !existing.robloxUserId) existing.robloxUserId = pending.robloxUserId;
+      safeSaveUsersDb();
+      pendingVerifications.delete(safeToLower(robloxUsername));
+
+      setImmediate(async () => { try { await resolveAndCacheAvatar(existing.id); } catch (_) {} });
+
+      const loginToken = jwt.sign(
+        { userId: existing.id, robloxUsername: existing.robloxUsername, isAdmin: !!existing.isAdmin },
+        process.env.JWT_SECRET || 'fallback_secret_key',
+        { expiresIn: '24h' }
+      );
+
+      const { password: _pw, ...existingWithoutPassword } = existing;
+      return res.status(200).json({ token: loginToken, user: existingWithoutPassword });
     }
 
     let avatar = pending.avatar || '';

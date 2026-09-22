@@ -1,0 +1,107 @@
+/* CoinChip.css — pure SVG + CSS poker chips, dark-theme friendly (transparent bg) */
+
+.coin-chip {
+  display: inline-block;
+  background: transparent;
+  line-height: 0;
+  vertical-align: middle;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
+}
+
+.coin-chip svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+
+/* ---------- 3D flip container ---------- */
+
+.coin-flip-scene {
+  display: inline-block;
+  background: transparent;
+  perspective: 900px;
+  -webkit-perspective: 900px;
+  line-height: 0;
+}
+
+.coin-flip-inner {
+  position: relative;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+  /* Final rotation is supplied inline via --coin-landing (e.g. 1800deg / 1980deg) */
+  --coin-landing: 1800deg;
+}
+
+/* Spinning state: rapid rotateY with ease-out over ~2.5s, winner hidden mid-spin */
+.coin-flip-inner.coin-spinning {
+  animation: coin-spin 2.5s cubic-bezier(0.15, 0.6, 0.25, 1) forwards;
+  -webkit-animation: coin-spin 2.5s cubic-bezier(0.15, 0.6, 0.25, 1) forwards;
+}
+
+/* Landing helpers — component also sets --coin-landing inline via style prop */
+.coin-flip-inner.land-heads {
+  --coin-landing: 1800deg;
+}
+
+.coin-flip-inner.land-tails {
+  --coin-landing: 1980deg;
+}
+
+/* Landed (static) states, multiples of 360 = heads, +180 = tails */
+.coin-flip-inner.coin-landed-heads {
+  transform: rotateY(1800deg);
+}
+
+.coin-flip-inner.coin-landed-tails {
+  transform: rotateY(1980deg);
+}
+
+@keyframes coin-spin {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(var(--coin-landing, 1800deg));
+  }
+}
+
+@-webkit-keyframes coin-spin {
+  from {
+    -webkit-transform: rotateY(0deg);
+    transform: rotateY(0deg);
+  }
+  to {
+    -webkit-transform: rotateY(var(--coin-landing, 1800deg));
+    transform: rotateY(var(--coin-landing, 1800deg));
+  }
+}
+
+/* ---------- Faces ---------- */
+
+.coin-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background: transparent;
+}
+
+.coin-face-front {
+  transform: rotateY(0deg);
+  z-index: 2;
+}
+
+.coin-face-back {
+  transform: rotateY(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coin-flip-inner.coin-spinning {
+    animation-duration: 0.01s;
+    -webkit-animation-duration: 0.01s;
+  }
+}

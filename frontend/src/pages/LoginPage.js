@@ -1,62 +1,64 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import './AuthPage.css';
 
 const LoginPage = () => {
-  const [formData, setFormData] = useState({
-    robloxUsername: '',
-    password: ''
-  });
+  const [step, setStep] = useState(1); // 1 = username, 2 = bio code
+  const [robloxUsername, setRobloxUsername] = useState('');
+  const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login, loading: authLoading } = useAuth(); // Get auth loading state
+  const { requestVerifyCode, verifyAndRegister, loading: authLoading } = useAuth();
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-    setError('');
-  };
-
-  const handleSubmit = async (e) => {
+  const handleGetCode = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
-
-    // Validate inputs
-    if (!formData.robloxUsername.trim()) {
-      setError('Please enter your Roblox Username');
-      setLoading(false);
+    if (!robloxUsername.trim()) {
+      setError('Please enter your Roblox username');
       return;
     }
-    
-    if (!formData.password.trim()) {
-      setError('Please enter your password');
-      setLoading(false);
-      return;
-    }
-
+    setLoading(true);
     try {
-      // Use the actual login function from auth context
-      const result = await login(formData);
-      
+      const result = await requestVerifyCode(robloxUsername.trim());
       if (result.success) {
-        // Navigate to dashboard
-        navigate('/coinflip');
+        setCode(result.code);
+        setStep(2);
       } else {
-        setError(result.message || 'Login failed');
+        setError(result.message || 'Could not create code');
       }
     } catch (err) {
-      console.error('Login error:', err);
       setError(err.message || 'Network error. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  // If auth is loading, show a loading state
+  const handleVerify = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const result = await verifyAndRegister({ robloxUsername: robloxUsername.trim() });
+      if (result.success) {
+        navigate('/coinflip');
+      } else {
+        setError(result.message || 'Verification failed');
+      }
+    } catch (err) {
+      setError(err.message || 'Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const copyCode = () => {
+    try {
+      navigator.clipboard.writeText(code);
+    } catch (_) { /* ignore */ }
+  };
+
   if (authLoading) {
     return (
       <div className="loading-container">
@@ -67,54 +69,69 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="auth-container">
-      <form onSubmit={handleSubmit} className="auth-form">
-        <h2>Login</h2>
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-logo">
+          <span className="auth-logo-fire">🔥</span>
+          <span className="auth-logo-text">AMPCOIN</span>
+        </div>
 
-        {error && <div className="error-message" style={{color: '#ff4d4d', marginBottom: '15px'}}>{error}</div>}
-        
-        <div className="form-group">
-          <label htmlFor="robloxUsername" className="form-label">Roblox Username</label>
-          <input
-            type="text"
-            id="robloxUsername"
-            name="robloxUsername"
-            value={formData.robloxUsername}
-            onChange={handleChange}
-            className="form-control"
-            placeholder="Enter your Roblox Username"
-            required
-          />
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="password" className="form-label">Password</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            className="form-control"
-            placeholder="Enter your password"
-            required
-          />
-        </div>
-        
-        <button 
-          type="submit" 
-          className="btn btn-primary"
-          disabled={loading}
-        >
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
-        
-        <div className="auth-links">
-          <p>
-            Don't have an account? <Link to="/register">Register</Link>
-          </p>
-        </div>
-      </form>
+        {step === 1 ? (
+          <form onSubmit={handleGetCode}>
+            <h2 className="auth-title">Sign In</h2>
+            <p className="auth-sub">Enter your Roblox username to get a verification code.</p>
+
+            {error && <div className="auth-error">{error}</div>}
+
+            <label className="auth-label" htmlFor="robloxUsername">Roblox Username</label>
+            <input
+              type="text"
+              id="robloxUsername"
+              value={robloxUsername}
+              onChange={(e) => { setRobloxUsername(e.target.value); setError(''); }}
+              className="auth-input"
+              placeholder="Enter your Roblox username"
+              autoComplete="off"
+            />
+
+            <button type="submit" className="auth-btn" disabled={loading}>
+              {loading ? 'Please wait...' : 'Get Verification Code'}
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleVerify}>
+            <h2 className="auth-title">Verify It's You</h2>
+            <p className="auth-sub">
+              Put this code in your <strong>Roblox profile bio</strong>, then press Verify.
+            </p>
+
+            {error && <div className="auth-error">{error}</div>}
+
+            <div className="auth-code-box" onClick={copyCode} title="Click to copy">
+              <span className="auth-code">{code}</span>
+              <span className="auth-copy">📋</span>
+            </div>
+
+            <ol className="auth-steps">
+              <li>Go to <strong>roblox.com</strong> and open your profile</li>
+              <li>Click the <strong>pencil / edit</strong> icon on your bio</li>
+              <li>Paste the code above into your bio and <strong>save</strong></li>
+              <li>Come back here and press <strong>Verify</strong></li>
+            </ol>
+
+            <button type="submit" className="auth-btn" disabled={loading}>
+              {loading ? 'Checking your bio...' : 'Verify & Sign In'}
+            </button>
+            <button
+              type="button"
+              className="auth-btn-secondary"
+              onClick={() => { setStep(1); setError(''); }}
+            >
+              ← Use a different username
+            </button>
+          </form>
+        )}
+      </div>
     </div>
   );
 };

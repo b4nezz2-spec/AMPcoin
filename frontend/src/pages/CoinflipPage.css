@@ -779,58 +779,158 @@
 }
 
 .cf-join-left {
-  width: 280px;
-  min-width: 280px;
+  width: 300px;
+  min-width: 300px;
   padding: 20px;
   border-right: 1px solid #21262d;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  gap: 16px;
   background: #0d1117;
+  overflow-y: auto;
+  max-height: calc(90vh - 120px);
 }
 
-/* Wheel */
-.cf-wheel-ring {
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  border: 3px solid #21262d;
-  background: radial-gradient(circle, #161b22 0%, #0d1117 100%);
-  position: relative;
+/* Who you're joining */
+.cf-join-vs-head {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cf-join-vs-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #484f58;
+}
+
+.cf-join-vs-user {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 10px;
 }
 
-.cf-wheel-center {
-  text-align: center;
+.cf-join-vs-avatar {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  max-width: 44px;
+  max-height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #30363d;
+  display: block;
 }
 
-.cf-wheel-value {
-  font-size: 1.6rem;
+.cf-join-vs-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cf-join-vs-name {
+  font-size: 0.95rem;
   font-weight: 700;
   color: #e6edf3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cf-join-vs-side {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 8px;
+  width: fit-content;
+}
+
+.cf-join-vs-total {
   display: flex;
   align-items: center;
   gap: 6px;
-  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #e6edf3;
 }
 
-.cf-wheel-info {
-  font-size: 0.75rem;
+.cf-join-vs-sub {
+  font-size: 0.72rem;
+  font-weight: 400;
   color: #8b949e;
-  margin-top: 4px;
 }
 
-.cf-wheel-avatar {
-  position: absolute;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+/* Items in this bet */
+.cf-join-bet-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.cf-join-bet-items-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #484f58;
+}
+
+.cf-join-bet-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+  max-height: 260px;
+  padding-right: 4px;
+}
+
+.cf-join-bet-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  background: #161b22;
+  border: 1px solid #21262d;
+  border-radius: 8px;
+}
+
+.cf-join-bet-item-img {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  max-width: 32px;
+  max-height: 32px;
+  border-radius: 6px;
   object-fit: cover;
-  border: 2px solid #58a6ff;
-  transform: translate(-50%, -50%);
+  background: #0d1117;
+  display: block;
+}
+
+.cf-join-bet-item-name {
+  flex: 1;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #e6edf3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.cf-join-bet-item-val {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #58a6ff;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 3px;
 }
 
 /* Right side: player cards + inventory */
@@ -842,8 +942,6 @@
 }
 
 .cf-join-player-cards {
-  padding: 16px 20px;
-  border-bottom: 1px solid #21262d;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -862,8 +960,20 @@
 .cf-join-pcard-avatar {
   width: 36px;
   height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  max-width: 36px;
+  max-height: 36px;
   border-radius: 50%;
   object-fit: cover;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* Safety: no avatar image anywhere in coinflip UI may exceed its box */
+.cf-join-modal img,
+.cf-view-modal img {
+  max-width: 100%;
 }
 
 .cf-join-pcard-info { flex: 1; }

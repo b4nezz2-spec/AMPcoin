@@ -29,9 +29,7 @@ function Sidebar() {
     { path: '/coinflip', label: 'Coinflip', icon: '🪙' },
     { path: '/jackpot', label: 'Jackpot', icon: '🎰' },
     { path: '/trading', label: 'Trading', icon: '👀', disabled: true },
-    { path: '/stats', label: 'Stats', icon: '📊' },
     { path: '/values', label: 'Values', icon: '💎' },
-    { path: '/provably-fair', label: 'Provably Fair', icon: '🛡️' },
   ];
 
   const adminItems = [

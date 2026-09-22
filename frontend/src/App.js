@@ -13,7 +13,6 @@ import WalletPage from './pages/WalletPage';
 import StatsPage from './pages/StatsPage';
 import ProvablyFairPage from './pages/ProvablyFairPage';
 import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminPanel from './pages/AdminPanel';
 import ChatPanel from './components/ChatPanel';
@@ -33,8 +32,6 @@ const socket = io(BACKEND_URL, {
 function TopNav() {
   return (
     <nav className="top-nav">
-      <a href="/provably-fair">🛡️ Provably Fair</a>
-      <a href="/stats">📊 Stats</a>
       <a href="/values">💎 Values</a>
       <a href="/leaderboard">🏆 Leaderboard</a>
     </nav>
@@ -88,7 +85,7 @@ function AppContent() {
           <div className="page-content">
             <Routes>
               <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/coinflip" />} />
-              <Route path="/register" element={!user ? <RegisterPage /> : <Navigate to="/coinflip" />} />
+              <Route path="/register" element={<Navigate to="/login" replace />} />
               <Route path="/" element={user ? <Navigate to="/coinflip" replace /> : <Navigate to="/login" replace />} />
               <Route path="/coinflip" element={<ProtectedRoute><CoinflipPage socket={socket} setBalance={setBalance} /></ProtectedRoute>} />
               <Route path="/jackpot" element={<ProtectedRoute><JackpotPage socket={socket} setBalance={setBalance} /></ProtectedRoute>} />
