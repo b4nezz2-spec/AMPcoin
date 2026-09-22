@@ -168,16 +168,20 @@ body {
   min-height: calc(100vh - 56px);
 }
 
-/* Chat column — far left */
+/* Chat column — far left, full height */
 .chat-column {
   width: 300px;
   min-width: 300px;
+  max-width: 300px;
   height: calc(100vh - 56px);
   position: sticky;
   top: 56px;
   border-right: 1px solid #161b22;
   background: #0d1117;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
 .chat-column .chat-panel {

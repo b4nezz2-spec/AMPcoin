@@ -79,7 +79,11 @@ function AppContent() {
       <TopNav />
       {user && <Sidebar />}
       <div className="layout-columns">
-        {user && <ChatPanel socket={socket} chatOpen={true} />}
+        {user && (
+          <div className="chat-column">
+            <ChatPanel socket={socket} chatOpen={true} />
+          </div>
+        )}
         <div className="main-content">
           {user && <Header balance={balance} setBalance={setBalance} notifications={notifications} socket={socket} />}
           <div className="page-content">

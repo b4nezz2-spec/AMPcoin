@@ -40,6 +40,23 @@
 
 .cf-tab:hover { color: #e6edf3; }
 
+a.cf-tab { text-decoration: none; }
+
+.cf-tab-divider {
+  width: 1px;
+  height: 20px;
+  background: #21262d;
+  margin: 0 12px;
+  align-self: center;
+}
+
+.cf-tab-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.cf-tab-disabled:hover { color: #8b949e; }
+
 .cf-tab-active {
   color: #58a6ff;
   border-bottom-color: #58a6ff;
@@ -585,6 +602,43 @@
   font-size: 0.8rem;
 }
 
+/* Big italic Vs (open bets) */
+.cf-view-vs-big {
+  font-size: 2rem;
+  font-weight: 800;
+  font-style: italic;
+  color: #e6edf3;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+  padding: 0 10px;
+}
+
+/* Mini chip badge pinned to avatar */
+.cf-view-avatar-ring { position: relative; }
+
+.cf-view-chip-badge {
+  position: absolute;
+  left: -6px;
+  bottom: -2px;
+  width: 24px;
+  height: 24px;
+  z-index: 3;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+/* Dashed empty avatar (waiting opponent) */
+.cf-view-avatar-empty {
+  border: 2px dashed #30363d;
+}
+
+/* Row chip (completed-game result in lobby rows) */
+.cf-row-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+}
+
 /* Coin animation area */
 .cf-view-coin-area {
   display: flex;
@@ -636,41 +690,61 @@
   font-family: monospace;
 }
 
-/* View panels */
+/* View panels: win-chance bars (% left, value right) */
 .cf-view-panels {
   display: flex;
-  gap: 0;
+  gap: 12px;
   padding: 0 20px;
 }
 
 .cf-view-panel {
   flex: 1;
-  padding: 14px 16px;
-  text-align: center;
-}
-
-.cf-panel-side {
-  font-size: 0.75rem;
-  color: #8b949e;
-  font-weight: 600;
-  text-transform: uppercase;
-  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #0d1117;
+  border: 1px solid #21262d;
+  border-radius: 10px;
 }
 
 .cf-panel-pct {
-  font-size: 1.4rem;
-  font-weight: 700;
+  font-size: 0.95rem;
+  font-weight: 600;
   color: #e6edf3;
 }
 
 .cf-panel-val {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 4px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #e6edf3;
+}
+
+.cf-panel-val .cf-diamond-sm { color: #58a6ff; }
+
+/* Waiting text (right column, open bets) */
+.cf-view-waiting {
+  color: #8b949e;
   font-size: 0.85rem;
-  color: #58a6ff;
-  margin-top: 2px;
+  padding: 20px 10px;
+  text-align: center;
+}
+
+/* Created-ago line */
+.cf-view-created {
+  font-size: 0.8rem;
+  color: #8b949e;
+}
+
+/* Result line (completed bets) */
+.cf-view-result-text {
+  text-align: center;
+  padding: 10px 20px 0;
+  font-size: 0.88rem;
+  color: #e6edf3;
 }
 
 /* View items */
@@ -1377,4 +1451,118 @@
   .cf-join-content { flex-direction: column; }
   .cf-join-left { width: 100%; min-width: auto; border-right: none; border-bottom: 1px solid #21262d; }
   .cf-view-top { flex-direction: column; gap: 16px; }
+}
+/* section: pet hover tooltip + legacy button texture */
+
+.cf-tip-host { position: relative; }
+
+.cf-tip-pop {
+  display: none;
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.cf-tip-host:hover .cf-tip-pop { display: block; }
+
+/* Dark pet card tooltip */
+.pet-tip {
+  width: 130px;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+.pet-tip-img-wrap {
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
+
+.pet-tip-img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #f08800;
+  display: block;
+}
+
+.pet-tip-badge {
+  position: absolute;
+  bottom: -2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: #fff;
+  border: 2px solid #161b22;
+}
+
+.pet-tip-badge.badge-f { left: 6px; background: #1f6feb; }
+.pet-tip-badge.badge-r { right: 6px; background: #f08800; }
+
+.pet-tip-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #e6edf3;
+  text-align: center;
+}
+
+.pet-tip-val {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #58a6ff;
+}
+
+.pet-tip-rarity {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  color: #8b949e;
+}
+
+.pet-tip-rarity.rarity-legendary { color: #ffaa00; }
+.pet-tip-rarity.rarity-ultra_rare { color: #ff44cc; }
+.pet-tip-rarity.rarity-rare { color: #58a6ff; }
+.pet-tip-rarity.rarity-uncommon { color: #3fb950; }
+
+/* section: legacy button texture (gradient + glow + lift on hover) */
+
+.cf-join-btn,
+.cf-view-join-btn,
+.cf-confirm-btn,
+.cf-join-action-btn.cf-confirm,
+.cf-topbar-btn-gold {
+  background: linear-gradient(135deg, #00aaff, #0066ff) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 4px 15px rgba(0, 170, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  transition: all 0.3s ease !important;
+}
+
+.cf-join-btn:hover:not(:disabled),
+.cf-view-join-btn:hover:not(:disabled),
+.cf-confirm-btn:hover:not(:disabled),
+.cf-join-action-btn.cf-confirm:hover:not(:disabled),
+.cf-topbar-btn-gold:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0099dd, #0055cc) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(0, 170, 255, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
 }
