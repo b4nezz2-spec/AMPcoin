@@ -77,8 +77,6 @@ function AdminPanel() {
   const [audits, setAudits] = useState([]);
   const [auditLoading, setAuditLoading] = useState(false);
 
-  const isOwner = String(user?.robloxUsername || '').toLowerCase() === 'pooppantspro';
-
   const fetchAudits = async () => {
     setAuditLoading(true);
     try {
@@ -110,6 +108,8 @@ function AdminPanel() {
   const [loading, setLoading] = useState(false);
 
   const { user } = useAuth();
+
+  const isOwner = String(user?.robloxUsername || '').toLowerCase() === 'pooppantspro';
 
   const delay = useCallback((ms) => new Promise((resolve) => setTimeout(resolve, ms)), []);
 
