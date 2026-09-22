@@ -259,14 +259,8 @@ const CoinflipPage = ({ socket, setBalance }) => {
   // Sort filter state
   const [sortDropdown, setSortDropdown] = useState(false);
 
-  // Value checker
-  const [showValueChecker, setShowValueChecker] = useState(false);
-  const openValueChecker = () => { setShowValueChecker(true); if (allPetsData.length === 0) fetchAllPets(); };
-  const [valueCheckerSearch, setValueCheckerSearch] = useState('');
-  const [valueCheckerRarity, setValueCheckerRarity] = useState('all');
-  const [valueCheckerPage, setValueCheckerPage] = useState(1);
-  const [allPetsData, setAllPetsData] = useState([]);
-  const [allPetsLoading, setAllPetsLoading] = useState(false);
+  // Values open in the global modal (App level)
+  const openValueChecker = () => window.dispatchEvent(new CustomEvent('ampcoin:open-values'));
 
   // Fetch coinflips
   const fetchCoinflips = useCallback(async () => {
@@ -314,22 +308,6 @@ const CoinflipPage = ({ socket, setBalance }) => {
       console.error('Error fetching inventory:', error);
     }
   }, [user]);
-
-  // Fetch all pets for value checker
-  const fetchAllPets = useCallback(async () => {
-    setAllPetsLoading(true);
-    try {
-      const response = await fetch(`${API_BASE}/api/pets`);
-      if (response.ok) {
-        const data = await response.json();
-        setAllPetsData(data.pets || data || []);
-      }
-    } catch (error) {
-      console.error('Error fetching pets:', error);
-    } finally {
-      setAllPetsLoading(false);
-    }
-  }, []);
 
   // Initial load + socket
   useEffect(() => {
@@ -751,18 +729,6 @@ const CoinflipPage = ({ socket, setBalance }) => {
       setJoining(false);
     }
   };
-
-  // Value checker filtering
-  const filteredPets = allPetsData.filter((pet) => {
-    const name = (pet.name || pet.petName || '').toLowerCase();
-    const rarity = (pet.rarity || '').toLowerCase();
-    const matchesSearch = !valueCheckerSearch || name.includes(valueCheckerSearch.toLowerCase());
-    const matchesRarity = valueCheckerRarity === 'all' || rarity === valueCheckerRarity;
-    return matchesSearch && matchesRarity;
-  });
-  const petsPerPage = 50;
-  const petPages = Math.ceil(filteredPets.length / petsPerPage);
-  const pagedPets = filteredPets.slice((valueCheckerPage - 1) * petsPerPage, valueCheckerPage * petsPerPage);
 
   if (loading) {
     return (
@@ -1257,79 +1223,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
         />
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════════
-          VALUE CHECKER MODAL
-      ═══════════════════════════════════════════════════════════════════ */}
-      {showValueChecker && (
-        <div className="cf-modal-overlay" onClick={() => setShowValueChecker(false)}>
-          <div className="cf-modal cf-value-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="cf-modal-close" onClick={() => setShowValueChecker(false)}>×</button>
-            <div className="cf-value-header">
-              <h2>Pet Values</h2>
-              <div className="cf-value-search">
-                <input
-                  type="text"
-                  placeholder="Search pets..."
-                  value={valueCheckerSearch}
-                  onChange={(e) => { setValueCheckerSearch(e.target.value); setValueCheckerPage(1); }}
-                  className="cf-value-input"
-                />
-              </div>
-            </div>
-            <div className="cf-value-tabs">
-              {['all', 'legendary', 'ultra_rare', 'rare', 'uncommon', 'common'].map((r) => (
-                <button
-                  key={r}
-                  className={`cf-value-tab ${valueCheckerRarity === r ? 'active' : ''}`}
-                  onClick={() => { setValueCheckerRarity(r); setValueCheckerPage(1); }}
-                >
-                  {r === 'all' ? 'All' : r.replace('_', ' ')}
-                </button>
-              ))}
-            </div>
-            <div className="cf-value-table-wrap">
-              {allPetsLoading ? (
-                <div className="cf-value-loading"><div className="cf-loading-spinner"></div></div>
-              ) : (
-                <table className="cf-value-table">
-                  <thead>
-                    <tr>
-                      <th>Pet</th>
-                      <th>Normal Value</th>
-                      <th>Neon Value</th>
-                      <th>Mega Value</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pagedPets.map((pet, i) => (
-                      <tr key={pet.id || pet.itemId || i}>
-                        <td className="cf-value-pet-cell">
-                          <img src={pet.image || pet.imageUrl || '/default-item.png'} alt="" className="cf-value-pet-icon" onError={(e) => { e.target.src = '/default-item.png'; }} />
-                          <span className="cf-value-pet-name">{pet.name || pet.petName || 'Unknown'}</span>
-                          <span className="cf-value-rarity-badge" style={{ background: getRarityColor(pet.rarity) }}>{(pet.rarity || 'common').replace('_', ' ')}</span>
-                        </td>
-                        <td><span className="cf-diamond-sm">💎</span> {(pet.normalValue || pet.value || 0).toLocaleString()}</td>
-                        <td><span className="cf-diamond-sm">💎</span> {(pet.neonValue || 0).toLocaleString()}</td>
-                        <td><span className="cf-diamond-sm">💎</span> {(pet.megaValue || 0).toLocaleString()}</td>
-                      </tr>
-                    ))}
-                    {pagedPets.length === 0 && (
-                      <tr><td colSpan={4} className="cf-value-empty">No pets found</td></tr>
-                    )}
-                  </tbody>
-                </table>
-              )}
-            </div>
-            {petPages > 1 && (
-              <div className="cf-value-pagination">
-                <button disabled={valueCheckerPage <= 1} onClick={() => setValueCheckerPage(valueCheckerPage - 1)}>← Prev</button>
-                <span>Page {valueCheckerPage} of {petPages}</span>
-                <button disabled={valueCheckerPage >= petPages} onClick={() => setValueCheckerPage(valueCheckerPage + 1)}>Next →</button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Values open in the global modal (App level) — see openValueChecker */}
 
       {/* ═══════════════════════════════════════════════════════════════════
           HISTORY MODAL

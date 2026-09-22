@@ -1,46 +1,71 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import './AnimatedPopup.css';
+import './AnimatedPopup.css';
 
-const AnimatedPopup = ({ message, type = 'info', duration = 3000, onClose }) => {
+const TYPE_META = {
+  success: { icon: '✓', label: 'Success' },
+  error: { icon: '✕', label: 'Error' },
+  warning: { icon: '!', label: 'Warning' },
+  info: { icon: 'i', label: 'Info' }
+};
+
+const AnimatedPopup = ({
+  show = true,
+  title,
+  message,
+  type = 'info',
+  duration = 3200,
+  onClose
+}) => {
+  const [closing, setClosing] = useState(false);
+  const meta = TYPE_META[type] || TYPE_META.info;
+
   useEffect(() => {
+    setClosing(false);
+  }, [message, show]);
+
+  useEffect(() => {
+    if (!show) return;
+    let exitTimer;
     const timer = setTimeout(() => {
-      onClose();
+      setClosing(true);
+      exitTimer = setTimeout(() => {
+        if (onClose) onClose();
+      }, 250);
     }, duration);
+    return () => {
+      clearTimeout(timer);
+      if (exitTimer) clearTimeout(exitTimer);
+    };
+  }, [duration, onClose, show, message]);
 
-    return () => clearTimeout(timer);
-  }, [duration, onClose]);
+  if (!show) return null;
 
-  const getTypeStyles = () => {
-    switch(type) {
-      case 'success':
-        return {
-          backgroundColor: 'rgba(0, 204, 102, 0.55)',
-          borderColor: 'rgba(0, 204, 102, 0.7)'
-        };
-      case 'error':
-        return {
-          backgroundColor: 'rgba(255, 77, 77, 0.55)', // 55% transparent red
-          borderColor: 'rgba(255, 77, 77, 0.7)'
-        };
-      case 'warning':
-        return {
-          backgroundColor: 'rgba(255, 165, 0, 0.55)',
-          borderColor: 'rgba(255, 165, 0, 0.7)'
-        };
-      default:
-        return {
-          backgroundColor: 'rgba(0, 170, 255, 0.55)',
-          borderColor: 'rgba(0, 170, 255, 0.7)'
-        };
-    }
+  const handleClose = () => {
+    setClosing(true);
+    setTimeout(() => {
+      if (onClose) onClose();
+    }, 250);
   };
 
   return (
-    <div className="animated-popup-overlay">
-      <div className="animated-popup" style={getTypeStyles()}>
-        <div className="popup-content">
-          <span className="popup-dot"></span>
-          <span className="popup-message">{message}</span>
+    <div className="apop-overlay" onClick={handleClose}>
+      <div
+        className={`apop-card apop-${type} ${closing ? 'apop-exit' : 'apop-enter'}`}
+        onClick={(e) => e.stopPropagation()}
+        role="alert"
+      >
+        <span className="apop-glow" />
+        <div className="apop-icon">{meta.icon}</div>
+        <div className="apop-body">
+          <div className="apop-title">{title || meta.label}</div>
+          {message && <div className="apop-message">{message}</div>}
         </div>
+        <button className="apop-x" onClick={handleClose} aria-label="Dismiss">×</button>
+        <div
+          className="apop-progress"
+          style={{ animationDuration: `${duration}ms` }}
+        />
       </div>
     </div>
   );

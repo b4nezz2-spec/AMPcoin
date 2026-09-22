@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import './ValueChecker.css';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -32,7 +33,8 @@ const ValueChecker = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (!isOpen) return;
     setLoading(true);
-    fetch(`${API_BASE}/api/admin/items`)
+    // Public catalog endpoint (no admin rights needed)
+    fetch(`${API_BASE}/api/items`)
       .then((r) => r.json())
       .then((data) => {
         setAllItems(Array.isArray(data) ? data : data.items || []);
@@ -142,9 +144,11 @@ const ValueChecker = ({ isOpen, onClose }) => {
                   {pageItems.map((item, idx) => {
                     const name = item.name || item.itemName || 'Unknown';
                     const rarity = (item.rarity || 'common').toLowerCase().replace(/\s+/g, '_');
-                    const normalVal = Number(item.value || 0);
-                    const neonVal = Number(item.neonValue || item.value_neon || normalVal * 2.5 || 0);
-                    const megaVal = Number(item.megaValue || item.value_mega || normalVal * 7 || 0);
+                    // Base catalog value; Neon (+8%) and Mega (+20%) match the N/M mod bonuses
+                    const baseVal = Number(item.baseValue ?? item.value ?? 0);
+                    const normalVal = baseVal;
+                    const neonVal = Math.round(baseVal * 1.08);
+                    const megaVal = Math.round(baseVal * 1.20);
                     return (
                       <tr key={item.id || item.itemId || idx} className="vc-row">
                         <td className="vc-pet-cell">

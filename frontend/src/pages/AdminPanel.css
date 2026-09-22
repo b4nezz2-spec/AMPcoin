@@ -782,9 +782,52 @@
 }
 
 @media (max-width: 768px) {
-  .admin-tabs { flex-wrap: wrap; }
+  .admin-tabs { flex-wrap: wrap; gap: 6px; }
   .admin-table-wrap { overflow-x: auto; }
   .add-pet-to-user { flex-direction: column; }
   .mod-btn { width: 40px; height: 40px; }
   .manage-pets { flex-direction: column; }
+}
+
+@media (max-width: 768px) {
+  .admin-panel { padding: 0; }
+  .admin-content { padding: 12px; }
+  .admin-tabs {
+    display: flex;
+    flex-direction: row !important;
+    overflow-x: auto;
+    gap: 6px;
+    padding-bottom: 6px;
+  }
+  .tab-btn {
+    white-space: nowrap;
+    padding: 8px 12px !important;
+    font-size: 0.78rem !important;
+    flex-shrink: 0;
+  }
+  .admin-dashboard { grid-template-columns: 1fr 1fr !important; gap: 8px; }
+  .stat-card { padding: 12px !important; }
+  .stat-number { font-size: 1.2rem !important; }
+
+  /* Users table -> horizontally scrollable, sticky first col */
+  .manage-users { overflow-x: auto; }
+  .manage-users .table { min-width: 640px; }
+
+  .user-pets-section .inventory-grid,
+  .manage-pets .inventory-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px;
+  }
+  .inventory-item { padding: 8px !important; }
+  .admin-thumb { width: 44px !important; height: 44px !important; }
+
+  .add-pet-form { padding: 14px !important; }
+  .add-pet-to-user { gap: 8px; }
+  .add-pet-to-user select[size] { min-height: 120px; }
+
+  .tax-row { flex-direction: column !important; align-items: stretch !important; gap: 10px; }
+  .tax-row-controls { justify-content: stretch !important; }
+  .tax-slider { max-width: none !important; }
+
+  .activity-item { flex-wrap: wrap; gap: 4px; }
 }

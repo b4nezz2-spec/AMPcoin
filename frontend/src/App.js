@@ -16,6 +16,7 @@ import LoginPage from './pages/LoginPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminPanel from './pages/AdminPanel';
 import ChatPanel from './components/ChatPanel';
+import ValueChecker from './components/ValueChecker';
 import AuthProvider, { useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -30,9 +31,10 @@ const socket = io(BACKEND_URL, {
 });
 
 function TopNav() {
+  const openValues = () => window.dispatchEvent(new CustomEvent('ampcoin:open-values'));
   return (
     <nav className="top-nav">
-      <a href="/values">💎 Values</a>
+      <span className="top-nav-item" onClick={openValues}>💎 Values</span>
       <a href="/leaderboard">🏆 Leaderboard</a>
     </nav>
   );
@@ -43,6 +45,14 @@ function AppContent() {
   const [balance, setBalance] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const [mobileChatOpen, setMobileChatOpen] = useState(false);
+  const [valuesOpen, setValuesOpen] = useState(false);
+
+  // Global "Values" modal — opened from sidebar, top nav, or coinflip page
+  useEffect(() => {
+    const open = () => setValuesOpen(true);
+    window.addEventListener('ampcoin:open-values', open);
+    return () => window.removeEventListener('ampcoin:open-values', open);
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -119,6 +129,7 @@ function AppContent() {
           {mobileChatOpen ? '✕' : '💬'}
         </button>
       )}
+      <ValueChecker isOpen={valuesOpen} onClose={() => setValuesOpen(false)} />
     </div>
   );
 }

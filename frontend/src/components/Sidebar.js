@@ -29,7 +29,7 @@ function Sidebar() {
     { path: '/coinflip', label: 'Coinflip', icon: '🪙' },
     { path: '/jackpot', label: 'Jackpot', icon: '🎰' },
     { path: '/trading', label: 'Trading', icon: '👀', disabled: true },
-    { path: '/values', label: 'Values', icon: '💎' },
+    { action: 'values', label: 'Values', icon: '💎' },
   ];
 
   const adminItems = [
@@ -48,7 +48,16 @@ function Sidebar() {
 
         <div className="nav-section">
           {navItems.map((item) =>
-            item.disabled ? (
+            item.action === 'values' ? (
+              <span
+                key="values"
+                className="nav-link"
+                onClick={() => window.dispatchEvent(new CustomEvent('ampcoin:open-values'))}
+              >
+                <span className="nav-icon">{item.icon}</span>
+                <span className="nav-label">{item.label}</span>
+              </span>
+            ) : item.disabled ? (
               <span
                 key={item.path}
                 className="nav-link nav-disabled"

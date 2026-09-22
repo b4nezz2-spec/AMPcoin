@@ -470,9 +470,11 @@ const ChatPanel = ({ socket, chatOpen }) => {
 
       if (response.ok) {
         const saved = await response.json();
-        // Backend broadcasts chatMessage to all users via socket — no client emit needed
+        // Backend broadcasts chatMessage to all users via socket — no client emit needed.
+        // The broadcast can arrive BEFORE this resolves, so drop any copy
+        // with the real id first (fixes the double-message visual bug).
         setMessages((prev) =>
-          prev.map((m) => (m.id === optimisticMsg.id ? saved : m))
+          prev.filter((m) => m.id !== saved.id && m.id !== optimisticMsg.id).concat(saved)
         );
         startCooldown(5);
       } else {
