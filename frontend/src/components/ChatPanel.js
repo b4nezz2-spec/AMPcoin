@@ -651,24 +651,19 @@ const ChatPanel = ({ socket, chatOpen }) => {
               );
             }
             const resolved = getResolved(msg);
-            const isOwn = user && String(msg.userId) === String(user.id);
             const displayName =
               resolved?.displayName ||
               msg.displayName ||
               msg.username ||
               msg.robloxUsername ||
               'Anonymous';
+            const msgIsAdmin = !!(msg.isAdmin || resolved?.isAdmin);
             return (
-              <div
-                key={msg.id || idx}
-                className={`chat-message-row ${isOwn ? 'own-row' : 'other-row'}`}
-              >
-                {!isOwn && (
-                  <span onClick={() => openUserProfile(msg)} style={{ cursor: 'pointer' }}>
-                    <ChatAvatar msg={msg} resolved={resolved} />
-                  </span>
-                )}
-                <div className={`chat-bubble ${isOwn ? 'own' : 'other'}`}>
+              <div key={msg.id || idx} className="chat-message-row">
+                <span onClick={() => openUserProfile(msg)} style={{ cursor: 'pointer' }}>
+                  <ChatAvatar msg={msg} resolved={resolved} />
+                </span>
+                <div className="chat-bubble">
                   <div className="bubble-header">
                     <span
                       className="bubble-username bubble-username-clickable"
@@ -677,15 +672,11 @@ const ChatPanel = ({ socket, chatOpen }) => {
                     >
                       {displayName}
                     </span>
+                    {msgIsAdmin && <span className="chat-admin-badge">ADMIN</span>}
                     <span className="bubble-timestamp">{formatTime(msg.timestamp)}</span>
                   </div>
                   <div className="bubble-content">{msg.message}</div>
                 </div>
-                {isOwn && (
-                  <span onClick={() => openUserProfile(msg)} style={{ cursor: 'pointer' }}>
-                    <ChatAvatar msg={msg} resolved={resolved} />
-                  </span>
-                )}
               </div>
             );
           })

@@ -694,6 +694,18 @@ body {
   text-decoration: underline;
 }
 
+.chat-admin-badge {
+  font-size: 0.6rem;
+  font-weight: 800;
+  background: #da3633;
+  color: #fff;
+  padding: 1px 6px;
+  border-radius: 8px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .bubble-timestamp {
   font-size: 0.65rem;
   color: #484f58;

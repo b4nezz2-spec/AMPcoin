@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import AnimatedPopup from './AnimatedPopup';
+import { CoinChip } from './CoinChip';
+import './CoinChip.css';
+import '../pages/CoinflipPage.css';
 import './CreateCoinflipModal.css';
 
 const CreateCoinflipModal = ({ onClose, onCreated, userId, socket, setBalance, userInventory }) => {
@@ -47,6 +50,17 @@ const CreateCoinflipModal = ({ onClose, onCreated, userId, socket, setBalance, u
       return n;
     });
   };
+
+  // Select all: one unit of every stack (respects 8-tile display rule per stack via grid)
+  const selectAll = () => {
+    const n = {};
+    inventory.forEach((item) => {
+      n[stackKeyOf(item)] = stackQtyOf(item);
+    });
+    setSelectedQty(n);
+  };
+
+  const clearAll = () => setSelectedQty({});
 
   // Selected stacks with their chosen unit counts
   const selectedEntries = inventory
@@ -118,17 +132,6 @@ const CreateCoinflipModal = ({ onClose, onCreated, userId, socket, setBalance, u
     }
   };
 
-  const getRarityClass = (rarity) => {
-    switch(rarity) {
-      case 'common': return 'rarity-common';
-      case 'rare': return 'rarity-rare';
-      case 'epic': return 'rarity-epic';
-      case 'legendary': return 'rarity-legendary';
-      case 'mythic': return 'rarity-mythic';
-      default: return 'rarity-common';
-    }
-  };
-
   // Filter and sort inventory
   let filteredInventory = [...inventory];
 
@@ -179,7 +182,7 @@ const CreateCoinflipModal = ({ onClose, onCreated, userId, socket, setBalance, u
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="cf-modal-overlay" onClick={onClose}>
       {notice && (
         <AnimatedPopup
           message={notice.message}
@@ -187,80 +190,169 @@ const CreateCoinflipModal = ({ onClose, onCreated, userId, socket, setBalance, u
           onClose={() => setNotice(null)}
         />
       )}
-      <div className="modal enhanced" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>Create Coinflip Game</h2>
-          <button className="close-modal" onClick={onClose}>×</button>
-        </div>
-        
-        <div className="modal-body">
-          <div className="form-group">
-            <label className="form-label">Selected Items ({selectedCount}): {getTotalValue().toLocaleString()} AMP</label>
-            <div className="selected-items compact">
-              {selectedEntries.length > 0 ? (
-                selectedEntries.map(({ item, qty }) => (
-                  <div key={item.itemId || item.id} className="selected-chip" title={`${item.details?.name || item.name} — ${((item.value || item.details?.value || 0) * qty).toLocaleString()} AMP`}>
-                    <img
-                      src={item.details?.imageUrl || item.image || '/default-item.png'}
-                      alt={item.details?.name || item.name}
-                      className="chip-img"
-                      onError={(e) => {
-                        e.target.src = '/default-item.png';
-                      }}
-                    />
-                    <span className="chip-name">{item.details?.name || item.name}{qty > 1 && ` ×${qty}`}</span>
-                    <span className="chip-val">{((item.value || item.details?.value || 0) * qty).toLocaleString()}</span>
-                    <button
-                      className="chip-x"
-                      onClick={() => clearStack(stackKeyOf(item))}
-                      title="Remove"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))
-              ) : (
-                <div className="no-selected-items">
-                  <p>No items selected</p>
+      <div className="cf-modal cf-join-modal" onClick={(e) => e.stopPropagation()}>
+        <button className="cf-modal-close" onClick={onClose}>×</button>
+
+        <div className="cf-join-content">
+          {/* Left: your side + limits + select controls */}
+          <div className="cf-join-left">
+            <div className="cf-join-vs-head">
+              <span className="cf-join-vs-label">CREATE BET</span>
+              <div className="cf-join-vs-total">
+                <span className="cf-diamond-sm">💎</span> {getTotalValue().toLocaleString()}
+                <span className="cf-join-vs-sub">{selectedCount} items selected</span>
+              </div>
+            </div>
+
+            <div className="cf-create-opt-group">
+              <div className="cf-join-bet-items-title">YOUR SIDE</div>
+              <div className="cf-create-side-row">
+                <button
+                  type="button"
+                  className={`cf-create-side ${selectedSide === 'heads' ? 'active' : ''}`}
+                  onClick={() => setSelectedSide('heads')}
+                >
+                  <CoinChip side="heads" size={30} />
+                  <span>Heads</span>
+                </button>
+                <button
+                  type="button"
+                  className={`cf-create-side ${selectedSide === 'tails' ? 'active' : ''}`}
+                  onClick={() => setSelectedSide('tails')}
+                >
+                  <CoinChip side="tails" size={30} />
+                  <span>Tails</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="cf-create-opt-group">
+              <div className="cf-join-bet-items-title">LIMITS</div>
+              <div className={`cf-limitations ${limitationsOn ? 'on' : ''}`}>
+                <div className="cf-limit-switch-row">
+                  <span className="cf-limit-label">Limit Items</span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={limitationsOn}
+                    className={`cf-limit-switch ${limitationsOn ? 'on' : ''}`}
+                    onClick={() => {
+                      const next = !limitationsOn;
+                      setLimitationsOn(next);
+                      setLimitMenuOpen(next);
+                    }}
+                  >
+                    <span className="cf-limit-knob" />
+                  </button>
                 </div>
-              )}
+                <div className={`cf-limit-dropdown ${limitationsOn && limitMenuOpen ? 'open' : ''} ${limitationsOn ? 'enabled' : ''}`}>
+                  <button
+                    type="button"
+                    className="cf-limit-trigger"
+                    disabled={!limitationsOn}
+                    onClick={() => setLimitMenuOpen((o) => !o)}
+                    aria-expanded={limitationsOn && limitMenuOpen}
+                  >
+                    Max {maxJoinPets === 0 ? 'No Limit' : `${maxJoinPets} pet${maxJoinPets === 1 ? '' : 's'}`}
+                    <span className="cf-limit-caret">▾</span>
+                  </button>
+                  <div className="cf-limit-menu" role="listbox">
+                    {[0, ...Array.from({ length: 15 }, (_, i) => i + 1)].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        role="option"
+                        aria-selected={maxJoinPets === n}
+                        className={`cf-limit-opt ${maxJoinPets === n ? 'active' : ''}`}
+                        style={{ '--i': n }}
+                        onClick={() => {
+                          setMaxJoinPets(n);
+                          setLimitMenuOpen(false);
+                        }}
+                      >
+                        {n === 0 ? 'No Limit' : n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="cf-create-opt-group">
+              <div className="cf-join-bet-items-title">SELECT</div>
+              <div className="cf-create-side-row">
+                <button type="button" className="cf-join-action-btn" onClick={selectAll}>
+                  Select All
+                </button>
+                <button type="button" className="cf-join-action-btn" onClick={clearAll}>
+                  Clear
+                </button>
+              </div>
+            </div>
+
+            {/* Selected items preview */}
+            <div className="cf-join-bet-items">
+              <div className="cf-join-bet-items-title">YOUR BET ({selectedCount})</div>
+              <div className="cf-join-bet-items-list">
+                {selectedEntries.length > 0 ? (
+                  selectedEntries.map(({ item, qty }) => (
+                    <div key={item.itemId || item.id} className="cf-join-bet-item">
+                      <img
+                        src={item.details?.imageUrl || item.image || '/default-item.png'}
+                        alt={item.details?.name || item.name}
+                        className="cf-join-bet-item-img"
+                        onError={(e) => { e.target.src = '/default-item.png'; }}
+                      />
+                      <span className="cf-join-bet-item-name">{item.details?.name || item.name}{qty > 1 ? ` ×${qty}` : ''}</span>
+                      <span className="cf-join-bet-item-val"><span className="cf-diamond-sm">💎</span> {((item.value || item.details?.value || 0) * qty).toLocaleString()}</span>
+                      <button className="cf-bet-item-x" onClick={() => clearStack(stackKeyOf(item))} title="Remove">×</button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="cf-join-no-items">No items selected</div>
+                )}
+              </div>
             </div>
           </div>
-          
-          <div className="inventory-filters">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Search items..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <select 
-              className="form-control" 
-              value={rarityFilter}
-              onChange={(e) => setRarityFilter(e.target.value)}
-            >
-              <option value="all">All Rarities</option>
-              <option value="common">Common</option>
-              <option value="uncommon">Uncommon</option>
-              <option value="rare">Rare</option>
-              <option value="epic">Epic</option>
-              <option value="legendary">Legendary</option>
-              <option value="mythic">Mythic</option>
-            </select>
-            <select 
-              className="form-control" 
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-            >
-              <option value="value_desc">Value: High to Low</option>
-              <option value="value_asc">Value: Low to High</option>
-              <option value="name_asc">Name: A to Z</option>
-              <option value="name_desc">Name: Z to A</option>
-            </select>
-          </div>
-          
-          <div className="inventory-grid">
+
+          {/* Right: Inventory grid */}
+          <div className="cf-join-right">
+            <div className="cf-join-inv-header">
+              <span>Select Items</span>
+            </div>
+            <div className="cf-create-filters">
+              <input
+                type="text"
+                className="cf-create-search"
+                placeholder="Search items..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <select
+                className="cf-create-select"
+                value={rarityFilter}
+                onChange={(e) => setRarityFilter(e.target.value)}
+              >
+                <option value="all">All Rarities</option>
+                <option value="common">Common</option>
+                <option value="uncommon">Uncommon</option>
+                <option value="rare">Rare</option>
+                <option value="epic">Epic</option>
+                <option value="legendary">Legendary</option>
+                <option value="mythic">Mythic</option>
+              </select>
+              <select
+                className="cf-create-select"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+              >
+                <option value="value_desc">Value: High to Low</option>
+                <option value="value_asc">Value: Low to High</option>
+                <option value="name_asc">Name: A to Z</option>
+                <option value="name_desc">Name: Z to A</option>
+              </select>
+            </div>
+            <div className="cf-join-inv-grid">
             {filteredInventory.length > 0 ? (
               filteredInventory.flatMap((item) => {
                 const key = stackKeyOf(item);
@@ -272,107 +364,43 @@ const CreateCoinflipModal = ({ onClose, onCreated, userId, socket, setBalance, u
                   return (
                     <div
                       key={`${key}:${i}`}
-                      className={`inventory-item ${isSelected ? 'selected' : ''}`}
+                      className={`cf-inv-tile ${isSelected ? 'selected' : ''}`}
                       onClick={() => toggleUnit(key, i)}
                     >
                       <img
                         src={item.details?.imageUrl || item.image || '/default-item.png'}
                         alt={item.details?.name || item.name}
-                        className="item-image"
+                        className="cf-inv-img"
                         onError={(e) => {
                           e.target.src = '/default-item.png';
                         }}
                       />
-                      <div className="item-info">
-                        <div className="item-name">{item.details?.name || item.name}</div>
-                        <div className="item-value">{(item.value || item.details?.value || 0).toLocaleString()} AMP</div>
-                        <span className={`badge ${getRarityClass(item.details?.rarity || item.rarity)}`}>
-                          {(item.details?.rarity || item.rarity)}
-                        </span>
-                      </div>
+                      <div className="cf-inv-name">{item.details?.name || item.name}</div>
+                      <div className="cf-inv-val"><span className="cf-diamond-xs">💎</span>{(item.value || item.details?.value || 0).toLocaleString()}</div>
                     </div>
                   );
                 });
               })
             ) : (
-              <div className="no-inventory-items">
-                <p>No items available in your inventory</p>
-              </div>
-            )}
-          </div>
-        </div>
-        
-        <div className="modal-actions create-actions">
-          <div className="cf-create-sides">
-            <button
-              type="button"
-              className={`side-btn heads ${selectedSide === 'heads' ? 'active' : ''}`}
-              onClick={() => setSelectedSide('heads')}
-            >
-              <span className="coin-badge heads">H</span> Heads
-            </button>
-            <button
-              type="button"
-              className={`side-btn tails ${selectedSide === 'tails' ? 'active' : ''}`}
-              onClick={() => setSelectedSide('tails')}
-            >
-              <span className="coin-badge tails">T</span> Tails
-            </button>
-            <div className={`cf-limitations ${limitationsOn ? 'on' : ''}`}>
-              <div className="cf-limit-switch-row">
-                <span className="cf-limit-label">Limit Items</span>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={limitationsOn}
-                  className={`cf-limit-switch ${limitationsOn ? 'on' : ''}`}
-                  onClick={() => {
-                    const next = !limitationsOn;
-                    setLimitationsOn(next);
-                    setLimitMenuOpen(next);
-                  }}
-                >
-                  <span className="cf-limit-knob" />
-                </button>
-              </div>
-              <div className={`cf-limit-dropdown ${limitationsOn && limitMenuOpen ? 'open' : ''} ${limitationsOn ? 'enabled' : ''}`}>
-                <button
-                  type="button"
-                  className="cf-limit-trigger"
-                  disabled={!limitationsOn}
-                  onClick={() => setLimitMenuOpen((o) => !o)}
-                  aria-expanded={limitationsOn && limitMenuOpen}
-                >
-                  Max {maxJoinPets === 0 ? 'No Limit' : `${maxJoinPets} pet${maxJoinPets === 1 ? '' : 's'}`}
-                  <span className="cf-limit-caret">▾</span>
-                </button>
-                <div className="cf-limit-menu" role="listbox">
-                  {[0, ...Array.from({ length: 15 }, (_, i) => i + 1)].map((n) => (
-                    <button
-                      key={n}
-                      type="button"
-                      role="option"
-                      aria-selected={maxJoinPets === n}
-                      className={`cf-limit-opt ${maxJoinPets === n ? 'active' : ''}`}
-                      style={{ '--i': n }}
-                      onClick={() => {
-                        setMaxJoinPets(n);
-                        setLimitMenuOpen(false);
-                      }}
-                    >
-                      {n === 0 ? 'No Limit' : n}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <div className="cf-join-no-items">No items available in your inventory</div>
+              )}
             </div>
           </div>
-          <div className="cf-create-confirm">
-            <button className="btn btn-secondary" onClick={onClose} disabled={loading}>
+        </div>
+
+        {/* Bottom bar */}
+        <div className="cf-join-bottom">
+          <div className="cf-join-bottom-left">
+            <span className="cf-join-selected-info">
+              {selectedCount} items · <span className="cf-diamond-sm">💎</span> {getTotalValue().toLocaleString()} AMP
+            </span>
+          </div>
+          <div className="cf-join-bottom-right">
+            <button className="cf-join-action-btn" onClick={onClose} disabled={loading}>
               Cancel
             </button>
             <button
-              className="btn btn-primary"
+              className="cf-confirm-btn"
               onClick={handleCreateCoinflip}
               disabled={selectedCount === 0 || loading}
             >

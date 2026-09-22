@@ -208,6 +208,7 @@ router.post('/send', authenticateToken, async (req, res) => {
       displayName: displayName,
       avatar: avatar,
       robloxUserId: profile.robloxUserId || user.robloxUserId || null,
+      isAdmin: !!user.isAdmin,
       message: message.trim(),
       timestamp: new Date().toISOString(),
       type: 'user_message'
