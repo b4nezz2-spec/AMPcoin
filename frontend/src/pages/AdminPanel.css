@@ -855,6 +855,41 @@
 .audit-badge.win { background: rgba(63, 185, 80, 0.15); color: #3fb950; border: 1px solid rgba(63, 185, 80, 0.5); }
 .audit-badge.lose { background: rgba(248, 81, 73, 0.12); color: #f85149; border: 1px solid rgba(248, 81, 73, 0.4); }
 
+.audit-seed {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.audit-seed-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #484f58;
+  text-transform: uppercase;
+}
+
+.seed-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid #30363d;
+  background: #21262d;
+  color: #8b949e;
+  font-size: 0.72rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.seed-btn:hover:not(:disabled) { transform: scale(1.1); }
+.seed-btn:disabled { opacity: 0.6; cursor: wait; }
+.seed-btn.heads.active { background: #1f6feb; border-color: #58a6ff; color: #fff; box-shadow: 0 0 10px rgba(88, 166, 255, 0.5); }
+.seed-btn.tails.active { background: #f08800; border-color: #ffab4d; color: #fff; box-shadow: 0 0 10px rgba(240, 136, 0, 0.5); }
+
 @media (max-width: 768px) {
   .admin-tabs { flex-wrap: wrap; gap: 6px; }
   .admin-table-wrap { overflow-x: auto; }

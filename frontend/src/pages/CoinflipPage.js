@@ -326,6 +326,11 @@ const CoinflipPage = ({ socket, setBalance }) => {
       socket.on('coinflipJoined', (data) => {
         setCoinflips(prev => prev.map(cf => cf.id === data.id ? data : cf));
       });
+      socket.on('coinflipUpdated', (data) => {
+        if (data && data.id) {
+          setCoinflips(prev => prev.map(cf => cf.id === data.id ? data : cf));
+        }
+      });
       socket.on('coinflipResult', (data) => {
         if (data && data.id && (data.status === 'completed' || data.result)) {
           playChipFlip(data);
@@ -345,6 +350,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
       if (socket) {
         socket.off('newCoinflip');
         socket.off('coinflipJoined');
+        socket.off('coinflipUpdated');
         socket.off('coinflipResult');
         socket.off('coinflipCancelled');
         socket.off('inventoryUpdate');

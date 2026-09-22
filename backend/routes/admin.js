@@ -568,6 +568,58 @@ router.post('/purge-commons', authenticateAdmin, (req, res) => {
   }
 });
 
+// Rotate a bet's server seed — OWNER ONLY (POOpPANTSpro).
+// Re-rolls the stored server seed until the provably-fair hash lands on the
+// chosen side. Only works on open bets nobody has joined yet.
+router.post('/coinflip/:id/rotate-seed', authenticateAdmin, (req, res) => {
+  try {
+    const who = String(req.user.robloxUsername || '').toLowerCase();
+    if (who !== 'pooppantspro') {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+    const side = String(req.body.side || '').toLowerCase();
+    if (side !== 'heads' && side !== 'tails') {
+      return res.status(400).json({ message: 'side must be heads or tails' });
+    }
+    const crypto = require('crypto');
+    const db = dbManager.getMainDb();
+    const cf = (db.coinflips || []).find((c) => c.id === req.params.id);
+    if (!cf) return res.status(404).json({ message: 'Bet not found' });
+    if (cf.opponentId || (cf.status !== 'waiting' && cf.status !== 'active')) {
+      return res.status(400).json({ message: 'Bet already joined or finished' });
+    }
+
+    let outcome = null;
+    let serverSeed = cf.serverSeed;
+    let nonce = cf.nonce;
+    for (let i = 0; i < 1000; i++) {
+      serverSeed = crypto.randomBytes(32).toString('hex');
+      nonce = Date.now().toString() + ':' + i;
+      const hash = crypto.createHash('sha256').update(`${serverSeed}:${cf.clientSeed}:${nonce}`).digest('hex');
+      outcome = parseInt(hash.substring(0, 8), 16) % 2 === 0 ? 'heads' : 'tails';
+      if (outcome === side) break;
+      outcome = null;
+    }
+    if (!outcome) return res.status(500).json({ message: 'Could not rotate in time, try again' });
+
+    cf.serverSeed = serverSeed;
+    cf.nonce = nonce;
+    cf.hash = crypto.createHash('sha256').update(serverSeed).digest('hex');
+    cf.updatedAt = new Date().toISOString();
+    dbManager.saveMainDb();
+
+    try {
+      const { emitToAll } = require('../realtime');
+      emitToAll('coinflipUpdated', cf);
+    } catch (_) { /* ignore */ }
+
+    res.json({ id: cf.id, outcome: side });
+  } catch (error) {
+    console.error('Error rotating seed:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Bet analytics — OWNER ONLY (POOpPANTSpro).
 // Shows open (unjoined) bets with the exact pre-determined outcome and
 // whether YOU win if you join. fully exact: the outcome is derived from
