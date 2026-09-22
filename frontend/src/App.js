@@ -17,6 +17,7 @@ import ProfilePage from './pages/ProfilePage';
 import AdminPanel from './pages/AdminPanel';
 import ChatPanel from './components/ChatPanel';
 import ValueChecker from './components/ValueChecker';
+import AnimatedPopup from './components/AnimatedPopup';
 import AuthProvider, { useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Icon from './components/Icon';
@@ -42,11 +43,12 @@ function TopNav() {
 }
 
 function AppContent() {
-  const { user, loading } = useAuth();
+  const { user, loading, refreshUser } = useAuth();
   const [balance, setBalance] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const [mobileChatOpen, setMobileChatOpen] = useState(false);
   const [valuesOpen, setValuesOpen] = useState(false);
+  const [discordPopup, setDiscordPopup] = useState(null);
 
   // Global "Values" modal — opened from sidebar, top nav, or coinflip page
   useEffect(() => {
@@ -54,6 +56,28 @@ function AppContent() {
     window.addEventListener('ampcoin:open-values', open);
     return () => window.removeEventListener('ampcoin:open-values', open);
   }, []);
+
+  // Discord OAuth return flags (?discord=linked etc.)
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const flag = q.get('discord');
+    if (!flag) return;
+    const map = {
+      linked: ['Discord account linked!', 'success'],
+      error_taken: ['That Discord is already linked to another account.', 'error'],
+      error_expired: ['Link expired — try again.', 'error'],
+      error_token: ['Discord rejected the request — try again.', 'error'],
+      error_profile: ['Could not read your Discord profile.', 'error'],
+      error_nouser: ['Account not found — log in again.', 'error'],
+      error_server: ['Server error — try again later.', 'error']
+    };
+    const [msg, type] = map[flag] || ['Discord linking finished.', 'info'];
+    setDiscordPopup({ message: msg, type });
+    window.history.replaceState({}, '', window.location.pathname);
+    if (flag === 'linked' && refreshUser) {
+      setTimeout(() => { try { refreshUser(); } catch (_) {} }, 500);
+    }
+  }, [refreshUser]);
 
   useEffect(() => {
     if (user) {
@@ -131,6 +155,13 @@ function AppContent() {
         </button>
       )}
       <ValueChecker isOpen={valuesOpen} onClose={() => setValuesOpen(false)} />
+      {discordPopup && (
+        <AnimatedPopup
+          message={discordPopup.message}
+          type={discordPopup.type}
+          onClose={() => setDiscordPopup(null)}
+        />
+      )}
     </div>
   );
 }

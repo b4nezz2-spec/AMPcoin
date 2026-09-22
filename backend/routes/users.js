@@ -293,6 +293,26 @@ router.put('/:robloxUsername', authenticateToken, (req, res) => {
   }
 });
 
+// Unlink Discord account
+router.delete('/unlink-discord', authenticateToken, (req, res) => {
+  try {
+    const usersDb = dbManager.getUsersDb();
+    const user = usersDb.users.find((u) => u.id === req.user.userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    user.discordId = null;
+    user.discordUsername = null;
+    user.discordAvatar = null;
+    user.discordLinkedAt = null;
+    user.updatedAt = new Date().toISOString();
+    dbManager.saveUsersDb();
+    const { password, ...clean } = user;
+    res.json({ message: 'Discord unlinked', user: clean });
+  } catch (error) {
+    console.error('Error unlinking discord:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Get user statistics
 router.get('/:robloxUsername/stats', authenticateToken, (req, res) => {
   try {

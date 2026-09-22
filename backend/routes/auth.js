@@ -608,13 +608,118 @@ router.post('/verify-token', async (req, res) => {  try {
         balance: typeof freshUser.balance === 'number' ? freshUser.balance : 0,
         isAdmin: !!freshUser.isAdmin,
         avatar: freshUser.avatar || '',
-        robloxUserId: freshUser.robloxUserId || null
+        robloxUserId: freshUser.robloxUserId || null,
+        discordId: freshUser.discordId || null,
+        discordUsername: freshUser.discordUsername || null,
+        discordAvatar: freshUser.discordAvatar || null
       }
     });
   } catch (error) {
     console.error('Token verification error:', error.message);
     console.error(error.stack);
     res.status(401).json({ valid: false, message: 'Invalid token' });
+  }
+});
+
+// ---- Discord account linking (OAuth2) ----
+// Setup: create an app at https://discord.com/developers/applications,
+// add redirect URI <backend>/api/auth/discord/callback, set env:
+// DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URI, CLIENT_URL.
+const discordLinkStates = new Map(); // state -> { userId, expires }
+
+function discordConfigured() {
+  return !!(process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET && process.env.DISCORD_REDIRECT_URI);
+}
+
+// Step 1: logged-in user hits this (JWT in query since redirects can't send headers)
+router.get('/discord', async (req, res) => {
+  try {
+    if (!discordConfigured()) {
+      return res.status(500).send('Discord linking is not configured on this server.');
+    }
+    const token = req.query.token;
+    if (!token) return res.status(401).send('Missing login token.');
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_key');
+    } catch (_) {
+      return res.status(401).send('Invalid login token.');
+    }
+    const state = crypto.randomBytes(24).toString('hex');
+    discordLinkStates.set(state, { userId: decoded.userId, expires: Date.now() + 10 * 60 * 1000 });
+    const params = new URLSearchParams({
+      client_id: process.env.DISCORD_CLIENT_ID,
+      redirect_uri: process.env.DISCORD_REDIRECT_URI,
+      response_type: 'code',
+      scope: 'identify',
+      state
+    });
+    res.redirect(`https://discord.com/api/oauth2/authorize?${params.toString()}`);
+  } catch (error) {
+    console.error('Discord link start error:', error.message);
+    res.status(500).send('Could not start Discord linking.');
+  }
+});
+
+// Step 2: Discord redirects back here
+router.get('/discord/callback', async (req, res) => {
+  const front = (process.env.CLIENT_URL || '').replace(/\/$/, '');
+  const back = (to) => res.redirect(`${front}/profile${to}`);
+  try {
+    const { code, state } = req.query;
+    const pending = discordLinkStates.get(state);
+    discordLinkStates.delete(state);
+    if (!code || !pending || pending.expires < Date.now()) {
+      return back('?discord=error_expired');
+    }
+
+    // Exchange code for access token
+    const tokenRes = await fetch('https://discord.com/api/oauth2/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: process.env.DISCORD_CLIENT_ID,
+        client_secret: process.env.DISCORD_CLIENT_SECRET,
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: process.env.DISCORD_REDIRECT_URI
+      })
+    });
+    if (!tokenRes.ok) return back('?discord=error_token');
+    const tokenData = await tokenRes.json();
+    if (!tokenData.access_token) return back('?discord=error_token');
+
+    // Fetch Discord profile
+    const meRes = await fetch('https://discord.com/api/users/@me', {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` }
+    });
+    if (!meRes.ok) return back('?discord=error_profile');
+    const me = await meRes.json();
+    if (!me.id) return back('?discord=error_profile');
+
+    const usersDb = dbManager.getUsersDb();
+    // Discord account can only be linked to one site account
+    const taken = (usersDb.users || []).find(
+      (u) => u.discordId && String(u.discordId) === String(me.id) && u.id !== pending.userId
+    );
+    if (taken) return back('?discord=error_taken');
+
+    const user = (usersDb.users || []).find((u) => u.id === pending.userId);
+    if (!user) return back('?discord=error_nouser');
+
+    user.discordId = String(me.id);
+    user.discordUsername = me.username + (me.discriminator && me.discriminator !== '0' ? `#${me.discriminator}` : '');
+    user.discordAvatar = me.avatar
+      ? `https://cdn.discordapp.com/avatars/${me.id}/${me.avatar}.png`
+      : '';
+    user.discordLinkedAt = new Date().toISOString();
+    user.updatedAt = new Date().toISOString();
+    dbManager.saveUsersDb();
+
+    return back('?discord=linked');
+  } catch (error) {
+    console.error('Discord callback error:', error.message);
+    return back('?discord=error_server');
   }
 });
 

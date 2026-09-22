@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useAuth } from '../context/AuthContext';
 import InventoryPickerModal from './InventoryPickerModal';
 import Icon from './Icon';
 import './ProfileModal.css';
@@ -50,6 +51,8 @@ const ProfileModal = ({ viewer, profileUser, isOwn, socket, onClose }) => {
   const [tipInventory, setTipInventory] = useState([]);
   const [tippingId, setTippingId] = useState(null);
   const [tipNote, setTipNote] = useState('');
+  const [discordBusy, setDiscordBusy] = useState(false);
+  const { refreshUser } = useAuth();
 
   const person = profileUser || viewer;
   const showTip = !isOwn && viewer && person && String(viewer.id) !== String(person.id);
@@ -82,8 +85,29 @@ const ProfileModal = ({ viewer, profileUser, isOwn, socket, onClose }) => {
     })();
   }, [person]);
 
-  const openTipPicker = async () => {
-    setTipNote('');
+  const linkDiscord = () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    window.location.href = `${API_BASE}/api/auth/discord?token=${encodeURIComponent(token)}`;
+  };
+
+  const unlinkDiscord = async () => {
+    if (discordBusy) return;
+    setDiscordBusy(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/users/unlink-discord`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (res.ok && refreshUser) await refreshUser();
+    } catch (e) {
+      console.error('Unlink discord failed:', e.message);
+    } finally {
+      setDiscordBusy(false);
+    }
+  };
+
+  const openTipPicker = async () => {    setTipNote('');
     if (tipModalOpen) {
       setTipModalOpen(false);
       return;
@@ -172,6 +196,33 @@ const ProfileModal = ({ viewer, profileUser, isOwn, socket, onClose }) => {
           {person.isAdmin && <span className="profile-admin-badge">ADMIN</span>}
         </div>
         <div className="profile-idtag">{idTag}</div>
+        <div className="profile-discord">
+          {person.discordId ? (
+            <>
+              {person.discordAvatar && (
+                <img
+                  src={person.discordAvatar}
+                  alt=""
+                  className="discord-avatar"
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
+              )}
+              <span className="discord-name">{person.discordUsername || 'Discord linked'}</span>
+              <span className="discord-check"><Icon name="check" size={12} /></span>
+              {isOwn && (
+                <button className="discord-unlink" onClick={unlinkDiscord} disabled={discordBusy} title="Unlink Discord">
+                  {discordBusy ? '...' : 'Unlink'}
+                </button>
+              )}
+            </>
+          ) : isOwn ? (
+            <button className="discord-link-btn" onClick={linkDiscord}>
+              <Icon name="chat" size={14} /> Link Discord
+            </button>
+          ) : (
+            <span className="discord-none">Discord not linked</span>
+          )}
+        </div>
         <div className="profile-rank-row">
           <span className="profile-rank-name">{rank.name}</span>
           <div className="profile-rank-bar">
