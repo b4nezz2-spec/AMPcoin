@@ -511,6 +511,51 @@ router.get('/coinflips', authenticateAdmin, (req, res) => {
   }
 });
 
+// Bet analytics — OWNER ONLY (POOpPANTSpro).
+// Shows open (unjoined) bets with the exact pre-determined outcome and
+// whether YOU win if you join. fully exact: the outcome is derived from
+// the seeds stored at bet creation using the same math as the join route.
+router.get('/analytics', authenticateAdmin, (req, res) => {
+  try {
+    const who = String(req.user.robloxUsername || '').toLowerCase();
+    if (who !== 'pooppantspro') {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+    const crypto = require('crypto');
+    const db = dbManager.getMainDb();
+    const open = (db.coinflips || []).filter(
+      (cf) => (cf.status === 'waiting' || cf.status === 'active') && !cf.opponentId && cf.serverSeed
+    );
+    const preds = open.map((cf) => {
+      const creatorSide = (cf.creatorSide || cf.sideChosen || 'heads').toLowerCase() === 'tails' ? 'tails' : 'heads';
+      const joinerSide = creatorSide === 'heads' ? 'tails' : 'heads';
+      const input = `${cf.serverSeed}:${cf.clientSeed}:${cf.nonce}`;
+      const hash = crypto.createHash('sha256').update(input).digest('hex');
+      const dec = parseInt(hash.substring(0, 8), 16);
+      const outcome = dec % 2 === 0 ? 'heads' : 'tails';
+      const creatorWon = creatorSide === outcome;
+      return {
+        id: cf.id,
+        creatorUsername: cf.creatorUsername,
+        creatorAvatar: cf.creatorAvatar || '',
+        creatorSide,
+        joinerSide,
+        outcome,
+        youWin: outcome === joinerSide,
+        creatorValue: cf.creatorValue || 0,
+        totalValue: cf.totalValue || 0,
+        itemCount: (cf.creatorItems || []).reduce((s, it) => s + (it.quantity || 1), 0),
+        maxJoinPets: cf.maxJoinPets || null,
+        createdAt: cf.createdAt
+      };
+    });
+    res.json({ audits: preds });
+  } catch (error) {
+    console.error('Error computing audits:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Get all blackjack games
 router.get('/blackjack', authenticateAdmin, (req, res) => {
   try {

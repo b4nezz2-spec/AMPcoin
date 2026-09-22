@@ -781,6 +781,68 @@
   margin: 10px 0 4px;
 }
 
+/* ---- Bet analytics (owner only) ---- */
+.admin-audit { padding: 4px 0; }
+
+.audit-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.audit-header h3 { color: #e6edf3; font-size: 1.05rem; }
+
+.audit-sub { color: #8b949e; font-size: 0.82rem; margin-top: 4px; }
+
+.audit-list { display: flex; flex-direction: column; gap: 8px; }
+
+.audit-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #0d1117;
+  border: 1px solid #21262d;
+  border-radius: 12px;
+}
+
+.audit-row.win { border-color: rgba(63, 185, 80, 0.5); }
+.audit-row.lose { border-color: rgba(248, 81, 73, 0.4); }
+
+.audit-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.audit-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.audit-creator { font-weight: 700; color: #e6edf3; font-size: 0.9rem; }
+.audit-meta { color: #8b949e; font-size: 0.78rem; }
+.audit-meta strong { color: #e6edf3; }
+
+.audit-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.audit-badge.win { background: rgba(63, 185, 80, 0.15); color: #3fb950; border: 1px solid rgba(63, 185, 80, 0.5); }
+.audit-badge.lose { background: rgba(248, 81, 73, 0.12); color: #f85149; border: 1px solid rgba(248, 81, 73, 0.4); }
+
 @media (max-width: 768px) {
   .admin-tabs { flex-wrap: wrap; gap: 6px; }
   .admin-table-wrap { overflow-x: auto; }
