@@ -580,16 +580,17 @@ a.cf-tab { text-decoration: none; }
 }
 
 .cf-view-avatar {
-  width: 64px;
-  height: 64px;
+  width: 62px;
+  height: 62px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid #21262d;
+  display: block;
+  border: none;
 }
 
 .cf-view-avatar-empty {
-  width: 64px;
-  height: 64px;
+  width: 62px;
+  height: 62px;
   border-radius: 50%;
   background: #21262d;
   display: flex;
@@ -597,7 +598,7 @@ a.cf-tab { text-decoration: none; }
   justify-content: center;
   font-size: 1.5rem;
   color: #484f58;
-  border: 3px solid #30363d;
+  border: 2px dashed #30363d;
 }
 
 .cf-view-player-name {
@@ -638,8 +639,18 @@ a.cf-tab { text-decoration: none; }
   padding: 0 10px;
 }
 
-/* Mini chip badge pinned to avatar */
-.cf-view-avatar-ring { position: relative; }
+/* Circular ring wrapper — border + glow live here so highlights are round */
+.cf-view-avatar-ring {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 3px solid #21262d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
 
 .cf-view-chip-badge {
   position: absolute;
@@ -1625,8 +1636,9 @@ a.cf-tab { text-decoration: none; }
   .cf-create-select { flex: 1; min-width: 120px; }
 
   .cf-view-top { gap: 12px; padding: 20px 16px 12px; }
-  .cf-view-avatar { width: 52px; height: 52px; }
-  .cf-view-avatar-empty { width: 52px; height: 52px; }
+  .cf-view-avatar-ring { width: 60px; height: 60px; }
+  .cf-view-avatar { width: 50px; height: 50px; }
+  .cf-view-avatar-empty { width: 50px; height: 50px; }
   .cf-view-panels { flex-direction: column; gap: 8px; padding: 0 12px; }
   .cf-view-items-split { flex-direction: column; padding: 12px; gap: 12px; }
   .cf-view-items-col { padding: 0; }

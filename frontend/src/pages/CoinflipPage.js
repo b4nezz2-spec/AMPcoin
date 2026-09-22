@@ -145,8 +145,8 @@ const RARITY_COLORS = {
 const getRarityColor = (r) => RARITY_COLORS[(r || '').toLowerCase()] || '#6b7280';
 
 /* ── Coinflip animation: poker-chip flip, winner hidden until landing ── */
-function CoinSpinner({ result, size = 80 }) {
-  return <CoinFlipAnimation result={result} size={size} />;
+function CoinSpinner({ result, size = 80, onDone }) {
+  return <CoinFlipAnimation result={result} size={size} onDone={onDone} />;
 }
 
 /* ── Relative time helper ("Created 7 minutes ago") ── */
@@ -632,6 +632,8 @@ const CoinflipPage = ({ socket, setBalance }) => {
 
   const [viewBet, setViewBet] = useState(null);
   const [cancelling, setCancelling] = useState(false);
+  // Bet id whose view-modal flip animation has finished (winner ring shows after)
+  const [flipDoneId, setFlipDoneId] = useState(null);
 
   const handleCancelBet = async (bet) => {
     if (!bet || cancelling) return;
@@ -815,13 +817,18 @@ const CoinflipPage = ({ socket, setBalance }) => {
             const oppWon = meta.isCompleted && meta.winnerId && meta.winnerId === coinflip.opponentId;
             const creatorLost = meta.isCompleted && meta.winnerId && meta.winnerId !== coinflip.creatorId;
             const oppLost = meta.isCompleted && meta.winnerId && meta.winnerId !== coinflip.opponentId;
+            // Lobby rows stay unhighlighted while the flip animation plays;
+            // the winner ring appears once the result lands
+            const flipping = !!(anim && anim.phase === 'flipping');
+            const showCreatorRing = creatorWon && !flipping;
+            const showOppRing = oppWon && !flipping;
 
             return (
               <div key={coinflip.id} className={`cf-row ${meta.isCompleted ? 'cf-row-done' : ''}`}>
                 {/* Players */}
                 <div className="cf-row-players">
                   <div className="cf-row-player">
-                    <div className={`cf-row-avatar-ring ${creatorWon ? 'ring-winner' : ''} ${creatorLost ? 'ring-lost' : ''} ring-${meta.creatorSide}`}>
+                    <div className={`cf-row-avatar-ring ${showCreatorRing ? 'ring-winner' : ''} ${creatorLost ? 'ring-lost' : ''} ring-${meta.creatorSide}`}>
                       <img
                         src={meta.creatorAvatar}
                         alt={meta.creatorName}
@@ -835,7 +842,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
                   </div>
                   <span className="cf-row-vs">VS</span>
                   <div className="cf-row-player">
-                    <div className={`cf-row-avatar-ring ${oppWon ? 'ring-winner' : ''} ${oppLost ? 'ring-lost' : ''} ring-${meta.opponentSide}`}>
+                    <div className={`cf-row-avatar-ring ${showOppRing ? 'ring-winner' : ''} ${oppLost ? 'ring-lost' : ''} ring-${meta.opponentSide}`}>
                       {meta.hasOpponent ? (
                         <img
                           src={meta.oppAvatar}
@@ -934,6 +941,8 @@ const CoinflipPage = ({ socket, setBalance }) => {
         const meta = getBetMeta(viewBet);
         const isCompleted = viewBet.status === 'completed' || viewBet.isCompleted;
         const creatorWon = isCompleted && meta.winnerId && meta.winnerId === viewBet.creatorId;
+        // Winner ring appears only after the flip animation lands
+        const showWinnerRing = isCompleted && flipDoneId === viewBet.id;
         return (
           <div className="cf-modal-overlay" onClick={() => setViewBet(null)}>
             <div className="cf-modal cf-view-modal" onClick={(e) => e.stopPropagation()}>
@@ -942,7 +951,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
               {/* Top: Players + Vs / Coin */}
               <div className="cf-view-top">
                 <div className="cf-view-player">
-                  <div className={`cf-view-avatar-ring ${creatorWon ? 'ring-winner' : ''} ring-${meta.creatorSide}`}>
+                  <div className={`cf-view-avatar-ring ${showWinnerRing && creatorWon ? 'ring-winner' : ''} ring-${meta.creatorSide}`}>
                     <img src={meta.creatorAvatar} alt={meta.creatorName} className="cf-view-avatar" onError={(e) => { e.target.src = '/default-avatar.png'; }} />
                     <span className="cf-view-chip-badge"><CoinChip side={meta.creatorSide} size={24} /></span>
                   </div>
@@ -951,14 +960,14 @@ const CoinflipPage = ({ socket, setBalance }) => {
 
                 <div className="cf-view-coin-area">
                   {isCompleted ? (
-                    <CoinSpinner result={meta.resultSide} size={84} />
+                    <CoinSpinner result={meta.resultSide} size={84} onDone={() => setFlipDoneId(viewBet.id)} />
                   ) : (
                     <div className="cf-view-vs-big">Vs</div>
                   )}
                 </div>
 
                 <div className="cf-view-player">
-                  <div className={`cf-view-avatar-ring ${!creatorWon && isCompleted ? 'ring-winner' : ''} ring-${meta.opponentSide}`}>
+                  <div className={`cf-view-avatar-ring ${showWinnerRing && !creatorWon ? 'ring-winner' : ''} ring-${meta.opponentSide}`}>
                     {meta.hasOpponent ? (
                       <img src={meta.oppAvatar} alt={meta.oppName} className="cf-view-avatar" onError={(e) => { e.target.src = '/default-avatar.png'; }} />
                     ) : (
@@ -1020,7 +1029,6 @@ const CoinflipPage = ({ socket, setBalance }) => {
               {isCompleted && (
                 <div className="cf-view-result-text">
                   🏆 <strong>{viewBet.winnerUsername || 'Someone'}</strong> won <span className="cf-highlight">{meta.total.toLocaleString()} AMP</span>
-                  {viewBet.result && <span className="cf-view-result-side"> ({String(viewBet.result).toUpperCase()})</span>}
                 </div>
               )}
 
