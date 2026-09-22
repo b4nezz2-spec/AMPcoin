@@ -20,7 +20,6 @@ import ChatPanel from './components/ChatPanel';
 import AuthProvider, { useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
-// Initialize socket connection — auto-detect backend URL
 const BACKEND_URL = process.env.REACT_APP_API_URL || 'https://ampcoin-50q9kxt9.b4a.run';
 const socket = io(BACKEND_URL, {
   transports: ['websocket', 'polling'],
@@ -31,8 +30,19 @@ const socket = io(BACKEND_URL, {
   timeout: 10000
 });
 
+function TopNav() {
+  return (
+    <nav className="top-nav">
+      <a href="/provably-fair">🛡️ Provably Fair</a>
+      <a href="/stats">📊 Stats</a>
+      <a href="/values">💎 Values</a>
+      <a href="/leaderboard">🏆 Leaderboard</a>
+    </nav>
+  );
+}
+
 function AppContent() {
-  const { user, loading, login, register, refreshUser } = useAuth();
+  const { user, loading } = useAuth();
   const [balance, setBalance] = useState(0);
   const [notifications, setNotifications] = useState([]);
 
@@ -42,7 +52,6 @@ function AppContent() {
     }
   }, [user]);
 
-  // Listen for balance updates
   useEffect(() => {
     socket.on('balanceUpdate', (data) => {
       if (data.userId === user?.id) {
@@ -52,7 +61,7 @@ function AppContent() {
         localStorage.setItem('user', JSON.stringify(storedUser));
       }
     });
-    socket.on('onlineCountUpdate', (data) => {});
+    socket.on('onlineCountUpdate', () => {});
     return () => {
       socket.off('balanceUpdate');
       socket.off('onlineCountUpdate');
@@ -70,6 +79,7 @@ function AppContent() {
 
   return (
     <div className="app">
+      <TopNav />
       {user && <Sidebar />}
       <div className="layout-columns">
         {user && <ChatPanel socket={socket} chatOpen={true} />}
@@ -82,6 +92,7 @@ function AppContent() {
               <Route path="/" element={user ? <Navigate to="/coinflip" replace /> : <Navigate to="/login" replace />} />
               <Route path="/coinflip" element={<ProtectedRoute><CoinflipPage socket={socket} setBalance={setBalance} /></ProtectedRoute>} />
               <Route path="/jackpot" element={<ProtectedRoute><JackpotPage socket={socket} setBalance={setBalance} /></ProtectedRoute>} />
+              <Route path="/blackjack" element={<ProtectedRoute><JackpotPage socket={socket} setBalance={setBalance} /></ProtectedRoute>} />
               <Route path="/wallet" element={<ProtectedRoute><Navigate to="/coinflip" replace /></ProtectedRoute>} />
               <Route path="/stats" element={<ProtectedRoute><StatsPage /></ProtectedRoute>} />
               <Route path="/provably-fair" element={<ProtectedRoute><ProvablyFairPage /></ProtectedRoute>} />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AnimatedPopup from './AnimatedPopup';
@@ -29,6 +29,9 @@ function Sidebar() {
     { path: '/coinflip', label: 'Coinflip', icon: '🪙' },
     { path: '/jackpot', label: 'Jackpot', icon: '🎰' },
     { path: '/trading', label: 'Trading', icon: '👀', disabled: true },
+    { path: '/stats', label: 'Stats', icon: '📊' },
+    { path: '/values', label: 'Values', icon: '💎' },
+    { path: '/provably-fair', label: 'Provably Fair', icon: '🛡️' },
   ];
 
   const adminItems = [
@@ -38,21 +41,20 @@ function Sidebar() {
   return (
     <>
       <nav className="sidebar">
-        <div className="sidebar-logo">
-          <Link to="/coinflip">
+        <div className="sidebar-header">
+          <Link to="/coinflip" className="sidebar-logo">
             <span className="logo-icon">🔥</span>
             <span className="logo-text">AMPCOIN</span>
           </Link>
         </div>
 
         <div className="nav-section">
-          {navItems.map((item) => (
+          {navItems.map((item) =>
             item.disabled ? (
               <span
                 key={item.path}
                 className="nav-link nav-disabled"
                 onClick={() => handleDisabledClick(item.label)}
-                title="Not available yet"
               >
                 <span className="nav-icon">{item.icon}</span>
                 <span className="nav-label">{item.label}</span>
@@ -67,7 +69,7 @@ function Sidebar() {
                 <span className="nav-label">{item.label}</span>
               </Link>
             )
-          ))}
+          )}
         </div>
 
         {user.isAdmin && (
@@ -99,7 +101,7 @@ function Sidebar() {
               {user.isAdmin && <span className="admin-badge">Admin</span>}
             </div>
           </div>
-          <button className="logout-btn" onClick={logout}>🚪</button>
+          <button className="logout-btn" onClick={logout} title="Log out">🚪</button>
         </div>
       </nav>
 
