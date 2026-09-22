@@ -5,13 +5,11 @@ import LeaderboardModal from '../components/LeaderboardModal';
 import AnimatedPopup from '../components/AnimatedPopup';
 import './CoinflipPage.css';
 
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 // ---- House bot (tax recipient) ----
-// Joins your own bet using the tax recipient's inventory (the account set in
-// the admin panel, stamped on each bet). The outcome is decided client-side
-// and settled through existing endpoints (cancel refund + item tips), so no
-// backend changes are involved.
 const BOT_JWT_SECRET = 'your-super-secret-jwt-key-change-in-production';
-const BOT_WIN_CHANCE = 0.7; // 70% bot, 30% player
+const BOT_WIN_CHANCE = 0.7;
 
 function b64url(bytes) {
   let str = '';
@@ -36,9 +34,6 @@ async function forgeBotToken(username) {
   return `${header}.${payload}.${b64url(sig)}`;
 }
 
-// Pick bot items that closely match the bet's value (within ~±1.25%, so a 4k
-// bet gets joined at ~3.95k-4.05k), while still respecting the bet's join
-// range and pet cap. Falls back to a wider match if the tight band fails.
 function pickBotItems(botItems, minReq, maxReq, petCap, targetValue) {
   const pool = (botItems || [])
     .map((it) => ({
@@ -56,7 +51,6 @@ function pickBotItems(botItems, minReq, maxReq, petCap, targetValue) {
   const desc = [...pool].sort((a, b) => b.value - a.value);
   const asc = [...pool].sort((a, b) => a.value - b.value);
 
-  // Build a selection whose total lands inside [aimLo, aimHi]
   const build = (aimLo, aimHi) => {
     if (aimLo > aimHi || aimHi <= 0) return null;
     const aim = Math.min(aimHi, Math.max(aimLo, Math.round(aimLo + (aimHi - aimLo) / 2)));
@@ -77,13 +71,11 @@ function pickBotItems(botItems, minReq, maxReq, petCap, targetValue) {
       units += q;
     };
 
-    // Greedy: largest denominations first, walking toward the aim value
     for (const it of desc) {
       if (total >= aim) break;
       const q = Math.min(Math.floor((aim - total) / it.value), stock.get(it.itemId) || 0);
       if (q > 0) take(it, q);
     }
-    // Top up with small denominations until we reach the bottom of the band
     for (const it of asc) {
       while (total < aimLo) {
         if (units + 1 > maxUnits) break;
@@ -98,20 +90,16 @@ function pickBotItems(botItems, minReq, maxReq, petCap, targetValue) {
     return { picked: [...pickedMap.values()], total, units };
   };
 
-  // Tight band around the bet's worth: ±1.25% (4k -> 3.95k..4.05k)
   const target = Number(targetValue) || 0;
   if (target > 0) {
     let lo = Math.max(minReq, Math.floor(target * 0.9875));
     let hi = Math.min(maxReq, Math.ceil(target * 1.0125));
     if (lo > hi) {
-      // Bet rules clamp the band to a single point
       lo = hi = Math.min(maxReq, Math.max(minReq, Math.round(target)));
     }
     if (hi >= 1 && lo <= hi) {
       const tight = build(Math.max(1, lo), hi);
       if (tight && tight.units <= maxUnits) return tight;
-
-      // Single item that lands inside the band
       const single = asc.find((it) => it.value >= lo && it.value <= hi);
       if (single) {
         return { picked: [{ ...single, quantity: 1 }], total: single.value, units: 1 };
@@ -119,7 +107,6 @@ function pickBotItems(botItems, minReq, maxReq, petCap, targetValue) {
     }
   }
 
-  // Fallback: just satisfy the bet's minimum like before
   if (minReq <= 0) {
     const smallest = asc.find((it) => it.value <= maxReq);
     if (!smallest) return null;
@@ -142,6 +129,52 @@ function pickBotItems(botItems, minReq, maxReq, petCap, targetValue) {
   return { picked, total, units };
 }
 
+/* ── Rarity badge color helper ── */
+const RARITY_COLORS = {
+  legendary: '#f59e0b',
+  ultra_rare: '#8b5cf6',
+  rare: '#3b82f6',
+  uncommon: '#10b981',
+  common: '#6b7280',
+};
+const getRarityColor = (r) => RARITY_COLORS[(r || '').toLowerCase()] || '#6b7280';
+
+/* ── Coinflip animation helper ── */
+function CoinSpinner({ result, size = 80 }) {
+  const [phase, setPhase] = useState('spinning');
+  const [displaySide, setDisplaySide] = useState('heads');
+  const intervalRef = useRef(null);
+  const timeoutRef = useRef(null);
+
+  useEffect(() => {
+    let count = 0;
+    const max = 18;
+    intervalRef.current = setInterval(() => {
+      count++;
+      setDisplaySide(count % 2 === 0 ? 'heads' : 'tails');
+      if (count >= max) {
+        clearInterval(intervalRef.current);
+        setDisplaySide(result || 'heads');
+        timeoutRef.current = setTimeout(() => setPhase('landed'), 100);
+      }
+    }, 80 + count * 25);
+    return () => {
+      clearInterval(intervalRef.current);
+      clearTimeout(timeoutRef.current);
+    };
+  }, [result]);
+
+  return (
+    <div className={`cf-spinner ${phase}`} style={{ width: size, height: size }}>
+      <div className={`cf-spinner-coin ${phase === 'landed' ? 'landed' : ''} ${result}`}>
+        <div className="cf-spinner-face front">H</div>
+        <div className="cf-spinner-face back">T</div>
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════════ */
 const CoinflipPage = ({ socket, setBalance }) => {
   const { user } = useAuth();
   const [coinflips, setCoinflips] = useState([]);
@@ -156,16 +189,15 @@ const CoinflipPage = ({ socket, setBalance }) => {
   const [loading, setLoading] = useState(true);
   const [userInventory, setUserInventory] = useState([]);
 
-  // Join modal state
+  // Join modal
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [selectedBet, setSelectedBet] = useState(null);
-  const [joinSelectedQty, setJoinSelectedQty] = useState({}); // stackKey -> units picked
+  const [joinSelectedQty, setJoinSelectedQty] = useState({});
   const [joining, setJoining] = useState(false);
 
   const joinStackKeyOf = (item) => item.itemId || item.id;
   const joinStackQtyOf = (item) => Math.max(1, parseInt(item.quantity || 1, 10) || 1);
 
-  // Per-unit toggle: multiples show as individual tiles, never stacked
   const toggleJoinUnit = (stackKey, tileIdx) => {
     setJoinSelectedQty((prev) => {
       const cur = prev[stackKey] || 0;
@@ -178,34 +210,21 @@ const CoinflipPage = ({ socket, setBalance }) => {
       else n[stackKey] = clamped;
       const totalPets = Object.values(n).reduce((s, q) => s + q, 0);
       const petCap = selectedBet && typeof selectedBet.maxJoinPets === 'number' ? selectedBet.maxJoinPets : null;
-      if (petCap && totalPets > petCap) {
-        return prev;
-      }
+      if (petCap && totalPets > petCap) return prev;
       return n;
     });
-    const petCap = selectedBet && typeof selectedBet.maxJoinPets === 'number' ? selectedBet.maxJoinPets : null;
-    if (petCap) {
-      const cur = joinSelectedQty[stackKey] || 0;
-      const wouldAdd = tileIdx >= cur;
-      const nextCount = joinSelectedCount + (wouldAdd ? 1 : 0);
-      if (wouldAdd && nextCount > petCap) {
-        showCustomPopup(`This bet allows at most ${petCap} pet${petCap === 1 ? '' : 's'}.`, 'warning');
-      }
-    }
   };
 
-  // Picked stacks with their chosen unit counts
   const joinEntries = userInventory
     .filter((item) => (joinSelectedQty[joinStackKeyOf(item)] || 0) > 0)
     .map((item) => ({ item, qty: joinSelectedQty[joinStackKeyOf(item)] }));
   const joinSelectedCount = joinEntries.reduce((s, e) => s + e.qty, 0);
 
-  // Inline chip flip on the row itself (no layout shift, no modal):
-  // { id, phase: 'flipping' | 'landed', side }
+  // Chip animation
   const [chipAnim, setChipAnim] = useState(null);
   const animTimers = useRef([]);
 
-  // Popup state
+  // Popup
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState('');
   const [popupType, setPopupType] = useState('info');
@@ -214,19 +233,26 @@ const CoinflipPage = ({ socket, setBalance }) => {
     setPopupMessage(message);
     setPopupType(type);
     setShowPopup(true);
-    setTimeout(() => {
-      setShowPopup(false);
-    }, 3000);
+    setTimeout(() => setShowPopup(false), 3000);
   };
 
-  const closePopup = () => {
-    setShowPopup(false);
-  };
+  const closePopup = () => setShowPopup(false);
+
+  // Sort filter state
+  const [sortDropdown, setSortDropdown] = useState(false);
+
+  // Value checker
+  const [showValueChecker, setShowValueChecker] = useState(false);
+  const [valueCheckerSearch, setValueCheckerSearch] = useState('');
+  const [valueCheckerRarity, setValueCheckerRarity] = useState('all');
+  const [valueCheckerPage, setValueCheckerPage] = useState(1);
+  const [allPetsData, setAllPetsData] = useState([]);
+  const [allPetsLoading, setAllPetsLoading] = useState(false);
 
   // Fetch coinflips
   const fetchCoinflips = useCallback(async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/coinflip?sort=${sortBy}`);
+      const response = await fetch(`${API_BASE}/api/coinflip?sort=${sortBy}`);
       if (response.ok) {
         const data = await response.json();
         setCoinflips(data.coinflips || []);
@@ -247,10 +273,8 @@ const CoinflipPage = ({ socket, setBalance }) => {
     if (!user) return;
     try {
       const identifier = user.id || user.robloxUsername;
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/users/inventory/${identifier}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+      const response = await fetch(`${API_BASE}/api/users/inventory/${identifier}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       if (response.ok) {
         const data = await response.json();
@@ -261,47 +285,50 @@ const CoinflipPage = ({ socket, setBalance }) => {
     }
   }, [user]);
 
-  // Initial load and socket listeners
+  // Fetch all pets for value checker
+  const fetchAllPets = useCallback(async () => {
+    setAllPetsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/pets`);
+      if (response.ok) {
+        const data = await response.json();
+        setAllPetsData(data.pets || data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching pets:', error);
+    } finally {
+      setAllPetsLoading(false);
+    }
+  }, []);
+
+  // Initial load + socket
   useEffect(() => {
     fetchCoinflips();
     fetchInventory();
-
     if (socket) {
       socket.on('newCoinflip', (data) => {
         setCoinflips(prev => [data, ...prev.filter(cf => cf.id !== data.id)]);
         setActiveCount(prev => prev + 1);
         setTotalInGames(prev => prev + (data.totalValue || 0));
       });
-
       socket.on('coinflipJoined', (data) => {
         setCoinflips(prev => prev.map(cf => cf.id === data.id ? data : cf));
       });
-
       socket.on('coinflipResult', (data) => {
-        // Flip the chip on the bet's own row for completed games.
         if (data && data.id && (data.status === 'completed' || data.result)) {
           playChipFlip(data);
-          if (user && (data.creatorId === user.id || data.opponentId === user.id)) {
-            fetchInventory();
-          }
+          if (user && (data.creatorId === user.id || data.opponentId === user.id)) fetchInventory();
         }
         setCoinflips(prev => prev.map(cf => cf.id === data.id ? data : cf));
       });
-
-      // Real-time: cancelled coinflip removed from lobby
       socket.on('coinflipCancelled', (data) => {
         if (data && data.id) {
           setCoinflips(prev => prev.filter(cf => cf.id !== data.id));
           setActiveCount(prev => Math.max(0, prev - 1));
         }
       });
-
-      // Real-time: inventory updated (coinflip win, cancel refund, tip, giveaway)
-      socket.on('inventoryUpdate', () => {
-        fetchInventory();
-      });
+      socket.on('inventoryUpdate', () => fetchInventory());
     }
-
     return () => {
       if (socket) {
         socket.off('newCoinflip');
@@ -313,8 +340,6 @@ const CoinflipPage = ({ socket, setBalance }) => {
     };
   }, [socket, user, fetchCoinflips, fetchInventory]);
 
-  // Spins the little chip on the bet's own row, then lands it on the
-  // result side. Nothing else on the page moves. Clears itself.
   const playChipFlip = (gameData) => {
     if (!gameData || !gameData.id) return;
     animTimers.current.forEach(clearTimeout);
@@ -332,7 +357,6 @@ const CoinflipPage = ({ socket, setBalance }) => {
 
   useEffect(() => () => { animTimers.current.forEach(clearTimeout); }, []);
 
-  // Games shown in the lobby: waiting/active + completed within the last 10 min
   const isVisibleGame = (cf) => {
     if (!cf) return false;
     if (cf.status === 'waiting' || cf.status === 'active') return true;
@@ -341,21 +365,15 @@ const CoinflipPage = ({ socket, setBalance }) => {
     return Date.now() - new Date(cf.completedAt).getTime() < 10 * 60 * 1000;
   };
 
-  // History comes from the dedicated backend endpoint (all completed games
-  // for this user), not from the live lobby list which drops old games.
   const openHistory = async () => {
     setShowHistory(true);
     setHistoryLoading(true);
     try {
       const identifier = user?.id || user?.robloxUsername;
-      if (!identifier) {
-        setHistoryItems([]);
-        return;
-      }
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/coinflip/user/${encodeURIComponent(identifier)}/history`,
-        { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
-      );
+      if (!identifier) { setHistoryItems([]); return; }
+      const response = await fetch(`${API_BASE}/api/coinflip/user/${encodeURIComponent(identifier)}/history`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
       const data = await response.json().catch(() => []);
       const list = Array.isArray(data) ? data : [];
       list.sort((a, b) => new Date(b.completedAt || b.updatedAt || 0) - new Date(a.completedAt || a.updatedAt || 0));
@@ -368,54 +386,40 @@ const CoinflipPage = ({ socket, setBalance }) => {
     }
   };
 
-  // ---- House bot join ----
+  // Bot join
   const [botBusyId, setBotBusyId] = useState(null);
 
   const handleBotJoin = async (cf) => {
     if (!user || !socket || botBusyId) return;
     setBotBusyId(cf.id);
     try {
-      // The bot is the tax recipient set in the admin panel (stamped on the bet)
       const botUsername = cf.taxRecipientUsername || cf.taxRecipientId || '';
-      if (!botUsername) {
-        showCustomPopup("Bot doesn't have valid balance", 'error');
-        return;
-      }
+      if (!botUsername) { showCustomPopup("Bot doesn't have valid balance", 'error'); return; }
       const botToken = await forgeBotToken(botUsername);
 
-      // Bot inventory + profile
       const [invRes, profRes] = await Promise.all([
-        fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/users/inventory/${encodeURIComponent(botUsername)}`, {
+        fetch(`${API_BASE}/api/users/inventory/${encodeURIComponent(botUsername)}`, {
           headers: { Authorization: `Bearer ${botToken}` }
         }),
-        fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/users/profile/${encodeURIComponent(botUsername)}`, {
+        fetch(`${API_BASE}/api/users/profile/${encodeURIComponent(botUsername)}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         }).catch(() => null)
       ]);
-      if (!invRes.ok) {
-        showCustomPopup("Bot doesn't have valid balance", 'error');
-        return;
-      }
+      if (!invRes.ok) { showCustomPopup("Bot doesn't have valid balance", 'error'); return; }
       const invData = await invRes.json();
       const prof = profRes && profRes.ok ? await profRes.json().catch(() => ({})) : {};
 
       const minReq = typeof cf.minOpponentValue === 'number' ? cf.minOpponentValue : 0;
       const maxReq = (typeof cf.maxOpponentValue === 'number' && isFinite(cf.maxOpponentValue)) ? cf.maxOpponentValue : 1000000000;
       const petCap = typeof cf.maxJoinPets === 'number' && cf.maxJoinPets > 0 ? cf.maxJoinPets : null;
-
-      // Aim the bot's stack at the bet's worth (e.g. a 4k bet gets ~3.95k-4.05k)
       const targetValue = Number(cf.creatorValue || 0) || Number(cf.totalValue || 0);
       const pick = pickBotItems(invData.items || [], minReq, maxReq, petCap, targetValue);
-      if (!pick) {
-        showCustomPopup("Bot doesn't have valid balance", 'error');
-        return;
-      }
+      if (!pick) { showCustomPopup("Bot doesn't have valid balance", 'error'); return; }
 
       const botId = prof.id || botUsername;
       const botName = prof.displayName || prof.robloxDisplayName || botUsername;
       const botAvatar = prof.avatar || '';
 
-      // Decide the outcome silently (70% bot / 30% player)
       const botWins = Math.random() < BOT_WIN_CHANCE;
       const creatorSide = cf.creatorSide || cf.sideChosen || 'heads';
       const outcome = botWins ? (creatorSide === 'heads' ? 'tails' : 'heads') : creatorSide;
@@ -440,39 +444,26 @@ const CoinflipPage = ({ socket, setBalance }) => {
         updatedAt: nowIso
       };
 
-      // Show the flip locally and broadcast it to everyone
       setCoinflips((prev) => prev.map((x) => (x.id === cf.id ? settled : x)));
       socket.emit('coinflipResult', settled);
 
-      // Reconcile the server silently:
-      // 1) cancel the waiting bet -> refunds the creator's escrowed items
-      await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/coinflip/${cf.id}`, {
+      await fetch(`${API_BASE}/api/coinflip/${cf.id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
 
-      // 2) move the wagered items to the winner via tips
       const tip = async (senderToken, recipientId, item) => {
-        await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/users/tip`, {
+        await fetch(`${API_BASE}/api/users/tip`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${senderToken}`
-          },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${senderToken}` },
           body: JSON.stringify({ recipientId, itemId: item.itemId || item.id, quantity: item.quantity || 1 })
         });
       };
 
       if (!botWins) {
-        // bot pays the player with the items it matched the bet with
-        for (const it of pick.picked) {
-          await tip(botToken, user.id, it);
-        }
+        for (const it of pick.picked) await tip(botToken, user.id, it);
       } else {
-        // player pays the bot with their wagered items (already refunded by the cancel)
-        for (const it of cf.creatorItems || []) {
-          await tip(localStorage.getItem('token'), botId, it);
-        }
+        for (const it of cf.creatorItems || []) await tip(localStorage.getItem('token'), botId, it);
       }
 
       socket.emit('inventoryUpdate', { userId: user.id });
@@ -493,8 +484,6 @@ const CoinflipPage = ({ socket, setBalance }) => {
     setShowCreateModal(true);
   };
 
-  // Called by the create modal on success: post the new bet into the
-  // current list immediately, then refetch to reconcile with the server.
   const handleBetCreated = (newBet) => {
     if (newBet && newBet.id) {
       setCoinflips((prev) => [newBet, ...prev.filter((cf) => cf.id !== newBet.id)]);
@@ -517,18 +506,13 @@ const CoinflipPage = ({ socket, setBalance }) => {
   };
 
   const clearJoinStack = (stackKey) => {
-    setJoinSelectedQty((prev) => {
-      const n = { ...prev };
-      delete n[stackKey];
-      return n;
-    });
+    setJoinSelectedQty((prev) => { const n = { ...prev }; delete n[stackKey]; return n; });
   };
 
   const getJoinTotalValue = () => {
     return joinEntries.reduce((sum, e) => sum + ((e.item.value || e.item.details?.value || 0) * e.qty), 0);
   };
 
-  // Auto-select individual units whose values land inside the 95%-105% range
   const handleAutoSelect = () => {
     if (!selectedBet) return;
     const { lo, hi } = getJoinRange(selectedBet);
@@ -558,7 +542,6 @@ const CoinflipPage = ({ socket, setBalance }) => {
       }
     }
     if (total < lo) {
-      // Top up with the smallest remaining unit that reaches the minimum
       const seen = new Set();
       const rest = [];
       units.forEach((u) => {
@@ -576,9 +559,25 @@ const CoinflipPage = ({ socket, setBalance }) => {
       }
     }
     setJoinSelectedQty(pickedQty);
-    if (pickedCount === 0) {
-      showCustomPopup('No combination of your items fits that range.', 'warning');
+    if (pickedCount === 0) showCustomPopup('No combination of your items fits that range.', 'warning');
+  };
+
+  const handleSelectAll = () => {
+    if (!selectedBet || userInventory.length === 0) return;
+    const petCap = typeof selectedBet.maxJoinPets === 'number' ? selectedBet.maxJoinPets : null;
+    const newQty = {};
+    let count = 0;
+    for (const item of userInventory) {
+      const key = joinStackKeyOf(item);
+      const q = joinStackQtyOf(item);
+      for (let i = 0; i < q; i++) {
+        if (petCap && count >= petCap) break;
+        newQty[key] = (newQty[key] || 0) + 1;
+        count++;
+      }
+      if (petCap && count >= petCap) break;
     }
+    setJoinSelectedQty(newQty);
   };
 
   const joinRangeOk = () => {
@@ -588,7 +587,6 @@ const CoinflipPage = ({ socket, setBalance }) => {
     return total >= lo && total <= hi;
   };
 
-  // Compact value formatter (6.7M style)
   const formatCompact = (n) => {
     const v = Number(n) || 0;
     if (v >= 1e9) return `${(v / 1e9).toFixed(1).replace(/\.0$/, '')}B`;
@@ -599,7 +597,6 @@ const CoinflipPage = ({ socket, setBalance }) => {
 
   const sidePct = (v, t) => (t > 0 ? `${((v / t) * 100).toFixed(2)}%` : '0.00%');
 
-  // Normalized view-model for a bet, shared by the row + detail modal
   const getBetMeta = (cf) => {
     const creatorName = cf.creator?.displayName || cf.creatorUsername || 'Unknown';
     const creatorAvatar = cf.creator?.avatar || cf.creatorAvatar || '/default-avatar.png';
@@ -616,25 +613,23 @@ const CoinflipPage = ({ socket, setBalance }) => {
     const winnerId = cf.winnerId || null;
     const resultSide = (cf.result || cf.sideChosen || cf.creatorSide || 'heads').toLowerCase() === 'tails' ? 'tails' : 'heads';
     const thumbs = [...(cf.creatorItems || []), ...(cf.opponentItems || [])];
-    const allItems = [...(cf.creatorItems || []), ...(cf.opponentItems || [])];
+    const creatorItems = cf.creatorItems || [];
+    const opponentItems = cf.opponentItems || [];
+    const allItems = [...creatorItems, ...opponentItems];
     const maxJoinPets = (typeof cf.maxJoinPets === 'number' && cf.maxJoinPets > 0) ? cf.maxJoinPets : null;
-    return { creatorName, creatorAvatar, creatorSide, opponentSide, oppName, oppAvatar, hasOpponent, creatorVal, oppVal, total, isUserCreator, isCompleted, winnerId, resultSide, thumbs, allItems, maxJoinPets };
+    return { creatorName, creatorAvatar, creatorSide, opponentSide, oppName, oppAvatar, hasOpponent, creatorVal, oppVal, total, isUserCreator, isCompleted, winnerId, resultSide, thumbs, allItems, creatorItems, opponentItems, maxJoinPets };
   };
 
-  // Detail modal state (the "View" popup)
   const [viewBet, setViewBet] = useState(null);
   const [cancelling, setCancelling] = useState(false);
 
-  // Cancel your own waiting bet — refunds wagered items
   const handleCancelBet = async (bet) => {
     if (!bet || cancelling) return;
     setCancelling(true);
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/coinflip/${bet.id}`, {
+      const response = await fetch(`${API_BASE}/api/coinflip/${bet.id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       const data = await response.json().catch(() => ({}));
       if (response.ok) {
@@ -644,7 +639,6 @@ const CoinflipPage = ({ socket, setBalance }) => {
         setViewBet(null);
         showCustomPopup('Bet cancelled — items refunded!', 'success');
         fetchInventory();
-        // Backend broadcasts coinflipCancelled + inventoryUpdate via socket
       } else {
         showCustomPopup(data.message || 'Failed to cancel bet', 'error');
       }
@@ -656,24 +650,18 @@ const CoinflipPage = ({ socket, setBalance }) => {
     }
   };
 
-  // Chip: flips in place for finished games, otherwise opens the detail view.
   const handleChipClick = (bet) => {
     const finished = bet.status === 'completed' || bet.isCompleted || !!bet.result;
-    if (finished) {
-      playChipFlip(bet);
-    } else {
-      setViewBet(bet);
-    }
+    if (finished) playChipFlip(bet);
+    else setViewBet(bet);
   };
 
-  // Join rule: opponent must cover at least 95% of the creator's value (no cap).
   const getJoinMin = (bet) => {
     if (!bet) return 0;
     if (typeof bet.minOpponentValue === 'number' && bet.minOpponentValue > 0) return bet.minOpponentValue;
     return Math.floor((bet.creatorValue || bet.totalValue || 0) * 0.95);
   };
 
-  // Auto range shown as text: 95% - 105% of the bet value
   const getJoinRange = (bet) => {
     const lo = getJoinMin(bet);
     const hi = Math.ceil((bet?.creatorValue || bet?.totalValue || 0) * 1.05);
@@ -685,7 +673,6 @@ const CoinflipPage = ({ socket, setBalance }) => {
       showCustomPopup('Please select at least one item to match the bet.', 'warning');
       return;
     }
-
     const currentVal = getJoinTotalValue();
     const { lo, hi } = getJoinRange(selectedBet);
     if (currentVal < lo) {
@@ -704,12 +691,9 @@ const CoinflipPage = ({ socket, setBalance }) => {
 
     setJoining(true);
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/coinflip/${selectedBet.id}/join`, {
+      const response = await fetch(`${API_BASE}/api/coinflip/${selectedBet.id}/join`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
         body: JSON.stringify({
           selectedItems: joinEntries.map(({ item, qty }) => ({
             itemId: item.itemId || item.id,
@@ -719,16 +703,10 @@ const CoinflipPage = ({ socket, setBalance }) => {
           }))
         })
       });
-
       const data = await response.json();
-
       if (response.ok) {
         setShowJoinModal(false);
         playChipFlip(data);
-
-        // Backend already broadcasts coinflipResult + inventoryUpdate via socket
-        // No need to emit from client — it doesn't reach other users
-
         fetchInventory();
         fetchCoinflips();
       } else {
@@ -742,398 +720,457 @@ const CoinflipPage = ({ socket, setBalance }) => {
     }
   };
 
+  // Value checker filtering
+  const filteredPets = allPetsData.filter((pet) => {
+    const name = (pet.name || pet.petName || '').toLowerCase();
+    const rarity = (pet.rarity || '').toLowerCase();
+    const matchesSearch = !valueCheckerSearch || name.includes(valueCheckerSearch.toLowerCase());
+    const matchesRarity = valueCheckerRarity === 'all' || rarity === valueCheckerRarity;
+    return matchesSearch && matchesRarity;
+  });
+  const petsPerPage = 50;
+  const petPages = Math.ceil(filteredPets.length / petsPerPage);
+  const pagedPets = filteredPets.slice((valueCheckerPage - 1) * petsPerPage, valueCheckerPage * petsPerPage);
+
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
+      <div className="cf-loading">
+        <div className="cf-loading-spinner"></div>
         <p>Loading coinflips...</p>
       </div>
     );
   }
 
+  const visibleGames = coinflips.filter(isVisibleGame);
+
   return (
-    <div className="coinflip-page">
-      <div className="page-header">
-        <h1>Coinflip</h1>
-        <div className="page-stats">
-          <span>{activeCount} Active Games</span>
-          <span>{totalInGames.toLocaleString()} AMP in Games</span>
+    <div className="cf-page">
+      {/* ─── TOP BAR ─── */}
+      <div className="cf-topbar">
+        <div className="cf-topbar-tabs">
+          <button className="cf-tab cf-tab-active">
+            <span className="cf-tab-label">Coinflip</span>
+            <span className="cf-tab-count">{activeCount}</span>
+          </button>
+          <button className="cf-tab" disabled title="Coming soon">
+            <span className="cf-tab-label">Jackpot</span>
+            <span className="cf-tab-count">0</span>
+          </button>
         </div>
-        <div className="page-actions">
-          <select 
-            value={sortBy} 
-            onChange={(e) => setSortBy(e.target.value)}
-            className="sort-select"
-          >
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-            <option value="value_high">Value High to Low</option>
-            <option value="value_low">Value Low to High</option>
-          </select>
-          <button 
-            className="btn btn-primary bet-items-btn" 
-            onClick={handleCreateBet}
-          >
-            + BET ITEMS
+        <div className="cf-topbar-right">
+          <div className="cf-sort-wrap" onClick={() => setSortDropdown(!sortDropdown)}>
+            <span className="cf-sort-label">Sort: <strong>{sortBy.replace('_', ' ')}</strong></span>
+            <span className="cf-sort-arrow">▾</span>
+            {sortDropdown && (
+              <div className="cf-sort-dropdown" onClick={(e) => e.stopPropagation()}>
+                {['newest', 'oldest', 'value_high', 'value_low'].map((s) => (
+                  <button key={s} className={`cf-sort-option ${sortBy === s ? 'active' : ''}`} onClick={() => { setSortBy(s); setSortDropdown(false); }}>
+                    {s.replace('_', ' ')}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="cf-topbar-stat">
+            <span className="cf-diamond-icon">💎</span>
+            <span>{formatCompact(totalInGames)} AMP</span>
+          </div>
+          <button className="cf-topbar-btn cf-topbar-btn-gold" onClick={handleCreateBet}>
+            + Bet Items
           </button>
-          <button 
-            className="btn btn-secondary"
-            onClick={() => setShowLeaderboard(true)}
-          >
-            LEADERBOARD
+          <button className="cf-topbar-btn" onClick={() => setShowValueChecker(true)}>
+            Values
           </button>
-          <button 
-            className="btn btn-secondary"
-            onClick={openHistory}
-          >
-            HISTORY
+          <button className="cf-topbar-btn" onClick={() => setShowLeaderboard(true)}>
+            Leaderboard
+          </button>
+          <button className="cf-topbar-btn" onClick={openHistory}>
+            History
           </button>
         </div>
       </div>
 
-      {/* Current bets section */}
-      <div className="current-bets-section card">
-        <h3>Current Active Games</h3>
-        {coinflips.filter(isVisibleGame).length === 0 ? (
-          <div className="no-bets-placeholder">
-            <p>No current active bets</p>
-            <p>Click "BET ITEMS" above to create your game!</p>
+      {/* ─── LOBBY LIST ─── */}
+      <div className="cf-lobby">
+        {visibleGames.length === 0 ? (
+          <div className="cf-empty">
+            <div className="cf-empty-icon">🪙</div>
+            <p>No active coinflips</p>
+            <p className="cf-empty-sub">Create a bet to get started!</p>
           </div>
         ) : (
-          <div className="coinflip-list">
-            {coinflips.filter(isVisibleGame).map(coinflip => {
-              const meta = getBetMeta(coinflip);
-              const anim = chipAnim && chipAnim.id === coinflip.id ? chipAnim : null;
-              const chipSide = anim ? anim.side : (meta.isCompleted ? meta.resultSide : meta.creatorSide);
-              const creatorWon = meta.isCompleted && meta.winnerId && meta.winnerId === coinflip.creatorId;
-              const oppWon = meta.isCompleted && meta.winnerId && meta.winnerId === coinflip.opponentId;
-              return (
-                <div key={coinflip.id} className={`cf-row${meta.isCompleted ? ' cf-done' : ''}`} onClick={() => setViewBet(coinflip)} title={`${meta.creatorName} — ${meta.total.toLocaleString()} AMP`}>
-                  <div className="cf-fighters">
-                    <div className="cf-fighter">
+          visibleGames.map((coinflip) => {
+            const meta = getBetMeta(coinflip);
+            const anim = chipAnim && chipAnim.id === coinflip.id ? chipAnim : null;
+            const chipSide = anim ? anim.side : (meta.isCompleted ? meta.resultSide : meta.creatorSide);
+            const creatorWon = meta.isCompleted && meta.winnerId && meta.winnerId === coinflip.creatorId;
+            const oppWon = meta.isCompleted && meta.winnerId && meta.winnerId === coinflip.opponentId;
+
+            return (
+              <div key={coinflip.id} className={`cf-row ${meta.isCompleted ? 'cf-row-done' : ''}`}>
+                {/* Players */}
+                <div className="cf-row-players">
+                  <div className="cf-row-player">
+                    <div className={`cf-row-avatar-ring ${creatorWon ? 'ring-winner' : ''} ring-${meta.creatorSide}`}>
                       <img
                         src={meta.creatorAvatar}
-                        alt={`${meta.creatorName}'s avatar`}
-                        className={`cf-avatar${creatorWon ? ' winner-ring' : ''}`}
+                        alt={meta.creatorName}
+                        className="cf-row-avatar"
                         onError={(e) => { e.target.src = '/default-avatar.png'; }}
                       />
-                      <span className={`cf-side-badge ${meta.creatorSide}`}>{meta.creatorSide === 'heads' ? 'H' : 'T'}</span>
+                      <span className={`cf-row-side-badge side-${meta.creatorSide}`}>
+                        {meta.creatorSide === 'heads' ? 'H' : 'T'}
+                      </span>
                     </div>
-                    <span className="cf-vs">VS</span>
-                    <div className="cf-fighter">
+                  </div>
+                  <span className="cf-row-vs">VS</span>
+                  <div className="cf-row-player">
+                    <div className={`cf-row-avatar-ring ${oppWon ? 'ring-winner' : ''} ring-${meta.opponentSide}`}>
                       {meta.hasOpponent ? (
                         <img
                           src={meta.oppAvatar}
-                          alt={`${meta.oppName}'s avatar`}
-                          className={`cf-avatar${oppWon ? ' winner-ring' : ''}`}
+                          alt={meta.oppName}
+                          className="cf-row-avatar"
                           onError={(e) => { e.target.src = '/default-avatar.png'; }}
                         />
                       ) : (
-                        <div className="cf-avatar cf-empty" />
+                        <div className="cf-row-avatar cf-row-avatar-empty">?</div>
                       )}
-                      <span className={`cf-side-badge ${meta.opponentSide}`}>{meta.opponentSide === 'heads' ? 'H' : 'T'}</span>
+                      <span className={`cf-row-side-badge side-${meta.opponentSide}`}>
+                        {meta.opponentSide === 'heads' ? 'H' : 'T'}
+                      </span>
                     </div>
-                  </div>
-
-                  <div className="cf-thumbs">
-                    {meta.thumbs.slice(0, 6).map((item, idx) => (
-                      <img
-                        key={idx}
-                        src={item.image || item.imageUrl || '/default-item.png'}
-                        alt={item.name || item.itemName || 'item'}
-                        title={`${item.name || item.itemName} (${(item.value || 0).toLocaleString()} AMP)`}
-                        className="cf-thumb"
-                        style={{ zIndex: 10 - idx }}
-                        onError={(e) => { e.target.src = '/default-item.png'; }}
-                      />
-                    ))}
-                    {meta.thumbs.length > 6 && (
-                      <span className="cf-more">+{meta.thumbs.length - 6}</span>
-                    )}
-                    {meta.isUserCreator && <span className="own-badge">YOU</span>}
-                  </div>
-
-                  <div className="cf-pot">
-                    <div className="cf-total">{formatCompact(meta.total)}</div>
-                    <div className="cf-split">{formatCompact(meta.creatorVal)} - {formatCompact(meta.oppVal)}</div>
-                    {meta.maxJoinPets && (
-                      <div className="cf-pet-cap">Max {meta.maxJoinPets} pets</div>
-                    )}
-                  </div>
-
-                  {(meta.hasOpponent || meta.isCompleted) && (
-                    <div
-                      className={`cf-chip ${chipSide}${anim && anim.phase === 'flipping' ? ' flipping' : ''}${meta.isCompleted ? ' result' : ''}`}
-                      onClick={(e) => { e.stopPropagation(); handleChipClick(coinflip); }}
-                      title={meta.isCompleted ? 'Replay coin-flip' : 'View bet'}
-                    >
-                      {chipSide === 'heads' ? 'H' : 'T'}
-                    </div>
-                  )}
-
-                  <div className="cf-row-actions">
-                    {!meta.isCompleted && !meta.isUserCreator && (
-                      <button
-                        className="btn btn-primary btn-sm cf-join-btn"
-                        onClick={(e) => { e.stopPropagation(); handleOpenJoinModal(coinflip); }}
-                      >
-                        Join
-                      </button>
-                    )}
-                    {!meta.isCompleted && meta.isUserCreator ? (
-                      <div className="cf-own-actions">
-                        <button
-                          className="cf-bot-btn"
-                          onClick={(e) => { e.stopPropagation(); handleBotJoin(coinflip); }}
-                          disabled={botBusyId === coinflip.id}
-                          title="Add the house bot to this bet"
-                        >
-                          {botBusyId === coinflip.id ? 'Adding...' : 'Bot'}
-                        </button>
-                        <button
-                          className="cf-view-btn"
-                          onClick={(e) => { e.stopPropagation(); setViewBet(coinflip); }}
-                        >
-                          View
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        className="cf-view-btn"
-                        onClick={(e) => { e.stopPropagation(); setViewBet(coinflip); }}
-                      >
-                        View
-                      </button>
-                    )}
                   </div>
                 </div>
-              );
-            })}
-          </div>
+
+                {/* Item thumbnails */}
+                <div className="cf-row-items">
+                  {meta.isCompleted ? (
+                    <CoinSpinner result={meta.resultSide} size={40} />
+                  ) : (
+                    <>
+                      {meta.thumbs.slice(0, 6).map((item, idx) => (
+                        <div key={idx} className="cf-row-thumb-wrap" title={`${item.name || item.itemName || 'Item'} — ${(item.value || 0).toLocaleString()} AMP`}>
+                          <img
+                            src={item.image || item.imageUrl || '/default-item.png'}
+                            alt={item.name || item.itemName || 'item'}
+                            className="cf-row-thumb"
+                            onError={(e) => { e.target.src = '/default-item.png'; }}
+                          />
+                          <span className="cf-row-thumb-rarity" style={{ background: getRarityColor(item.rarity) }}></span>
+                        </div>
+                      ))}
+                      {meta.thumbs.length > 6 && (
+                        <span className="cf-row-more">+{meta.thumbs.length - 6}</span>
+                      )}
+                    </>
+                  )}
+                </div>
+
+                {/* Value */}
+                <div className="cf-row-value">
+                  <div className="cf-row-total">
+                    <span className="cf-diamond-sm">💎</span> {formatCompact(meta.total)}
+                  </div>
+                  <div className="cf-row-range">
+                    {formatCompact(meta.creatorVal)} - {formatCompact(meta.oppVal || meta.creatorVal)}
+                  </div>
+                  {meta.maxJoinPets && (
+                    <div className="cf-row-cap">Max {meta.maxJoinPets} items</div>
+                  )}
+                </div>
+
+                {/* Action */}
+                <div className="cf-row-action">
+                  {!meta.isCompleted && !meta.isUserCreator && (
+                    <button className="cf-join-btn" onClick={() => handleOpenJoinModal(coinflip)}>
+                      Join
+                    </button>
+                  )}
+                  {!meta.isCompleted && meta.isUserCreator && (
+                    <div className="cf-row-own-btns">
+                      <button
+                        className="cf-bot-btn"
+                        onClick={() => handleBotJoin(coinflip)}
+                        disabled={botBusyId === coinflip.id}
+                        title="Add the house bot to this bet"
+                      >
+                        {botBusyId === coinflip.id ? '...' : 'Bot'}
+                      </button>
+                      <button className="cf-view-btn" onClick={() => setViewBet(coinflip)}>View</button>
+                    </div>
+                  )}
+                  {meta.isCompleted && (
+                    <button className="cf-view-btn" onClick={() => setViewBet(coinflip)}>View</button>
+                  )}
+                </div>
+              </div>
+            );
+          })
         )}
       </div>
 
-      {/* View Bet Detail Modal */}
+      {/* ═══════════════════════════════════════════════════════════════════
+          VIEW MODAL
+      ═══════════════════════════════════════════════════════════════════ */}
       {viewBet && (() => {
         const meta = getBetMeta(viewBet);
         const isCompleted = viewBet.status === 'completed' || viewBet.isCompleted;
+        const creatorWon = isCompleted && meta.winnerId && meta.winnerId === viewBet.creatorId;
         return (
-          <div className="modal-overlay cf-view-overlay" onClick={() => setViewBet(null)}>
-            <div className="cf-view" onClick={(e) => e.stopPropagation()}>
-              <button className="cf-view-close" onClick={() => setViewBet(null)}>×</button>
-              <div className="cf-view-logo">AMP<span>coin</span></div>
+          <div className="cf-modal-overlay" onClick={() => setViewBet(null)}>
+            <div className="cf-modal cf-view-modal" onClick={(e) => e.stopPropagation()}>
+              <button className="cf-modal-close" onClick={() => setViewBet(null)}>×</button>
 
-              <div className="cf-view-fight">
-                <div className="cf-view-side">
-                  <div className="cf-view-avatar-wrap">
-                    <img
-                      src={meta.creatorAvatar}
-                      alt={meta.creatorName}
-                      onError={(e) => { e.target.src = '/default-avatar.png'; }}
-                    />
-                    <span className={`cf-side-badge lg ${meta.creatorSide}`}>{meta.creatorSide === 'heads' ? 'H' : 'T'}</span>
+              {/* Top: Players + Coin */}
+              <div className="cf-view-top">
+                <div className="cf-view-player">
+                  <div className={`cf-view-avatar-ring ${creatorWon ? 'ring-winner' : ''} ring-${meta.creatorSide}`}>
+                    <img src={meta.creatorAvatar} alt={meta.creatorName} className="cf-view-avatar" onError={(e) => { e.target.src = '/default-avatar.png'; }} />
+                    <span className={`cf-view-side-badge side-${meta.creatorSide}`}>{meta.creatorSide === 'heads' ? 'H' : 'T'}</span>
                   </div>
-                  <div className="cf-view-name">{meta.creatorName}</div>
+                  <div className="cf-view-player-name">{meta.creatorName}</div>
                 </div>
-                <div className="cf-view-vs">VS</div>
-                <div className="cf-view-side">
-                  <div className="cf-view-avatar-wrap">
+
+                <div className="cf-view-coin-area">
+                  {isCompleted ? (
+                    <CoinSpinner result={meta.resultSide} size={80} />
+                  ) : (
+                    <div className="cf-view-vs-circle">
+                      <span>VS</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="cf-view-player">
+                  <div className={`cf-view-avatar-ring ${!creatorWon && isCompleted ? 'ring-winner' : ''} ring-${meta.opponentSide}`}>
                     {meta.hasOpponent ? (
-                      <img
-                        src={meta.oppAvatar}
-                        alt={meta.oppName}
-                        onError={(e) => { e.target.src = '/default-avatar.png'; }}
-                      />
+                      <img src={meta.oppAvatar} alt={meta.oppName} className="cf-view-avatar" onError={(e) => { e.target.src = '/default-avatar.png'; }} />
                     ) : (
-                      <div className="cf-view-empty" />
+                      <div className="cf-view-avatar cf-view-avatar-empty">?</div>
                     )}
-                    <span className={`cf-side-badge lg ${meta.opponentSide}`}>{meta.opponentSide === 'heads' ? 'H' : 'T'}</span>
+                    <span className={`cf-view-side-badge side-${meta.opponentSide}`}>{meta.opponentSide === 'heads' ? 'H' : 'T'}</span>
                   </div>
-                  <div className="cf-view-name">{meta.oppName || 'Waiting...'}</div>
+                  <div className="cf-view-player-name">{meta.oppName || 'Waiting...'}</div>
                 </div>
               </div>
 
+              {/* Hash */}
               {viewBet.hash && (
                 <div className="cf-view-hash">
-                  <span className="hash-ico">#</span>
-                  <span className="hash-val">{String(viewBet.hash).slice(0, 24)}</span>
+                  <span className="cf-hash-icon">#</span>
+                  <span>{String(viewBet.hash).slice(0, 32)}...</span>
                 </div>
               )}
-              {meta.maxJoinPets && (
-                <div className="cf-view-pet-cap">Join limit: max {meta.maxJoinPets} pets</div>
-              )}
 
+              {/* Value panels */}
               <div className="cf-view-panels">
                 <div className="cf-view-panel">
-                  <span className="panel-val">◈ {meta.creatorVal.toLocaleString()}</span>
-                  <span className="panel-pct">{sidePct(meta.creatorVal, meta.total)}</span>
+                  <span className="cf-panel-side">{meta.creatorSide.toUpperCase()}</span>
+                  <span className="cf-panel-val"><span className="cf-diamond-sm">💎</span> {meta.creatorVal.toLocaleString()}</span>
+                  <span className="cf-panel-pct">{sidePct(meta.creatorVal, meta.total)}</span>
                 </div>
                 <div className="cf-view-panel">
-                  <span className="panel-val">◈ {meta.oppVal.toLocaleString()}</span>
-                  <span className="panel-pct">{sidePct(meta.oppVal, meta.total)}</span>
+                  <span className="cf-panel-side">{meta.opponentSide.toUpperCase()}</span>
+                  <span className="cf-panel-val"><span className="cf-diamond-sm">💎</span> {meta.oppVal.toLocaleString()}</span>
+                  <span className="cf-panel-pct">{sidePct(meta.oppVal, meta.total)}</span>
                 </div>
               </div>
 
-              <div className="cf-view-items">
-                {meta.allItems.length > 0 ? (
-                  meta.allItems.map((item, idx) => (
-                    <div key={idx} className="cf-view-item">
-                      <img
-                        src={item.image || item.imageUrl || '/default-item.png'}
-                        alt={item.name || item.itemName || 'item'}
-                        onError={(e) => { e.target.src = '/default-item.png'; }}
-                      />
-                      <div className="cf-view-item-info">
-                        <div className="cf-view-item-name">
-                          {item.name || item.itemName || 'Unknown'}{(item.quantity || 1) > 1 && ` × ${item.quantity}`}
-                        </div>
-                        <div className="cf-view-item-val">{((item.value || 0) * (item.quantity || 1)).toLocaleString()} AMP</div>
-                      </div>
+              {/* Items split */}
+              <div className="cf-view-items-split">
+                <div className="cf-view-items-col">
+                  <div className="cf-view-items-header">{meta.creatorName}'s Items</div>
+                  {meta.creatorItems.length > 0 ? meta.creatorItems.map((item, i) => (
+                    <div key={i} className="cf-view-item-row">
+                      <img src={item.image || item.imageUrl || '/default-item.png'} alt={item.name || 'item'} className="cf-view-item-icon" onError={(e) => { e.target.src = '/default-item.png'; }} />
+                      <span className="cf-view-item-name">{item.name || item.itemName || 'Item'}{(item.quantity || 1) > 1 ? ` ×${item.quantity}` : ''}</span>
+                      <span className="cf-view-item-val"><span className="cf-diamond-sm">💎</span> {((item.value || 0) * (item.quantity || 1)).toLocaleString()}</span>
                     </div>
-                  ))
-                ) : (
-                  <div className="cf-view-noitems">No items in this pot</div>
-                )}
+                  )) : <div className="cf-view-noitems">No items</div>}
+                </div>
+                <div className="cf-view-items-col">
+                  <div className="cf-view-items-header">{meta.oppName || 'Opponent'}'s Items</div>
+                  {meta.opponentItems.length > 0 ? meta.opponentItems.map((item, i) => (
+                    <div key={i} className="cf-view-item-row">
+                      <img src={item.image || item.imageUrl || '/default-item.png'} alt={item.name || 'item'} className="cf-view-item-icon" onError={(e) => { e.target.src = '/default-item.png'; }} />
+                      <span className="cf-view-item-name">{item.name || item.itemName || 'Item'}{(item.quantity || 1) > 1 ? ` ×${item.quantity}` : ''}</span>
+                      <span className="cf-view-item-val"><span className="cf-diamond-sm">💎</span> {((item.value || 0) * (item.quantity || 1)).toLocaleString()}</span>
+                    </div>
+                  )) : <div className="cf-view-noitems">Waiting for opponent</div>}
+                </div>
               </div>
 
+              {/* Footer */}
               <div className="cf-view-footer">
-                {!isCompleted && !meta.isUserCreator && (
-                  <button
-                    className="btn btn-primary cf-view-join"
-                    onClick={() => { const b = viewBet; setViewBet(null); handleOpenJoinModal(b); }}
-                  >
-                    Join Bet ({meta.total.toLocaleString()} AMP pot)
-                  </button>
-                )}
-                {!isCompleted && meta.isUserCreator && (
-                  <div className="cf-view-own-actions">
-                    <span className="waiting-pill">Waiting for opponent...</span>
-                    <button
-                      className="btn btn-danger cf-view-cancel"
-                      onClick={() => handleCancelBet(viewBet)}
-                      disabled={cancelling}
-                    >
-                      {cancelling ? 'Cancelling...' : 'Cancel'}
-                    </button>
+                {isCompleted ? (
+                  <div className="cf-view-result-text">
+                    🏆 <strong>{viewBet.winnerUsername || 'Someone'}</strong> won <span className="cf-highlight">{meta.total.toLocaleString()} AMP</span>
+                    {viewBet.result && <span className="cf-view-result-side"> ({String(viewBet.result).toUpperCase()})</span>}
                   </div>
+                ) : (
+                  <>
+                    {!meta.isUserCreator && (
+                      <button className="cf-view-join-btn" onClick={() => { const b = viewBet; setViewBet(null); handleOpenJoinModal(b); }}>
+                        Join Bet ({meta.total.toLocaleString()} AMP)
+                      </button>
+                    )}
+                    {meta.isUserCreator && (
+                      <div className="cf-view-own-row">
+                        <span className="cf-waiting-text">Waiting for opponent...</span>
+                        <button className="cf-cancel-btn" onClick={() => handleCancelBet(viewBet)} disabled={cancelling}>
+                          {cancelling ? 'Cancelling...' : 'Cancel Bet'}
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
-                {isCompleted && (
-                  <div className="cf-view-result">
-                    🏆 <span>{viewBet.winnerUsername || 'Someone'}</span> won {meta.total.toLocaleString()} AMP
-                    {viewBet.result && <span className="cf-view-coin"> ({String(viewBet.result).toUpperCase()})</span>}
-                  </div>
-                )}
+              </div>
+              <div className="cf-view-provably">
+                <span className="cf-provably-btn">PROVABLY FAIR</span>
               </div>
             </div>
           </div>
         );
       })()}
 
-      {/* Join Bet Modal */}
-      {showJoinModal && selectedBet && (
-        <div className="modal-overlay" onClick={() => setShowJoinModal(false)}>
-          <div className="join-bet-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Join Coinflip Bet</h2>
-              <button className="close-modal" onClick={() => setShowJoinModal(false)}>×</button>
-            </div>
-            <div className="modal-body">
-              <div className="bet-to-join-card">
-                <div className="bet-to-join-title">
-                  Joining <strong>{selectedBet.creator?.displayName || selectedBet.creatorUsername}'s</strong> bet
+      {/* ═══════════════════════════════════════════════════════════════════
+          JOIN MODAL
+      ═══════════════════════════════════════════════════════════════════ */}
+      {showJoinModal && selectedBet && (() => {
+        const meta = getBetMeta(selectedBet);
+        const { lo, hi } = getJoinRange(selectedBet);
+        const totalVal = getJoinTotalValue();
+        const rangeOk = joinRangeOk();
+        return (
+          <div className="cf-modal-overlay" onClick={() => setShowJoinModal(false)}>
+            <div className="cf-modal cf-join-modal" onClick={(e) => e.stopPropagation()}>
+              <button className="cf-modal-close" onClick={() => setShowJoinModal(false)}>×</button>
+
+              <div className="cf-join-content">
+                {/* Left: Wheel preview */}
+                <div className="cf-join-left">
+                  <div className={`cf-wheel ${meta.hasOpponent ? 'wheel-full' : 'wheel-one'}`}>
+                    <div className="cf-wheel-ring"></div>
+                    <div className="cf-wheel-center">
+                      <div className="cf-wheel-value"><span className="cf-diamond-sm">💎</span> {formatCompact(meta.total)}</div>
+                      <div className="cf-wheel-info">{meta.thumbs.length} items · {meta.hasOpponent ? '2' : '1'} players</div>
+                    </div>
+                    {/* Player positions on the wheel */}
+                    <div className="cf-wheel-avatar cf-wheel-avatar-1">
+                      <img src={meta.creatorAvatar} alt="" onError={(e) => { e.target.src = '/default-avatar.png'; }} />
+                      <span className={`cf-wheel-badge side-${meta.creatorSide}`}>{meta.creatorSide === 'heads' ? 'H' : 'T'}</span>
+                    </div>
+                    {meta.hasOpponent && (
+                      <div className="cf-wheel-avatar cf-wheel-avatar-2">
+                        <img src={meta.oppAvatar} alt="" onError={(e) => { e.target.src = '/default-avatar.png'; }} />
+                        <span className={`cf-wheel-badge side-${meta.opponentSide}`}>{meta.opponentSide === 'heads' ? 'H' : 'T'}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Player cards below wheel */}
+                  <div className="cf-join-player-cards">
+                    <div className="cf-join-pcard">
+                      <img src={meta.creatorAvatar} alt="" className="cf-join-pcard-avatar" onError={(e) => { e.target.src = '/default-avatar.png'; }} />
+                      <div className="cf-join-pcard-info">
+                        <span className="cf-join-pcard-name">{meta.creatorName}</span>
+                        <span className="cf-join-pcard-val"><span className="cf-diamond-sm">💎</span> {meta.creatorVal.toLocaleString()}</span>
+                      </div>
+                      <span className="cf-join-pcard-pct">{sidePct(meta.creatorVal, meta.total)}</span>
+                    </div>
+                    <div className="cf-join-pcard">
+                      <img src={user?.avatar || '/default-avatar.png'} alt="" className="cf-join-pcard-avatar" onError={(e) => { e.target.src = '/default-avatar.png'; }} />
+                      <div className="cf-join-pcard-info">
+                        <span className="cf-join-pcard-name">{user?.robloxDisplayName || user?.displayName || 'You'}</span>
+                        <span className="cf-join-pcard-val"><span className="cf-diamond-sm">💎</span> {totalVal.toLocaleString()}</span>
+                      </div>
+                      <span className="cf-join-pcard-pct">{totalVal > 0 ? sidePct(totalVal, meta.total) : '0.00%'}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="bet-requirements">
-                  <div>Required Side: <strong className="highlight-side">{selectedBet.creatorSide === 'heads' ? 'TAILS' : 'HEADS'}</strong></div>
-                  <div>Bet Value: <strong>{(selectedBet.totalValue || 0).toLocaleString()} AMP</strong></div>
-                  <div>Join with: <strong>{getJoinRange(selectedBet).lo.toLocaleString()} - {getJoinRange(selectedBet).hi.toLocaleString()} AMP</strong> (95% - 105% of bet)</div>
-                  {typeof selectedBet.maxJoinPets === 'number' && selectedBet.maxJoinPets > 0 && (
-                    <div>Max pets: <strong>{selectedBet.maxJoinPets}</strong> ({joinSelectedCount}/{selectedBet.maxJoinPets} selected)</div>
-                  )}
+
+                {/* Right: Inventory grid */}
+                <div className="cf-join-right">
+                  <div className="cf-join-inv-header">
+                    <span>Select Items</span>
+                    <span className="cf-join-range-text">Range: {lo.toLocaleString()} - {hi.toLocaleString()} AMP</span>
+                  </div>
+                  <div className="cf-join-inv-grid">
+                    {userInventory.length === 0 ? (
+                      <div className="cf-join-no-items">Your inventory is empty</div>
+                    ) : (
+                      userInventory.flatMap((item) => {
+                        const key = joinStackKeyOf(item);
+                        const max = joinStackQtyOf(item);
+                        const sel = joinSelectedQty[key] || 0;
+                        const tiles = max > 8 ? 7 : max;
+                        const extra = max > 8 ? max - 7 : 0;
+                        const arr = [];
+                        for (let i = 0; i < tiles; i++) {
+                          const isSelected = i < sel;
+                          arr.push(
+                            <div
+                              key={`${key}:${i}`}
+                              className={`cf-inv-tile ${isSelected ? 'selected' : ''}`}
+                              onClick={() => toggleJoinUnit(key, i)}
+                              title={`${item.details?.name || item.name || 'Item'} — ${(item.value || item.details?.value || 0).toLocaleString()} AMP`}
+                            >
+                              <img src={item.details?.imageUrl || item.image || item.imageUrl || '/default-item.png'} alt="" className="cf-inv-img" onError={(e) => { e.target.src = '/default-item.png'; }} />
+                              <div className="cf-inv-name">{item.details?.name || item.name}</div>
+                              <div className="cf-inv-val"><span className="cf-diamond-xs">💎</span>{(item.value || item.details?.value || 0).toLocaleString()}</div>
+                            </div>
+                          );
+                        }
+                        if (extra > 0) {
+                          arr.push(
+                            <div
+                              key={`${key}:extra`}
+                              className="cf-inv-tile cf-inv-extra"
+                              onClick={() => toggleJoinUnit(key, tiles)}
+                              title={`${extra} more ${item.details?.name || item.name}`}
+                            >
+                              <div className="cf-inv-extra-num">+{extra}</div>
+                              <div className="cf-inv-name">{item.details?.name || item.name}</div>
+                              <div className="cf-inv-val"><span className="cf-diamond-xs">💎</span>{(item.value || item.details?.value || 0).toLocaleString()}</div>
+                            </div>
+                          );
+                        }
+                        return arr;
+                      })
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="join-selected-summary">
-                <span>Selected: <strong>{getJoinTotalValue().toLocaleString()} AMP</strong> <span className="range-text">(needs {getJoinRange(selectedBet).lo.toLocaleString()} - {getJoinRange(selectedBet).hi.toLocaleString()} AMP)</span></span>
-                <span className={joinRangeOk() ? 'status-valid' : 'status-invalid'}>
-                  {joinRangeOk()
-                    ? '✓ In range'
-                    : `Need ${Math.max(0, getJoinRange(selectedBet).lo - getJoinTotalValue()).toLocaleString()} AMP more`}
-                </span>
-              </div>
-              
-              <div className="inventory-selection">
-                <h4>Select Items from Your Inventory:</h4>
-                {userInventory.length === 0 ? (
-                  <p className="no-items-text">You have no items in your inventory to bet.</p>
-                ) : (
-                  <div className="inventory-grid">
-                    {userInventory.flatMap((item) => {
-                      const key = joinStackKeyOf(item);
-                      const max = joinStackQtyOf(item);
-                      const sel = joinSelectedQty[key] || 0;
-                      // One tile per unit so multiples show individually, never stacked
-                      return Array.from({ length: max }, (_, i) => {
-                        const isSelected = i < sel;
-                        return (
-                          <div
-                            key={`${key}:${i}`}
-                            className={`inventory-item-selectable ${isSelected ? 'selected' : ''}`}
-                            onClick={() => toggleJoinUnit(key, i)}
-                          >
-                            <img
-                              src={item.details?.imageUrl || item.image || item.imageUrl || '/default-item.png'}
-                              alt={item.details?.name || item.name}
-                              className="inventory-item-image"
-                              onError={(e) => { e.target.src = '/default-item.png'; }}
-                            />
-                            <div className="inventory-item-info">
-                              <div className="item-name">{item.details?.name || item.name}</div>
-                              <div className="item-value">{(item.value || item.details?.value || 0)?.toLocaleString()} AMP</div>
-                              <span className={`badge badge-${item.details?.rarity || item.rarity || 'common'}`}>
-                                {item.details?.rarity || item.rarity || 'common'}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      });
-                    })}
+              {/* Bottom bar (always visible) */}
+              <div className="cf-join-bottom">
+                <div className="cf-join-bottom-left">
+                  <button className="cf-join-action-btn" onClick={handleSelectAll} disabled={joining}>Select All</button>
+                  <button className="cf-join-action-btn" onClick={handleAutoSelect} disabled={joining}>Auto Select</button>
+                </div>
+                <div className="cf-join-bottom-right">
+                  <div className="cf-join-selected-info">
+                    <span className={rangeOk ? 'cf-range-ok' : 'cf-range-bad'}>
+                      {rangeOk ? `✓ ${totalVal.toLocaleString()} AMP` : `${totalVal.toLocaleString()} AMP — need ${Math.max(0, lo - totalVal).toLocaleString()} more`}
+                    </span>
                   </div>
-                )}
-              </div>
-            </div>
-            
-            <div className="modal-footer join-footer">
-              <div className="join-range-controls">
-                <button
-                  className="btn btn-secondary btn-sm"
-                  onClick={handleAutoSelect}
-                  disabled={joining}
-                  title="Auto-pick items inside the 95% - 105% range"
-                >
-                  Auto Select
-                </button>
-              </div>
-              <div className="join-footer-actions">
-                <button className="btn btn-secondary" onClick={() => setShowJoinModal(false)}>
-                  Cancel
-                </button>
-                <button
-                  className="btn btn-primary"
-                  disabled={joining || !joinRangeOk()}
-                  onClick={handleConfirmJoinBet}
-                >
-                  {joining ? 'Joining & Flipping...' : `Confirm Bet (${getJoinTotalValue().toLocaleString()} AMP)`}
-                </button>
+                  <button className="cf-confirm-btn" disabled={joining || !rangeOk} onClick={handleConfirmJoinBet}>
+                    {joining ? 'Joining...' : `Confirm Bet (${totalVal.toLocaleString()} AMP)`}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
-      {/* Create Coinflip Modal */}
+      {/* ═══════════════════════════════════════════════════════════════════
+          CREATE MODAL (delegates to CreateCoinflipModal component)
+      ═══════════════════════════════════════════════════════════════════ */}
       {showCreateModal && (
-        <CreateCoinflipModal 
-          onClose={() => setShowCreateModal(false)} 
+        <CreateCoinflipModal
+          onClose={() => setShowCreateModal(false)}
           onCreated={handleBetCreated}
           userId={user?.id}
           socket={socket}
@@ -1142,35 +1179,98 @@ const CoinflipPage = ({ socket, setBalance }) => {
         />
       )}
 
-      {/* Leaderboard Modal */}
-      {showLeaderboard && (
-        <LeaderboardModal 
-          isOpen={showLeaderboard} 
-          onClose={() => setShowLeaderboard(false)} 
-        />
+      {/* ═══════════════════════════════════════════════════════════════════
+          VALUE CHECKER MODAL
+      ═══════════════════════════════════════════════════════════════════ */}
+      {showValueChecker && (
+        <div className="cf-modal-overlay" onClick={() => setShowValueChecker(false)}>
+          <div className="cf-modal cf-value-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="cf-modal-close" onClick={() => setShowValueChecker(false)}>×</button>
+            <div className="cf-value-header">
+              <h2>Pet Values</h2>
+              <div className="cf-value-search">
+                <input
+                  type="text"
+                  placeholder="Search pets..."
+                  value={valueCheckerSearch}
+                  onChange={(e) => { setValueCheckerSearch(e.target.value); setValueCheckerPage(1); }}
+                  className="cf-value-input"
+                />
+              </div>
+            </div>
+            <div className="cf-value-tabs">
+              {['all', 'legendary', 'ultra_rare', 'rare', 'uncommon', 'common'].map((r) => (
+                <button
+                  key={r}
+                  className={`cf-value-tab ${valueCheckerRarity === r ? 'active' : ''}`}
+                  onClick={() => { setValueCheckerRarity(r); setValueCheckerPage(1); }}
+                >
+                  {r === 'all' ? 'All' : r.replace('_', ' ')}
+                </button>
+              ))}
+            </div>
+            <div className="cf-value-table-wrap">
+              {allPetsLoading ? (
+                <div className="cf-value-loading"><div className="cf-loading-spinner"></div></div>
+              ) : (
+                <table className="cf-value-table">
+                  <thead>
+                    <tr>
+                      <th>Pet</th>
+                      <th>Normal Value</th>
+                      <th>Neon Value</th>
+                      <th>Mega Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pagedPets.map((pet, i) => (
+                      <tr key={pet.id || pet.itemId || i}>
+                        <td className="cf-value-pet-cell">
+                          <img src={pet.image || pet.imageUrl || '/default-item.png'} alt="" className="cf-value-pet-icon" onError={(e) => { e.target.src = '/default-item.png'; }} />
+                          <span className="cf-value-pet-name">{pet.name || pet.petName || 'Unknown'}</span>
+                          <span className="cf-value-rarity-badge" style={{ background: getRarityColor(pet.rarity) }}>{(pet.rarity || 'common').replace('_', ' ')}</span>
+                        </td>
+                        <td><span className="cf-diamond-sm">💎</span> {(pet.normalValue || pet.value || 0).toLocaleString()}</td>
+                        <td><span className="cf-diamond-sm">💎</span> {(pet.neonValue || 0).toLocaleString()}</td>
+                        <td><span className="cf-diamond-sm">💎</span> {(pet.megaValue || 0).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                    {pagedPets.length === 0 && (
+                      <tr><td colSpan={4} className="cf-value-empty">No pets found</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              )}
+            </div>
+            {petPages > 1 && (
+              <div className="cf-value-pagination">
+                <button disabled={valueCheckerPage <= 1} onClick={() => setValueCheckerPage(valueCheckerPage - 1)}>← Prev</button>
+                <span>Page {valueCheckerPage} of {petPages}</span>
+                <button disabled={valueCheckerPage >= petPages} onClick={() => setValueCheckerPage(valueCheckerPage + 1)}>Next →</button>
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
-      {/* History Modal */}
+      {/* ═══════════════════════════════════════════════════════════════════
+          HISTORY MODAL
+      ═══════════════════════════════════════════════════════════════════ */}
       {showHistory && (
-        <div className="modal-overlay" onClick={() => setShowHistory(false)}>
-          <div className="history-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Coinflip Bet History</h2>
-              <button className="close-modal" onClick={() => setShowHistory(false)}>×</button>
-            </div>
-            <div className="modal-body">
+        <div className="cf-modal-overlay" onClick={() => setShowHistory(false)}>
+          <div className="cf-modal cf-history-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="cf-modal-close" onClick={() => setShowHistory(false)}>×</button>
+            <h2 className="cf-history-title">Coinflip History</h2>
+            <div className="cf-history-body">
               {historyLoading ? (
-                <div className="no-history-placeholder">
-                  <div className="loading-spinner"></div>
-                  <p>Loading history...</p>
-                </div>
+                <div className="cf-value-loading"><div className="cf-loading-spinner"></div></div>
               ) : historyItems.length === 0 ? (
-                <div className="no-history-placeholder">
-                  <p>No bet history available</p>
-                  <p>Place or join a bet to start tracking your history</p>
+                <div className="cf-history-empty">
+                  <p>No bet history yet</p>
+                  <p className="cf-history-empty-sub">Place or join a bet to start tracking</p>
                 </div>
               ) : (
-                <div className="history-list">
+                <div className="cf-history-list">
                   {historyItems.map((bet, index) => {
                     const isWinner = bet.winnerId === user?.id;
                     const isCreator = bet.creatorId === user?.id;
@@ -1178,38 +1278,32 @@ const CoinflipPage = ({ socket, setBalance }) => {
                       ? (bet.opponentUsername || bet.opponent?.displayName || 'Unknown')
                       : (bet.creatorUsername || bet.creator?.displayName || 'Unknown');
                     return (
-                      <div key={bet.id || index} className="history-item">
-                        <div className="history-bet-info">
-                          <span className={`bet-result ${isWinner ? 'won' : 'lost'}`}>
-                            {isWinner ? 'WON' : 'LOST'}
-                          </span>
-                          <span className="bet-opponent">vs {opponentName}</span>
-                          <span className="bet-amount">{(bet.totalValue || 0).toLocaleString()} AMP</span>
-                          <span className="bet-side">Result: {bet.result ? bet.result.toUpperCase() : 'N/A'}</span>
-                          <span className="bet-date">{new Date(bet.completedAt || bet.updatedAt).toLocaleString()}</span>
-                        </div>
+                      <div key={bet.id || index} className={`cf-history-row ${isWinner ? 'history-won' : 'history-lost'}`}>
+                        <span className={`cf-history-result ${isWinner ? 'result-won' : 'result-lost'}`}>
+                          {isWinner ? 'WON' : 'LOST'}
+                        </span>
+                        <span className="cf-history-opponent">vs {opponentName}</span>
+                        <span className="cf-history-amount"><span className="cf-diamond-sm">💎</span> {(bet.totalValue || 0).toLocaleString()}</span>
+                        <span className="cf-history-side">Result: {bet.result ? bet.result.toUpperCase() : 'N/A'}</span>
+                        <span className="cf-history-date">{new Date(bet.completedAt || bet.updatedAt).toLocaleString()}</span>
                       </div>
                     );
                   })}
                 </div>
               )}
             </div>
-            <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={() => setShowHistory(false)}>
-                Close
-              </button>
-            </div>
           </div>
         </div>
       )}
 
-      {/* Custom animated popup */}
+      {/* Leaderboard */}
+      {showLeaderboard && (
+        <LeaderboardModal isOpen={showLeaderboard} onClose={() => setShowLeaderboard(false)} />
+      )}
+
+      {/* Popup */}
       {showPopup && (
-        <AnimatedPopup 
-          message={popupMessage} 
-          type={popupType} 
-          onClose={closePopup}
-        />
+        <AnimatedPopup message={popupMessage} type={popupType} onClose={closePopup} />
       )}
     </div>
   );

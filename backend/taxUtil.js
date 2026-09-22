@@ -65,9 +65,9 @@ function cloneStack(st) {
   return { ...st };
 }
 
-// Smart tax: max 3 items, each item must be worth 5%-10% of the whole pot.
+// Smart tax: max 3 items, each item must be worth 10%-30% of the whole pot.
 // - 3 or fewer total items: NO TAX
-// - Picks up to 3 items that are each worth 5%-10% of the pot
+// - Picks up to 3 items that are each worth 10%-30% of the pot
 // - If fewer than 3 items qualify, takes however many qualify (even 0)
 // - Winner always keeps the rest
 function collectItemTax(potStacks, rate) {
@@ -80,13 +80,13 @@ function collectItemTax(potStacks, rate) {
     return { winnerStacks: stacks.map(cloneStack), taxStacks: [], taxAmount: 0, potValue };
   }
 
-  // Find items where a single unit is worth 5%-10% of the pot
+  // Find items where a single unit is worth 10%-30% of the pot
   const eligibleUnits = []; // { stackIndex, unitValue }
   stacks.forEach((st, si) => {
     const qty = Math.max(1, parseInt(st.quantity || 1, 10) || 1);
     const unitVal = st.value || 0;
     const pctOfPot = potValue > 0 ? (unitVal / potValue) * 100 : 0;
-    if (pctOfPot >= 5 && pctOfPot <= 10) {
+    if (pctOfPot >= 10 && pctOfPot <= 30) {
       for (let k = 0; k < qty; k++) eligibleUnits.push({ stackIndex: si, unitValue: unitVal });
     }
   });

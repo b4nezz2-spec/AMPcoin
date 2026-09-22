@@ -36,7 +36,6 @@ function AppContent() {
   const { user, loading, login, register, refreshUser } = useAuth();
   const [balance, setBalance] = useState(0);
   const [notifications, setNotifications] = useState([]);
-  const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -154,11 +153,10 @@ function AppContent() {
           </Routes>
         </div>
       </div>
-      {user && <ChatPanel socket={socket} chatOpen={chatOpen} />}
       {user && (
-        <button className="chat-toggle-btn" onClick={() => setChatOpen((v) => !v)}>
-          {chatOpen ? '✕' : '💬'}
-        </button>
+        <div className="chat-column">
+          <ChatPanel socket={socket} chatOpen={true} />
+        </div>
       )}
     </div>
   );

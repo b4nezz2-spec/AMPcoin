@@ -1,0 +1,272 @@
+/* ===== Value Checker Modal ===== */
+.vc-overlay {
+  z-index: 1100;
+}
+
+.vc-modal {
+  background: #1a2634;
+  border-radius: 16px;
+  width: 90vw;
+  max-width: 720px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #2a3a4a;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.vc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 12px;
+}
+
+.vc-header h2 {
+  color: #fff;
+  font-size: 1.4rem;
+  margin: 0;
+  font-weight: 700;
+}
+
+.vc-close {
+  background: none;
+  border: none;
+  color: #8899aa;
+  font-size: 1.6rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: all 0.15s;
+}
+
+.vc-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.vc-search-wrap {
+  padding: 0 24px 12px;
+  position: relative;
+}
+
+.vc-search-icon {
+  position: absolute;
+  left: 36px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+
+.vc-search {
+  width: 100%;
+  padding: 10px 14px 10px 36px;
+  background: #0f1923;
+  border: 1px solid #2a3a4a;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.vc-search:focus {
+  border-color: #0088ff;
+}
+
+.vc-search::placeholder {
+  color: #556677;
+}
+
+.vc-rarity-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 0 24px 16px;
+  flex-wrap: wrap;
+}
+
+.vc-rarity-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: #0f1923;
+  border: 1px solid #2a3a4a;
+  border-radius: 20px;
+  color: #8899aa;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.vc-rarity-tab:hover {
+  border-color: #3a4a5a;
+  color: #ccc;
+}
+
+.vc-rarity-tab.active {
+  background: var(--rarity-color, #0088ff);
+  border-color: var(--rarity-color, #0088ff);
+  color: #fff;
+}
+
+.vc-rarity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.vc-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #8899aa;
+}
+
+.vc-table-wrap {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 24px;
+}
+
+.vc-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.vc-th-pet {
+  text-align: left;
+  padding: 8px 12px;
+  color: #8899aa;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #2a3a4a;
+}
+
+.vc-th-val {
+  text-align: right;
+  padding: 8px 12px;
+  color: #8899aa;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #2a3a4a;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s;
+}
+
+.vc-th-val:hover {
+  color: #0088ff;
+}
+
+.vc-row {
+  transition: background 0.1s;
+}
+
+.vc-row:hover {
+  background: rgba(0, 136, 255, 0.05);
+}
+
+.vc-row td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(42, 58, 74, 0.5);
+}
+
+.vc-pet-cell {
+  width: 45%;
+}
+
+.vc-pet-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vc-pet-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #0f1923;
+}
+
+.vc-pet-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.vc-pet-name {
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.vc-pet-rarity {
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.vc-val-cell {
+  text-align: right;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.vc-diamond {
+  font-size: 0.8rem;
+  margin-right: 2px;
+}
+
+.vc-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px 24px;
+  border-top: 1px solid #2a3a4a;
+}
+
+.vc-page-btn {
+  background: #0f1923;
+  border: 1px solid #2a3a4a;
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.vc-page-btn:hover:not(:disabled) {
+  background: #0088ff;
+  border-color: #0088ff;
+}
+
+.vc-page-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.vc-page-info {
+  color: #8899aa;
+  font-size: 0.85rem;
+}

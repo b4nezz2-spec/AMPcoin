@@ -87,7 +87,7 @@ const Sidebar = () => {
 
   const navItems = [
     { path: '/coinflip', label: 'Coinflip', icon: '🪙' },
-    { path: '/blackjack', label: 'Blackjack', icon: '🃏', disabled: true },
+    { path: '/blackjack', label: 'Jackpot', icon: '🃏', disabled: true },
     { path: '/trading', label: 'Trading', icon: '👀', disabled: true }
   ];
 
@@ -111,15 +111,16 @@ const Sidebar = () => {
   return (
     <div className="sidebar">
       <div className="sidebar-header">
-        <div className="logo">
-          <h1 className="logo-text">AMPcoin</h1>
-        </div>
+        <Link to="/coinflip" className="logo">
+          <span className="logo-icon">🔥</span>
+          <h1 className="logo-text">AMPFLIP</h1>
+        </Link>
       </div>
 
       <nav className="sidebar-nav">
         <NavSection 
           title="Games" 
-          items={navItems.slice(0, 2)} 
+          items={navItems} 
           activePath={location.pathname}
           onDisabledClick={handleDisabledClick}
         />
