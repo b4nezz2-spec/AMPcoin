@@ -79,6 +79,7 @@ function AdminPanel() {
   const [taxLoading, setTaxLoading] = useState(false);
   const [taxSaving, setTaxSaving] = useState(false);
   const [taxHistory, setTaxHistory] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const { user } = useAuth();
 
