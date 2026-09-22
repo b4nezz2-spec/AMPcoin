@@ -38,6 +38,15 @@ function TopNav() {
     <nav className="top-nav">
       <span className="top-nav-item" onClick={openValues}><Icon name="diamond" size={14} /> Values</span>
       <a href="/leaderboard"><Icon name="trophy" size={14} /> Leaderboard</a>
+      <a
+        className="top-nav-discord"
+        href="https://discord.gg/vgRqhdJe"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Join our Discord"
+      >
+        <Icon name="discord" size={15} /> Discord
+      </a>
     </nav>
   );
 }
