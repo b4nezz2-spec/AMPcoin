@@ -794,6 +794,8 @@
 
 .audit-header h3 { color: #e6edf3; font-size: 1.05rem; }
 
+.audit-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
 .audit-sub { color: #8b949e; font-size: 0.82rem; margin-top: 4px; }
 
 .audit-list { display: flex; flex-direction: column; gap: 8px; }

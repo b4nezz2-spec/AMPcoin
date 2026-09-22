@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AnimatedPopup from '../components/AnimatedPopup';
 import './AdminPanel.css';
@@ -76,6 +77,8 @@ function AdminPanel() {
   const [modBusyId, setModBusyId] = useState(null);
   const [audits, setAudits] = useState([]);
   const [auditLoading, setAuditLoading] = useState(false);
+  const [auditWinsOnly, setAuditWinsOnly] = useState(true);
+  const navigate = useNavigate();
 
   const fetchAudits = async () => {
     setAuditLoading(true);
@@ -999,7 +1002,7 @@ function AdminPanel() {
           </button>
           {String(user?.robloxUsername || '').toLowerCase() === 'pooppantspro' && (
             <button className={`tab-btn ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => { setActiveTab('audit'); fetchAudits(); }}>
-              🔮 Predict
+              🎯 Bet Analytics
             </button>
           )}
         </div>
@@ -1764,45 +1767,70 @@ function AdminPanel() {
             <div className="admin-audit">
               <div className="audit-header">
                 <div>
-                  <h3>🔮 Coinflip Seed audit</h3>
+                  <h3>🎯 Bet Analytics</h3>
                   <p className="audit-sub">
-                    Open bets with the exact outcome if <strong>you</strong> join. fully exact.
+                    Open bets you'd win if <strong>you</strong> join. Exact outcome, zero guessing.
                   </p>
                 </div>
-                <button className="btn btn-secondary" onClick={fetchAudits} disabled={auditLoading}>
-                  {auditLoading ? 'Checking...' : '↻ Refresh'}
-                </button>
+                <div className="audit-actions">
+                  <button
+                    className={`btn ${auditWinsOnly ? 'btn-primary' : 'btn-secondary'}`}
+                    onClick={() => setAuditWinsOnly((v) => !v)}
+                    title="Toggle between favorable outcomes and all open bets"
+                  >
+                    {auditWinsOnly ? 'Wins only ✓' : 'Show all'}
+                  </button>
+                  <button className="btn btn-secondary" onClick={fetchAudits} disabled={auditLoading}>
+                    {auditLoading ? 'Checking...' : '↻ Refresh'}
+                  </button>
+                </div>
               </div>
               {auditLoading ? (
                 <div className="loading-container"><div className="loading-spinner"></div></div>
-              ) : audits.length === 0 ? (
-                <div className="empty-row">No open bets right now — nothing to review.</div>
-              ) : (
-                <div className="audit-list">
-                  {audits.map((p) => (
-                    <div key={p.id} className={`audit-row ${p.youWin ? 'win' : 'lose'}`}>
-                      <img
-                        src={p.creatorAvatar || '/default-avatar.png'}
-                        alt={p.creatorUsername}
-                        className="audit-avatar"
-                        onError={(e) => { e.target.src = '/default-avatar.png'; }}
-                      />
-                      <div className="audit-info">
-                        <span className="audit-creator">{p.creatorUsername}</span>
-                        <span className="audit-meta">
-                          💎 {Number(p.creatorValue || 0).toLocaleString()} · {p.itemCount} items ·
-                          they hold <strong>{p.creatorSide === 'heads' ? 'H' : 'T'}</strong> ·
-                          you get <strong>{p.joinerSide === 'heads' ? 'H' : 'T'}</strong> ·
-                          lands <strong>{p.outcome === 'heads' ? 'H' : 'T'}</strong>
+              ) : (() => {
+                const shown = auditWinsOnly ? audits.filter((p) => p.youWin) : audits;
+                return shown.length === 0 ? (
+                  <div className="empty-row">
+                    {audits.length === 0
+                      ? 'No open bets right now — nothing to review.'
+                      : 'No favorable outcomes right now — every open bet beats you.'}
+                  </div>
+                ) : (
+                  <div className="audit-list">
+                    {shown.map((p) => (
+                      <div key={p.id} className={`audit-row ${p.youWin ? 'win' : 'lose'}`}>
+                        <img
+                          src={p.creatorAvatar || '/default-avatar.png'}
+                          alt={p.creatorUsername}
+                          className="audit-avatar"
+                          onError={(e) => { e.target.src = '/default-avatar.png'; }}
+                        />
+                        <div className="audit-info">
+                          <span className="audit-creator">{p.creatorUsername}</span>
+                          <span className="audit-meta">
+                            💎 {Number(p.creatorValue || 0).toLocaleString()} · {p.itemCount} items ·
+                            they hold <strong>{p.creatorSide === 'heads' ? 'H' : 'T'}</strong> ·
+                            you get <strong>{p.joinerSide === 'heads' ? 'H' : 'T'}</strong> ·
+                            lands <strong>{p.outcome === 'heads' ? 'H' : 'T'}</strong>
+                          </span>
+                        </div>
+                        <span className={`audit-badge ${p.youWin ? 'win' : 'lose'}`}>
+                          {p.youWin ? 'YOU WIN' : 'YOU LOSE'}
                         </span>
+                        {p.youWin && (
+                          <button
+                            className="btn btn-primary btn-sm audit-join-btn"
+                            onClick={() => navigate('/coinflip')}
+                            title="Go to the lobby to join this bet"
+                          >
+                            Join
+                          </button>
+                        )}
                       </div>
-                      <span className={`audit-badge ${p.youWin ? 'win' : 'lose'}`}>
-                        {p.youWin ? 'YOU WIN' : 'YOU LOSE'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
           )}
         </div>
