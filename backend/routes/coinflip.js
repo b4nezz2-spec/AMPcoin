@@ -209,13 +209,13 @@ router.post('/', authenticateToken, (req, res) => {
     const nonce = Date.now().toString();
     const hash = crypto.createHash('sha256').update(serverSeed).digest('hex');
 
-    // Join rule: opponent must cover at least 95% of the creator's value.
-    // No upper cap. Old clients may still send explicit bounds — respect them.
+    // Join rule: opponent must cover 95%-105% of the creator's value.
+    // Old clients may still send explicit bounds — respect them.
     const parsedMin = parseFloat(minOpponentValue);
     const parsedMax = parseFloat(maxOpponentValue);
     const safeMin = isNaN(parsedMin) ? Math.floor(totalValue * 0.95) : Math.max(0, parsedMin);
-    let safeMax = isNaN(parsedMax) ? 1000000000 : parsedMax;
-    if (!isFinite(safeMax) || safeMax <= 0) safeMax = 1000000000;
+    let safeMax = isNaN(parsedMax) ? Math.ceil(totalValue * 1.05) : parsedMax;
+    if (!isFinite(safeMax) || safeMax <= 0) safeMax = Math.ceil(totalValue * 1.05);
 
     let safeMaxJoinPets = null;
     if (maxJoinPets != null && maxJoinPets !== '') {
@@ -344,14 +344,17 @@ router.post('/:id/join', authenticateToken, (req, res) => {
     const opponentTotalValue = detailedOpponentItems.reduce((sum, item) => sum + (item.value * item.quantity), 0);
     const minReq = typeof coinflip.minOpponentValue === 'number' ? coinflip.minOpponentValue : 0;
     const maxRaw = coinflip.maxOpponentValue;
-    const maxReq = (typeof maxRaw === 'number' && isFinite(maxRaw)) ? maxRaw : 1000000000;
+    // Legacy bets created before the cap have huge/no max — fall back to ±5% band
+    const maxReq = (typeof maxRaw === 'number' && isFinite(maxRaw) && maxRaw < 1000000000)
+      ? maxRaw
+      : Math.ceil((coinflip.creatorValue || 0) * 1.05);
     if (minReq > 0 && opponentTotalValue < minReq) {
       return res.status(400).json({
         message: `Selected value (${opponentTotalValue.toLocaleString()} AMP) is below required minimum (${minReq.toLocaleString()} AMP)`
       });
     }
 
-    if (maxReq < 1000000000 && opponentTotalValue > maxReq) {
+    if (opponentTotalValue > maxReq) {
       return res.status(400).json({
         message: `Selected value (${opponentTotalValue.toLocaleString()} AMP) exceeds required maximum (${maxReq.toLocaleString()} AMP)`
       });

@@ -679,7 +679,10 @@ const CoinflipPage = ({ socket, setBalance }) => {
 
   const getJoinRange = (bet) => {
     const lo = getJoinMin(bet);
-    const hi = Math.ceil((bet?.creatorValue || bet?.totalValue || 0) * 1.05);
+    const storedHi = bet?.maxOpponentValue;
+    const hi = (typeof storedHi === 'number' && isFinite(storedHi) && storedHi > 0 && storedHi < 1000000000)
+      ? storedHi
+      : Math.ceil((bet?.creatorValue || bet?.totalValue || 0) * 1.05);
     return { lo, hi };
   };
 
