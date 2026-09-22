@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import InventoryPickerModal from './InventoryPickerModal';
+import Icon from './Icon';
 import './ProfileModal.css';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -165,7 +166,10 @@ const ProfileModal = ({ viewer, profileUser, isOwn, socket, onClose }) => {
           />
           <span className="profile-lvl">LVL {rank.level}</span>
         </div>
-        <div className="profile-name">{displayName}</div>
+        <div className="profile-name">
+          {displayName}
+          {person.isAdmin && <span className="profile-admin-badge">ADMIN</span>}
+        </div>
         <div className="profile-idtag">{idTag}</div>
         <div className="profile-rank-row">
           <span className="profile-rank-name">{rank.name}</span>
@@ -185,7 +189,7 @@ const ProfileModal = ({ viewer, profileUser, isOwn, socket, onClose }) => {
             <div key={c.label} className="profile-stat-box">
               <span className="profile-stat-label">{c.label}</span>
               <span className={`profile-stat-val ${c.cls}`}>
-                <span className="stat-gem">◈</span> {c.value}
+                <span className="stat-gem"><Icon name="diamond" size={14} /></span> {c.value}
               </span>
             </div>
           ))}
