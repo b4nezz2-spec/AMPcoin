@@ -8,9 +8,18 @@ const usersDbPath = path.join(__dirname, '..', 'db', 'users.json');
 const itemsDbPath = path.join(__dirname, '..', 'db', 'items.json');
 const mainDbPath = path.join(__dirname, '..', 'db', 'db.json');
 
-let usersDb = JSON.parse(fs.readFileSync(usersDbPath, 'utf8'));
-let itemsDb = JSON.parse(fs.readFileSync(itemsDbPath, 'utf8'));
-let db = JSON.parse(fs.readFileSync(mainDbPath, 'utf8'));
+function safeLoad(p, fallback) {
+  try {
+    return JSON.parse(fs.readFileSync(p, 'utf8'));
+  } catch (e) {
+    console.warn(`stats.js: could not load ${p}, using defaults:`, e.message);
+    return fallback;
+  }
+}
+
+let usersDb = safeLoad(usersDbPath, { users: [] });
+let itemsDb = safeLoad(itemsDbPath, { items: [] });
+let db = safeLoad(mainDbPath, { transactions: [], coinflips: [], blackjackGames: [], jackpots: [] });
 
 // Get global statistics
 router.get('/global', (req, res) => {

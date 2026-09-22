@@ -5,7 +5,6 @@ frontend
 *.md
 .env
 .env.*
-backend/db/*.json
 backend/db/backup-*
 .DS_Store
 Thumbs.db
