@@ -7,21 +7,22 @@
 }
 
 body {
-  background: #0f1923;
+  background: linear-gradient(135deg, #000000 0%, #0a0a1a 30%, #001122 60%, #000000 100%);
   color: #ffffff;
   overflow-x: hidden;
   min-height: 100vh;
 }
 
-/* App layout: horizontal nav on top, chat on left, main on right */
+/* App layout */
 .app {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   width: 100%;
+  background: linear-gradient(135deg, #000000 0%, #0a0a1a 30%, #001122 60%, #000000 100%);
 }
 
-/* ---- Horizontal Navbar (Sidebar) ---- */
+/* ---- Horizontal Navbar ---- */
 .sidebar {
   position: fixed;
   top: 0;
@@ -29,12 +30,13 @@ body {
   right: 0;
   z-index: 1000;
   height: 56px;
-  background: #0a0f1a;
+  background: #0a0e18;
   border-bottom: 1px solid #1a2a3a;
   display: flex;
   align-items: center;
   padding: 0 20px;
   gap: 8px;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
 }
 
 .sidebar-logo a {
@@ -84,7 +86,7 @@ body {
 }
 
 .sidebar .nav-link.active {
-  background: rgba(0, 136, 255, 0.15);
+  background: rgba(0, 136, 255, 0.2);
   color: #0088ff;
 }
 
@@ -151,11 +153,11 @@ body {
 /* ---- Layout: Chat + Main ---- */
 .layout-columns {
   display: flex;
-  margin-top: 56px; /* Space for top navbar */
+  margin-top: 56px;
   min-height: calc(100vh - 56px);
 }
 
-/* Chat column — fixed width on far left */
+/* Chat column */
 .chat-column {
   width: 300px;
   min-width: 300px;
@@ -163,10 +165,10 @@ body {
   position: sticky;
   top: 56px;
   border-right: 1px solid #1a2a3a;
-  background: #0a0f1a;
+  background: rgba(10, 14, 24, 0.95);
+  overflow-y: auto;
 }
 
-/* Chat panel fills its parent column */
 .chat-column .chat-panel {
   position: relative;
   right: auto;
@@ -177,7 +179,7 @@ body {
   border: none;
 }
 
-/* Main content — takes remaining space */
+/* Main content */
 .main-content {
   flex: 1;
   display: flex;
@@ -187,7 +189,7 @@ body {
 
 .page-content {
   flex: 1;
-  padding: 20px;
+  padding: 24px;
   overflow-y: auto;
 }
 
@@ -196,16 +198,17 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 20px;
-  background: #0a0f1a;
+  padding: 10px 24px;
+  background: rgba(10, 14, 24, 0.9);
   border-bottom: 1px solid #1a2a3a;
   position: sticky;
   top: 56px;
   z-index: 900;
   height: 48px;
+  backdrop-filter: blur(10px);
 }
 
-/* ---- Loading spinner ---- */
+/* ---- Loading ---- */
 .loading-container {
   display: flex;
   flex-direction: column;

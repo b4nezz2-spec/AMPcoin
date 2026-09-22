@@ -160,10 +160,12 @@ const Header = ({ balance, notifications, socket }) => {
 
   const getPageTitle = () => {
     switch(location.pathname) {
+      case '/jackpot':
+        return 'Jackpot';
       case '/coinflip':
         return 'Coinflip';
       case '/blackjack':
-        return 'Blackjack';
+        return 'Jackpot';
       case '/leaderboard':
         return 'Leaderboard';
       case '/stats':
