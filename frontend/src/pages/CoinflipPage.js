@@ -169,6 +169,7 @@ function PetTooltip({ item }) {
   const rarity = (item.rarity || 'common').toLowerCase();
   const unitVal = Number(item.value || 0);
   const qty = parseInt(item.quantity || 1, 10) || 1;
+  const itemMods = Array.isArray(item.mods) ? item.mods : [];
   return (
     <div className="pet-tip">
       <div className="pet-tip-img-wrap">
@@ -178,8 +179,8 @@ function PetTooltip({ item }) {
           className="pet-tip-img"
           onError={(e) => { e.target.src = '/default-item.png'; }}
         />
-        <span className="pet-tip-badge badge-f">F</span>
-        <span className="pet-tip-badge badge-r">R</span>
+        {itemMods.includes('F') && <span className="pet-tip-badge badge-f">F</span>}
+        {itemMods.includes('R') && <span className="pet-tip-badge badge-r">R</span>}
       </div>
       <div className="pet-tip-name">{name}{qty > 1 ? ` ×${qty}` : ''}</div>
       <ModBadges mods={item.mods} size={16} />
@@ -842,30 +843,31 @@ const CoinflipPage = ({ socket, setBalance }) => {
           visibleGames.map((coinflip) => {
             const meta = getBetMeta(coinflip);
             const anim = chipAnim && chipAnim.id === coinflip.id ? chipAnim : null;
-            const chipSide = anim ? anim.side : (meta.isCompleted ? meta.resultSide : meta.creatorSide);
             const creatorWon = meta.isCompleted && meta.winnerId && meta.winnerId === coinflip.creatorId;
             const oppWon = meta.isCompleted && meta.winnerId && meta.winnerId === coinflip.opponentId;
+            const creatorLost = meta.isCompleted && meta.winnerId && meta.winnerId !== coinflip.creatorId;
+            const oppLost = meta.isCompleted && meta.winnerId && meta.winnerId !== coinflip.opponentId;
 
             return (
               <div key={coinflip.id} className={`cf-row ${meta.isCompleted ? 'cf-row-done' : ''}`}>
                 {/* Players */}
                 <div className="cf-row-players">
                   <div className="cf-row-player">
-                    <div className={`cf-row-avatar-ring ${creatorWon ? 'ring-winner' : ''} ring-${meta.creatorSide}`}>
+                    <div className={`cf-row-avatar-ring ${creatorWon ? 'ring-winner' : ''} ${creatorLost ? 'ring-lost' : ''} ring-${meta.creatorSide}`}>
                       <img
                         src={meta.creatorAvatar}
                         alt={meta.creatorName}
                         className="cf-row-avatar"
                         onError={(e) => { e.target.src = '/default-avatar.png'; }}
                       />
-                      <span className={`cf-row-side-badge side-${meta.creatorSide}`}>
-                        {meta.creatorSide === 'heads' ? 'H' : 'T'}
+                      <span className="cf-row-chip-badge">
+                        <CoinChip side={meta.creatorSide} size={20} />
                       </span>
                     </div>
                   </div>
                   <span className="cf-row-vs">VS</span>
                   <div className="cf-row-player">
-                    <div className={`cf-row-avatar-ring ${oppWon ? 'ring-winner' : ''} ring-${meta.opponentSide}`}>
+                    <div className={`cf-row-avatar-ring ${oppWon ? 'ring-winner' : ''} ${oppLost ? 'ring-lost' : ''} ring-${meta.opponentSide}`}>
                       {meta.hasOpponent ? (
                         <img
                           src={meta.oppAvatar}
@@ -876,8 +878,8 @@ const CoinflipPage = ({ socket, setBalance }) => {
                       ) : (
                         <div className="cf-row-avatar cf-row-avatar-empty">?</div>
                       )}
-                      <span className={`cf-row-side-badge side-${meta.opponentSide}`}>
-                        {meta.opponentSide === 'heads' ? 'H' : 'T'}
+                      <span className="cf-row-chip-badge">
+                        <CoinChip side={meta.opponentSide} size={20} />
                       </span>
                     </div>
                   </div>
@@ -902,7 +904,11 @@ const CoinflipPage = ({ socket, setBalance }) => {
                   )}
                   {meta.isCompleted && (
                     <span className="cf-row-chip" title={`Landed ${meta.resultSide}`}>
-                      <CoinChip side={meta.resultSide} size={30} />
+                      {anim && anim.phase === 'flipping' ? (
+                        <CoinFlipAnimation result={anim.side} size={46} />
+                      ) : (
+                        <CoinChip side={meta.resultSide} size={46} />
+                      )}
                     </span>
                   )}
                 </div>
@@ -923,9 +929,12 @@ const CoinflipPage = ({ socket, setBalance }) => {
                 {/* Action */}
                 <div className="cf-row-action">
                   {!meta.isCompleted && !meta.isUserCreator && (
-                    <button className="cf-join-btn" onClick={() => handleOpenJoinModal(coinflip)}>
-                      Join
-                    </button>
+                    <>
+                      <button className="cf-join-btn" onClick={() => handleOpenJoinModal(coinflip)}>
+                        Join
+                      </button>
+                      <button className="cf-view-btn" onClick={() => setViewBet(coinflip)}>View</button>
+                    </>
                   )}
                   {!meta.isCompleted && meta.isUserCreator && (
                     <div className="cf-row-own-btns">

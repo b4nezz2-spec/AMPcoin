@@ -226,7 +226,33 @@ a.cf-tab { text-decoration: none; }
 
 .ring-heads { border-color: #f08800; }
 .ring-tails { border-color: #1f6feb; }
-.ring-winner { border-color: #3fb950 !important; box-shadow: 0 0 8px rgba(63,185,80,0.4); }
+
+/* Winner: blue glowing ring */
+.ring-winner {
+  border-color: #58a6ff !important;
+  box-shadow: 0 0 10px rgba(88, 166, 255, 0.7), 0 0 20px rgba(88, 166, 255, 0.3);
+}
+
+/* Loser on completed games: dimmed */
+.ring-lost img, .ring-lost .cf-row-avatar-empty {
+  filter: brightness(0.55);
+}
+
+/* Mini chip badge pinned to row avatars */
+.cf-row-chip-badge {
+  position: absolute;
+  top: -6px;
+  left: -8px;
+  width: 20px;
+  height: 20px;
+  z-index: 3;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+}
+
+.cf-row-player:last-child .cf-row-chip-badge {
+  left: auto;
+  right: -8px;
+}
 
 .cf-row-avatar {
   width: 36px;
