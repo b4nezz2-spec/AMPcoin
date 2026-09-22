@@ -40,7 +40,7 @@ function TopNav() {
       <a href="/leaderboard"><Icon name="trophy" size={14} /> Leaderboard</a>
       <a
         className="top-nav-discord"
-        href="https://discord.gg/vgRqhdJe"
+        href="https://discord.gg/EfMgJa9qxa"
         target="_blank"
         rel="noopener noreferrer"
         title="Join our Discord"

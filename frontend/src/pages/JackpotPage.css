@@ -5,6 +5,31 @@
   padding: 0 10px;
 }
 
+/* Winner banner */
+.jp-winner-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, rgba(63, 185, 80, 0.12), rgba(63, 185, 80, 0.04));
+  border: 1px solid rgba(63, 185, 80, 0.4);
+  border-radius: 12px;
+  color: #3fb950;
+  font-size: 0.95rem;
+  font-weight: 600;
+  animation: jp-win-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes jp-win-in {
+  0% { opacity: 0; transform: translateY(-16px) scale(0.95); }
+  60% { opacity: 1; transform: translateY(3px) scale(1.01); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.jp-winner-banner strong { color: #e6edf3; }
+
 /* Tabs */
 .jp-tabs {
   display: flex;

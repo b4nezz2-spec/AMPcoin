@@ -1,11 +1,150 @@
 const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
-const crypto = require('crypto');
 const { authenticateToken } = require('../middleware/auth');
 const dbManager = require('../db/dbHelper');
 const { getTaxRecipient, collectItemTax, getTaxConfig } = require('../taxUtil');
 const { addNotification } = require('../notificationService');
+
+// Pending auto-resolve timers (jackpotId -> timeout)
+const resolveTimers = new Map();
+
+function msUntilExpiry(jp) {
+  if (!jp || !jp.timerStartedAt) return null;
+  const endsAt = new Date(jp.timerStartedAt).getTime() + (jp.timerDuration || 90) * 1000;
+  return endsAt - Date.now();
+}
+
+// Shared resolution logic — used by the route, the auto timer, and lazy checks.
+// Returns the jackpot if it was resolved now, null otherwise.
+function resolveJackpotById(id) {
+  const db = dbManager.getMainDb();
+  const jackpot = (db.jackpots || []).find((j) => j.id === id);
+  if (!jackpot) return null;
+  if (jackpot.status !== 'active' && jackpot.status !== 'waiting') return null;
+  if (jackpot.entries.length < 2) return null;
+
+  const totalValue = jackpot.entries.reduce((s, e) => s + e.value, 0);
+  if (totalValue <= 0) return null;
+
+  // Weighted random selection based on value
+  const roll = Math.random() * totalValue;
+  let cumulative = 0;
+  let winnerIdx = 0;
+  for (let i = 0; i < jackpot.entries.length; i++) {
+    cumulative += jackpot.entries[i].value;
+    if (roll < cumulative) {
+      winnerIdx = i;
+      break;
+    }
+  }
+
+  const winner = jackpot.entries[winnerIdx];
+  jackpot.winnerId = winner.userId;
+  jackpot.winnerUsername = winner.username;
+  jackpot.result = `Player ${winnerIdx + 1} wins`;
+  jackpot.status = 'completed';
+  jackpot.completedAt = new Date().toISOString();
+
+  // Collect all items from all entries
+  const allItems = [];
+  for (const entry of jackpot.entries) {
+    for (const item of entry.items) {
+      allItems.push(item);
+    }
+  }
+
+  // Apply tax
+  const taxConfig = getTaxConfig();
+  const recipient = getTaxRecipient();
+  let winnerItems = allItems;
+  if (recipient && taxConfig.rate > 0) {
+    const split = collectItemTax(allItems, taxConfig.rate);
+    winnerItems = split.winnerStacks;
+    for (const t of split.taxStacks) {
+      dbManager.addItemToUserInventory(recipient.id, t, t.quantity || 1);
+    }
+  }
+
+  // Award items to winner
+  for (const item of winnerItems) {
+    dbManager.addItemToUserInventory(winner.userId, item, item.quantity || 1);
+  }
+
+  // Update stats
+  const usersDb = dbManager.getUsersDb();
+  for (const entry of jackpot.entries) {
+    const u = usersDb.users.find((x) => x.id === entry.userId);
+    if (u) {
+      u.gamesPlayed = (u.gamesPlayed || 0) + 1;
+      if (entry.userId === winner.userId) u.gamesWon = (u.gamesWon || 0) + 1;
+      else u.gamesLost = (u.gamesLost || 0) + 1;
+      u.updatedAt = new Date().toISOString();
+    }
+  }
+
+  dbManager.saveUsersDb();
+  dbManager.saveMainDb();
+
+  // Notify all participants
+  const { emitToAll } = require('../realtime');
+  emitToAll('jackpotUpdate', formatJackpot(jackpot));
+  for (const entry of jackpot.entries) {
+    emitToAll('inventoryUpdate', { userId: entry.userId });
+  }
+
+  addNotification({
+    userId: winner.userId,
+    type: 'items',
+    title: 'Jackpot Won!',
+    message: `You won the jackpot with ${winnerItems.length} items!`,
+    imageUrl: ''
+  });
+
+  if (resolveTimers.has(id)) {
+    clearTimeout(resolveTimers.get(id));
+    resolveTimers.delete(id);
+  }
+  return jackpot;
+}
+
+// If the timer expired, resolve now. Returns the (possibly resolved) jackpot.
+function settleIfExpired(jackpot) {
+  if (!jackpot) return jackpot;
+  if ((jackpot.status === 'active' || jackpot.status === 'waiting') &&
+      jackpot.entries.length >= 2 && jackpot.timerStartedAt) {
+    const left = msUntilExpiry(jackpot);
+    if (left !== null && left <= 0) {
+      return resolveJackpotById(jackpot.id) || jackpot;
+    }
+    scheduleAutoResolve(jackpot);
+  }
+  return jackpot;
+}
+
+// Arm a one-shot server timer that resolves when the countdown ends.
+function scheduleAutoResolve(jackpot) {
+  if (!jackpot || resolveTimers.has(jackpot.id)) return;
+  if (jackpot.status !== 'active' || !jackpot.timerStartedAt) return;
+  const left = msUntilExpiry(jackpot);
+  if (left === null) return;
+  if (left <= 0) {
+    settleIfExpired(jackpot);
+    return;
+  }
+  const t = setTimeout(() => {
+    resolveTimers.delete(jackpot.id);
+    try {
+      const db = dbManager.getMainDb();
+      const fresh = (db.jackpots || []).find((j) => j.id === jackpot.id);
+      if (fresh) settleIfExpired(fresh);
+    } catch (e) {
+      console.error('Jackpot auto-resolve failed:', e.message);
+    }
+  }, Math.min(left, 2147483647));
+  if (t.unref) t.unref();
+  resolveTimers.set(jackpot.id, t);
+}
 
 // Format jackpot for API response
 function formatJackpot(jp) {
@@ -40,7 +179,8 @@ function formatJackpot(jp) {
 router.get('/active', (req, res) => {
   try {
     const db = dbManager.getMainDb();
-    const active = (db.jackpots || []).find(j => j.status === 'waiting' || j.status === 'active');
+    let active = (db.jackpots || []).find(j => j.status === 'waiting' || j.status === 'active');
+    if (active) active = settleIfExpired(active);
     res.json(active ? formatJackpot(active) : null);
   } catch (err) {
     console.error('Error fetching active jackpot:', err);
@@ -153,6 +293,7 @@ router.post('/join', authenticateToken, (req, res) => {
     }
 
     dbManager.saveMainDb();
+    scheduleAutoResolve(jackpot);
 
     // Broadcast update
     const { emitToAll } = require('../realtime');
@@ -166,97 +307,14 @@ router.post('/join', authenticateToken, (req, res) => {
   }
 });
 
-// Resolve jackpot (called by timer or manually)
+// Resolve jackpot (any logged-in user may trigger the draw once due)
 router.post('/:id/resolve', authenticateToken, (req, res) => {
   try {
-    const db = dbManager.getMainDb();
-    const jackpot = (db.jackpots || []).find(j => j.id === req.params.id);
-    if (!jackpot) return res.status(404).json({ message: 'Jackpot not found' });
-    if (jackpot.status !== 'active' && jackpot.status !== 'waiting') {
-      return res.status(400).json({ message: 'Jackpot already resolved' });
+    const resolved = resolveJackpotById(req.params.id);
+    if (!resolved) {
+      return res.status(400).json({ message: 'Jackpot cannot be resolved right now' });
     }
-    if (jackpot.entries.length < 2) {
-      return res.status(400).json({ message: 'Need at least 2 players' });
-    }
-
-    // Weighted random selection based on value
-    const totalValue = jackpot.entries.reduce((s, e) => s + e.value, 0);
-    if (totalValue <= 0) return res.status(400).json({ message: 'No value in pot' });
-
-    const roll = Math.random() * totalValue;
-    let cumulative = 0;
-    let winnerIdx = 0;
-    for (let i = 0; i < jackpot.entries.length; i++) {
-      cumulative += jackpot.entries[i].value;
-      if (roll < cumulative) {
-        winnerIdx = i;
-        break;
-      }
-    }
-
-    const winner = jackpot.entries[winnerIdx];
-    jackpot.winnerId = winner.userId;
-    jackpot.winnerUsername = winner.username;
-    jackpot.result = `Player ${winnerIdx + 1} wins`;
-    jackpot.status = 'completed';
-    jackpot.completedAt = new Date().toISOString();
-
-    // Collect all items from all entries
-    const allItems = [];
-    for (const entry of jackpot.entries) {
-      for (const item of entry.items) {
-        allItems.push(item);
-      }
-    }
-
-    // Apply tax
-    const taxConfig = getTaxConfig();
-    const recipient = getTaxRecipient();
-    let winnerItems = allItems;
-    if (recipient && taxConfig.rate > 0) {
-      const split = collectItemTax(allItems, taxConfig.rate);
-      winnerItems = split.winnerStacks;
-      for (const t of split.taxStacks) {
-        dbManager.addItemToUserInventory(recipient.id, t, t.quantity || 1);
-      }
-    }
-
-    // Award items to winner
-    for (const item of winnerItems) {
-      dbManager.addItemToUserInventory(winner.userId, item, item.quantity || 1);
-    }
-
-    // Update stats
-    const usersDb2 = dbManager.getUsersDb();
-    for (const entry of jackpot.entries) {
-      const u = usersDb2.users.find(u => u.id === entry.userId);
-      if (u) {
-        u.gamesPlayed = (u.gamesPlayed || 0) + 1;
-        if (entry.userId === winner.userId) u.gamesWon = (u.gamesWon || 0) + 1;
-        else u.gamesLost = (u.gamesLost || 0) + 1;
-        u.updatedAt = new Date().toISOString();
-      }
-    }
-
-    dbManager.saveUsersDb();
-    dbManager.saveMainDb();
-
-    // Notify all participants
-    const { emitToAll } = require('../realtime');
-    emitToAll('jackpotUpdate', formatJackpot(jackpot));
-    for (const entry of jackpot.entries) {
-      emitToAll('inventoryUpdate', { userId: entry.userId });
-    }
-
-    addNotification({
-      userId: winner.userId,
-      type: 'items',
-      title: 'Jackpot Won!',
-      message: `You won the jackpot with ${winnerItems.length} items!`,
-      imageUrl: ''
-    });
-
-    res.json(formatJackpot(jackpot));
+    res.json(formatJackpot(resolved));
   } catch (err) {
     console.error('Error resolving jackpot:', err);
     res.status(500).json({ message: 'Server error' });

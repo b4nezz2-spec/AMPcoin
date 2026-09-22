@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import AnimatedPopup from '../components/AnimatedPopup';
 import Icon from '../components/Icon';
+import ModBadges from '../components/ModBadges';
+import '../components/ModBadges.css';
 import './JackpotPage.css';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -81,21 +83,31 @@ const JackpotPage = ({ socket, setBalance }) => {
       .finally(() => setLoading(false));
   }, [fetchJackpot, fetchInventory, fetchHistory]);
 
-  // Timer countdown
+  // Timer countdown — when it hits zero, trigger the draw then refresh
   useEffect(() => {
     if (timer === null || timer <= 0) return;
     const interval = setInterval(() => {
       setTimer((t) => {
         if (t <= 1) {
           clearInterval(interval);
-          fetchJackpot(); // refresh after timer ends
+          (async () => {
+            try {
+              if (jackpot && jackpot.id && jackpot.status === 'active') {
+                await fetch(`${API_BASE}/api/jackpot/${jackpot.id}/resolve`, {
+                  method: 'POST',
+                  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                });
+              }
+            } catch (_) { /* server auto-resolves anyway */ }
+            fetchJackpot();
+          })();
           return null;
         }
         return t - 1;
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [timer, fetchJackpot]);
+  }, [timer, fetchJackpot, jackpot]);
 
   // Socket listeners
   useEffect(() => {
@@ -199,6 +211,13 @@ const JackpotPage = ({ socket, setBalance }) => {
 
       {activeTab === 'active' ? (
         <div className="jp-active">
+          {/* Winner banner */}
+          {jackpot && jackpot.status === 'completed' && jackpot.winnerUsername && (
+            <div className="jp-winner-banner">
+              <Icon name="trophy" size={18} />
+              <span><strong>{jackpot.winnerUsername}</strong> won the jackpot — <Icon name="diamond" size={13} /> {totalPotValue.toLocaleString()}</span>
+            </div>
+          )}
           {/* Jackpot Wheel / Pot Display */}
           <div className="jp-pot-section">
             <div className="jp-wheel">
@@ -291,6 +310,7 @@ const JackpotPage = ({ socket, setBalance }) => {
                       onError={(e) => { e.target.src = '/default-item.png'; }}
                     />
                     <span className="jp-inv-name">{item.name}</span>
+                    <ModBadges mods={item.mods} size={14} />
                     <span className="jp-inv-value"><Icon name="diamond" size={11} /> {(item.value || 0).toLocaleString()}</span>
                   </div>
                 );
