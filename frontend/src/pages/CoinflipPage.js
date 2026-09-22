@@ -243,6 +243,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
 
   // Value checker
   const [showValueChecker, setShowValueChecker] = useState(false);
+  const openValueChecker = () => { setShowValueChecker(true); if (allPetsData.length === 0) fetchAllPets(); };
   const [valueCheckerSearch, setValueCheckerSearch] = useState('');
   const [valueCheckerRarity, setValueCheckerRarity] = useState('all');
   const [valueCheckerPage, setValueCheckerPage] = useState(1);
@@ -778,7 +779,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
           <button className="cf-topbar-btn cf-topbar-btn-gold" onClick={handleCreateBet}>
             + Bet Items
           </button>
-          <button className="cf-topbar-btn" onClick={() => setShowValueChecker(true)}>
+          <button className="cf-topbar-btn" onClick={openValueChecker}>
             Values
           </button>
           <button className="cf-topbar-btn" onClick={() => setShowLeaderboard(true)}>

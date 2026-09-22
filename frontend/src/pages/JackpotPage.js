@@ -1,0 +1,336 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../context/AuthContext';
+import AnimatedPopup from '../components/AnimatedPopup';
+
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
+const JackpotPage = ({ socket, setBalance }) => {
+  const { user, refreshUser } = useAuth();
+  const [jackpot, setJackpot] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [inventory, setInventory] = useState([]);
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [joining, setJoining] = useState(false);
+  const [popup, setPopup] = useState({ show: false, message: '', type: 'info' });
+  const [timer, setTimer] = useState(null);
+  const [showHistory, setShowHistory] = useState(false);
+  const [activeTab, setActiveTab] = useState('active'); // active, history
+
+  const showCustomPopup = (message, type = 'info') => {
+    setPopup({ show: true, message, type });
+    setTimeout(() => setPopup({ show: false, message: '', type: 'info' }), 3000);
+  };
+
+  // Fetch active jackpot
+  const fetchJackpot = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/jackpot/active`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setJackpot(data);
+        if (data && data.timerStartedAt && data.status === 'active') {
+          const elapsed = Math.floor((Date.now() - new Date(data.timerStartedAt).getTime()) / 1000);
+          const remaining = Math.max(0, (data.timerDuration || 90) - elapsed);
+          setTimer(remaining);
+        } else {
+          setTimer(null);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching jackpot:', err);
+    }
+  }, []);
+
+  // Fetch inventory
+  const fetchInventory = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/users/inventory`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setInventory(Array.isArray(data) ? data : data.items || []);
+      }
+    } catch (err) {
+      console.error('Error fetching inventory:', err);
+    }
+  }, []);
+
+  // Fetch history
+  const fetchHistory = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/jackpot/history`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setHistory(Array.isArray(data) ? data : []);
+      }
+    } catch (err) {
+      console.error('Error fetching jackpot history:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    Promise.all([fetchJackpot(), fetchInventory(), fetchHistory()])
+      .finally(() => setLoading(false));
+  }, [fetchJackpot, fetchInventory, fetchHistory]);
+
+  // Timer countdown
+  useEffect(() => {
+    if (timer === null || timer <= 0) return;
+    const interval = setInterval(() => {
+      setTimer((t) => {
+        if (t <= 1) {
+          clearInterval(interval);
+          fetchJackpot(); // refresh after timer ends
+          return null;
+        }
+        return t - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timer, fetchJackpot]);
+
+  // Socket listeners
+  useEffect(() => {
+    if (!socket) return;
+    socket.on('jackpotUpdate', (data) => {
+      setJackpot(data);
+      if (data && data.timerStartedAt && data.status === 'active') {
+        const elapsed = Math.floor((Date.now() - new Date(data.timerStartedAt).getTime()) / 1000);
+        const remaining = Math.max(0, (data.timerDuration || 90) - elapsed);
+        setTimer(remaining);
+      } else {
+        setTimer(null);
+      }
+      fetchHistory();
+    });
+    socket.on('inventoryUpdate', () => {
+      fetchInventory();
+    });
+    return () => {
+      socket.off('jackpotUpdate');
+      socket.off('inventoryUpdate');
+    };
+  }, [socket, fetchInventory, fetchHistory]);
+
+  // Toggle item selection
+  const toggleItem = (item) => {
+    setSelectedItems((prev) => {
+      const exists = prev.find((p) => p.itemId === item.itemId);
+      if (exists) return prev.filter((p) => p.itemId !== item.itemId);
+      return [...prev, { itemId: item.itemId, name: item.name, quantity: 1 }];
+    });
+  };
+
+  // Select all items
+  const selectAll = () => {
+    setSelectedItems(inventory.map((item) => ({
+      itemId: item.itemId,
+      name: item.name,
+      quantity: 1
+    })));
+  };
+
+  // Join jackpot
+  const handleJoin = async () => {
+    if (selectedItems.length === 0) return showCustomPopup('Select at least one item', 'error');
+    setJoining(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/jackpot/join`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ selectedItems })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showCustomPopup('Entered jackpot!', 'success');
+        setSelectedItems([]);
+        fetchJackpot();
+        fetchInventory();
+      } else {
+        showCustomPopup(data.message || 'Failed to join', 'error');
+      }
+    } catch (err) {
+      showCustomPopup('Server error joining jackpot', 'error');
+    } finally {
+      setJoining(false);
+    }
+  };
+
+  const selectedValue = selectedItems.reduce((sum, sel) => {
+    const item = inventory.find((i) => i.itemId === sel.itemId);
+    return sum + (item ? item.value : 0);
+  }, 0);
+
+  const totalPotValue = jackpot ? jackpot.entries.reduce((s, e) => s + e.value, 0) : 0;
+
+  if (loading) {
+    return (
+      <div className="jackpot-page">
+        <div className="loading-spinner"></div>
+        <p>Loading jackpot...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="jackpot-page">
+      <AnimatedPopup show={popup.show} message={popup.message} type={popup.type} onClose={() => setPopup({ show: false, message: '', type: 'info' })} />
+
+      {/* Top Tabs */}
+      <div className="jp-tabs">
+        <button className={`jp-tab ${activeTab === 'active' ? 'active' : ''}`} onClick={() => setActiveTab('active')}>
+          🎰 Jackpot {jackpot?.entries?.length ? `(${jackpot.entries.length})` : ''}
+        </button>
+        <button className={`jp-tab ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>
+          📜 History
+        </button>
+      </div>
+
+      {activeTab === 'active' ? (
+        <div className="jp-active">
+          {/* Jackpot Wheel / Pot Display */}
+          <div className="jp-pot-section">
+            <div className="jp-wheel">
+              <div className="jp-wheel-inner">
+                <div className="jp-pot-value">
+                  <span className="jp-diamond">💎</span> {totalPotValue.toLocaleString()}
+                </div>
+                <div className="jp-pot-info">
+                  {jackpot?.entries?.length || 0} players · {timer !== null ? `${timer}s` : 'Waiting...'}
+                </div>
+              </div>
+              {/* Player avatars on wheel edge */}
+              {jackpot?.entries?.map((entry, idx) => {
+                const angle = (360 / Math.max(jackpot.entries.length, 1)) * idx - 90;
+                const radius = 45;
+                const x = 50 + radius * Math.cos((angle * Math.PI) / 180);
+                const y = 50 + radius * Math.sin((angle * Math.PI) / 180);
+                return (
+                  <div
+                    key={entry.userId}
+                    className="jp-wheel-avatar"
+                    style={{ left: `${x}%`, top: `${y}%` }}
+                    title={`${entry.username} — ${entry.value.toLocaleString()}`}
+                  >
+                    <img
+                      src={entry.avatar || `https://www.roblox.com/headshot-thumbnail/image?userId=${entry.userId}&width=100&height=100&format=png`}
+                      alt={entry.username}
+                      onError={(e) => { e.target.src = '/default-avatar.png'; }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+            {timer !== null && (
+              <div className="jp-timer-bar">
+                <div className="jp-timer-fill" style={{ width: `${(timer / 90) * 100}%` }}></div>
+              </div>
+            )}
+          </div>
+
+          {/* Player Cards */}
+          <div className="jp-players">
+            <h3>Players in Pot</h3>
+            {jackpot?.entries?.length > 0 ? (
+              jackpot.entries.map((entry) => (
+                <div key={entry.userId} className="jp-player-card">
+                  <img
+                    src={entry.avatar || `https://www.roblox.com/headshot-thumbnail/image?userId=${entry.userId}&width=100&height=100&format=png`}
+                    alt={entry.username}
+                    className="jp-player-avatar"
+                    onError={(e) => { e.target.src = '/default-avatar.png'; }}
+                  />
+                  <div className="jp-player-info">
+                    <span className="jp-player-name">{entry.username}</span>
+                    <span className="jp-player-value">
+                      💎 {entry.value.toLocaleString()} · {entry.itemCount} items
+                    </span>
+                  </div>
+                  <span className="jp-player-chance">
+                    {totalPotValue > 0 ? ((entry.value / totalPotValue) * 100).toFixed(1) : 0}%
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="jp-empty">No one has entered yet. Be the first!</div>
+            )}
+          </div>
+
+          {/* Item Selection */}
+          <div className="jp-select">
+            <h3>Select Items to Enter</h3>
+            <div className="jp-select-actions">
+              <button className="jp-btn-secondary" onClick={selectAll}>Select All</button>
+              <button className="jp-btn-secondary" onClick={() => setSelectedItems([])}>Clear</button>
+              <span className="jp-selected-value">💎 {selectedValue.toLocaleString()}</span>
+            </div>
+            <div className="jp-inventory-grid">
+              {inventory.length > 0 ? inventory.map((item) => {
+                const isSelected = selectedItems.some((s) => s.itemId === item.itemId);
+                return (
+                  <div
+                    key={item.itemId}
+                    className={`jp-inv-tile ${isSelected ? 'selected' : ''}`}
+                    onClick={() => toggleItem(item)}
+                    title={`${item.name} — 💎 ${(item.value || 0).toLocaleString()}`}
+                  >
+                    <img
+                      src={item.imageUrl || item.image || '/default-item.png'}
+                      alt={item.name}
+                      onError={(e) => { e.target.src = '/default-item.png'; }}
+                    />
+                    <span className="jp-inv-name">{item.name}</span>
+                    <span className="jp-inv-value">💎 {(item.value || 0).toLocaleString()}</span>
+                  </div>
+                );
+              }) : (
+                <div className="jp-empty">No items in inventory</div>
+              )}
+            </div>
+            <div className="jp-bottom-bar">
+              <span className="jp-selected-count">{selectedItems.length} items selected</span>
+              <button
+                className="jp-btn-primary"
+                onClick={handleJoin}
+                disabled={joining || selectedItems.length === 0}
+              >
+                {joining ? 'Joining...' : 'Enter Jackpot'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* History Tab */
+        <div className="jp-history">
+          <h3>Jackpot History</h3>
+          {history.length > 0 ? history.map((jp) => (
+            <div key={jp.id} className="jp-history-item">
+              <div className="jp-history-winner">
+                🏆 {jp.winnerUsername || 'Unknown'} won 💎 {(jp.totalValue || 0).toLocaleString()}
+              </div>
+              <div className="jp-history-details">
+                {jp.playerCount} players · {jp.entries?.reduce((s, e) => s + e.itemCount, 0) || 0} items
+              </div>
+              <div className="jp-history-time">
+                {jp.completedAt ? new Date(jp.completedAt).toLocaleString() : ''}
+              </div>
+            </div>
+          )) : (
+            <div className="jp-empty">No jackpot history yet</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default JackpotPage;

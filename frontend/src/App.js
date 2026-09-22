@@ -8,6 +8,7 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import CoinflipPage from './pages/CoinflipPage';
 import BlackjackPage from './pages/BlackjackPage';
+import JackpotPage from './pages/JackpotPage';
 import WalletPage from './pages/WalletPage';
 import StatsPage from './pages/StatsPage';
 import ProvablyFairPage from './pages/ProvablyFairPage';
@@ -20,8 +21,6 @@ import AuthProvider, { useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Initialize socket connection — auto-detect backend URL
-// When no REACT_APP_API_URL is set, derive from current page hostname
-// pointing to the Back4App backend on port 5000
 const BACKEND_URL = process.env.REACT_APP_API_URL || 'https://ampcoin-50q9kxt9.b4a.run';
 const socket = io(BACKEND_URL, {
   transports: ['websocket', 'polling'],
@@ -48,18 +47,12 @@ function AppContent() {
     socket.on('balanceUpdate', (data) => {
       if (data.userId === user?.id) {
         setBalance(data.newBalance);
-        // Update user balance in local storage as well
         const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
         storedUser.balance = data.newBalance;
         localStorage.setItem('user', JSON.stringify(storedUser));
       }
     });
-
-    // Listen for online user count updates
-    socket.on('onlineCountUpdate', (data) => {
-      // Update online user count in chat panel
-    });
-
+    socket.on('onlineCountUpdate', (data) => {});
     return () => {
       socket.off('balanceUpdate');
       socket.off('onlineCountUpdate');
@@ -78,86 +71,26 @@ function AppContent() {
   return (
     <div className="app">
       {user && <Sidebar />}
-      <div className={`main-content ${user ? 'with-sidebar' : ''}`}>
-        {user && <Header balance={balance} setBalance={setBalance} notifications={notifications} socket={socket} />}
-        <div className="page-content">
-          <Routes>
-            <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/coinflip" />} />
-            <Route path="/register" element={!user ? <RegisterPage /> : <Navigate to="/coinflip" />} />
-            <Route 
-              path="/" 
-              element={
-                user ? (
-                  <Navigate to="/coinflip" replace />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              } 
-            />
-            <Route 
-              path="/coinflip" 
-              element={
-                <ProtectedRoute>
-                  <CoinflipPage socket={socket} setBalance={setBalance} />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/blackjack" 
-              element={
-                <ProtectedRoute>
-                  <BlackjackPage socket={socket} setBalance={setBalance} />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/wallet" 
-              element={
-                <ProtectedRoute>
-                  <Navigate to="/coinflip" replace />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/stats" 
-              element={
-                <ProtectedRoute>
-                  <StatsPage />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/provably-fair" 
-              element={
-                <ProtectedRoute>
-                  <ProvablyFairPage />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/profile" 
-              element={
-                <ProtectedRoute>
-                  <ProfilePage />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin" 
-              element={
-                <ProtectedRoute adminOnly={true}>
-                  <AdminPanel />
-                </ProtectedRoute>
-              } 
-            />
-          </Routes>
+      <div className="layout-columns">
+        {user && <ChatPanel socket={socket} chatOpen={true} />}
+        <div className="main-content">
+          {user && <Header balance={balance} setBalance={setBalance} notifications={notifications} socket={socket} />}
+          <div className="page-content">
+            <Routes>
+              <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/coinflip" />} />
+              <Route path="/register" element={!user ? <RegisterPage /> : <Navigate to="/coinflip" />} />
+              <Route path="/" element={user ? <Navigate to="/coinflip" replace /> : <Navigate to="/login" replace />} />
+              <Route path="/coinflip" element={<ProtectedRoute><CoinflipPage socket={socket} setBalance={setBalance} /></ProtectedRoute>} />
+              <Route path="/jackpot" element={<ProtectedRoute><JackpotPage socket={socket} setBalance={setBalance} /></ProtectedRoute>} />
+              <Route path="/wallet" element={<ProtectedRoute><Navigate to="/coinflip" replace /></ProtectedRoute>} />
+              <Route path="/stats" element={<ProtectedRoute><StatsPage /></ProtectedRoute>} />
+              <Route path="/provably-fair" element={<ProtectedRoute><ProvablyFairPage /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+              <Route path="/admin" element={<ProtectedRoute adminOnly={true}><AdminPanel /></ProtectedRoute>} />
+            </Routes>
+          </div>
         </div>
       </div>
-      {user && (
-        <div className="chat-column">
-          <ChatPanel socket={socket} chatOpen={true} />
-        </div>
-      )}
     </div>
   );
 }

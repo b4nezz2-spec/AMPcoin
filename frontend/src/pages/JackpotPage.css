@@ -1,0 +1,356 @@
+/* ===== Jackpot Page ===== */
+.jackpot-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 10px;
+}
+
+/* Tabs */
+.jp-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+}
+
+.jp-tab {
+  padding: 10px 20px;
+  background: #0f1923;
+  border: 1px solid #2a3a4a;
+  border-radius: 10px 10px 0 0;
+  color: #8899aa;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.jp-tab.active {
+  background: #1a2634;
+  color: #fff;
+  border-bottom-color: #1a2634;
+}
+
+/* Pot Section */
+.jp-pot-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.jp-wheel {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  border: 3px solid #2a3a4a;
+  background: radial-gradient(circle, #1a2634 0%, #0f1923 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.jp-wheel-inner {
+  text-align: center;
+}
+
+.jp-pot-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.jp-pot-value .jp-diamond {
+  font-size: 1.2rem;
+}
+
+.jp-pot-info {
+  color: #8899aa;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.jp-wheel-avatar {
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid #0088ff;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.jp-wheel-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.jp-timer-bar {
+  width: 200px;
+  height: 4px;
+  background: #1a2634;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.jp-timer-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0088ff, #00ccff);
+  border-radius: 2px;
+  transition: width 1s linear;
+}
+
+/* Player Cards */
+.jp-players {
+  margin-bottom: 24px;
+}
+
+.jp-players h3 {
+  color: #fff;
+  font-size: 1rem;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.jp-player-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #1a2634;
+  border: 1px solid #2a3a4a;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  transition: border-color 0.15s;
+}
+
+.jp-player-card:hover {
+  border-color: #0088ff;
+}
+
+.jp-player-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.jp-player-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.jp-player-name {
+  font-weight: 600;
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.jp-player-value {
+  color: #8899aa;
+  font-size: 0.8rem;
+}
+
+.jp-player-chance {
+  color: #00ff88;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.jp-empty {
+  color: #556677;
+  text-align: center;
+  padding: 30px 20px;
+  font-size: 0.9rem;
+}
+
+/* Item Selection */
+.jp-select h3 {
+  color: #fff;
+  font-size: 1rem;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.jp-select-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.jp-btn-secondary {
+  padding: 6px 14px;
+  background: #0f1923;
+  border: 1px solid #2a3a4a;
+  border-radius: 8px;
+  color: #8899aa;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.jp-btn-secondary:hover {
+  background: #1a2634;
+  color: #fff;
+}
+
+.jp-selected-value {
+  margin-left: auto;
+  color: #0088ff;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.jp-inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 8px;
+  max-height: 350px;
+  overflow-y: auto;
+  padding: 4px;
+  margin-bottom: 12px;
+}
+
+.jp-inv-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  background: #0f1923;
+  border: 2px solid #2a3a4a;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.jp-inv-tile:hover {
+  border-color: #3a4a5a;
+  background: #1a2634;
+}
+
+.jp-inv-tile.selected {
+  border-color: #0088ff;
+  background: rgba(0, 136, 255, 0.1);
+}
+
+.jp-inv-tile img {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.jp-inv-name {
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.2;
+  max-height: 2.4em;
+  overflow: hidden;
+}
+
+.jp-inv-value {
+  color: #0088ff;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.jp-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #0f1923;
+  border: 1px solid #2a3a4a;
+  border-radius: 10px;
+}
+
+.jp-selected-count {
+  color: #8899aa;
+  font-size: 0.85rem;
+}
+
+.jp-btn-primary {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #0066dd, #0088ff);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.jp-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0077ee, #0099ff);
+  transform: translateY(-1px);
+}
+
+.jp-btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* History */
+.jp-history h3 {
+  color: #fff;
+  font-size: 1rem;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.jp-history-item {
+  padding: 14px 16px;
+  background: #1a2634;
+  border: 1px solid #2a3a4a;
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+
+.jp-history-winner {
+  font-weight: 600;
+  color: #00ff88;
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+}
+
+.jp-history-details {
+  color: #8899aa;
+  font-size: 0.8rem;
+  margin-bottom: 2px;
+}
+
+.jp-history-time {
+  color: #556677;
+  font-size: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .jp-wheel {
+    width: 160px;
+    height: 160px;
+  }
+
+  .jp-pot-value {
+    font-size: 1.3rem;
+  }
+
+  .jp-wheel-avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .jp-inventory-grid {
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  }
+}
