@@ -262,6 +262,8 @@ const dbManager = {
         itemName: item.itemName || item.name || 'Unknown Item',
         value: typeof item.value === 'number' ? item.value : 0,
         rarity: item.rarity || 'common',
+        mods: Array.isArray(item.mods) ? item.mods : [],
+        baseValue: typeof item.baseValue === 'number' ? item.baseValue : undefined,
         quantity: qty,
         image: item.image || item.imageUrl || '',
         imageUrl: item.imageUrl || item.image || '',

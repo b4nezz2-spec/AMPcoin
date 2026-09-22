@@ -70,6 +70,7 @@ function AdminPanel() {
   const [adminStats, setAdminStats] = useState({ totalBalance: 0 });
   const [statusActions, setStatusActions] = useState({});
   const [selectedPetIds, setSelectedPetIds] = useState([]);
+  const [giveMods, setGiveMods] = useState([]);
   const [addUserQty, setAddUserQty] = useState(1);
   const [addUserBusy, setAddUserBusy] = useState(false);
   const [modBusyId, setModBusyId] = useState(null);
@@ -443,6 +444,18 @@ function AdminPanel() {
     });
   };
 
+  const toggleGiveMod = (mod) => {
+    setGiveMods((prev) => (prev.includes(mod) ? prev.filter((m) => m !== mod) : [...prev, mod]));
+  };
+
+  // Preview: first selected pet's value with give-mods applied
+  const givePreview = (() => {
+    if (!selectedPetIds || selectedPetIds.length === 0 || giveMods.length === 0) return null;
+    const pet = (items || []).find((p) => String(p.id) === String(selectedPetIds[0]));
+    if (!pet) return null;
+    return { name: pet.name, value: moddedValue(petBaseOf(pet), giveMods) };
+  })();
+
   const handleRemovePet = async (petId) => {    try {
       const response = await retryRequest(() =>
         fetch(`${API_BASE}/api/items/${petId}`, {
@@ -590,7 +603,7 @@ function AdminPanel() {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${localStorage.getItem('token')}`
               },
-              body: JSON.stringify({ itemId, quantity: qty })
+              body: JSON.stringify({ itemId, quantity: qty, mods: giveMods })
             })
           );
           if (response.ok) ok++;
@@ -600,9 +613,11 @@ function AdminPanel() {
         }
       }
       if (ok > 0) {
-        showCustomPopup(`Gave ${ids.length} item${ids.length === 1 ? '' : 's'} × ${qty} to ${displayUser(selectedUser)}!`, 'success');
+        const modSuffix = giveMods.length > 0 ? ` with ${giveMods.join('')} (+${Math.round(giveMods.reduce((s, m) => s + (MOD_BONUS[m] || 0), 0) * 100)}%)` : '';
+        showCustomPopup(`Gave ${ids.length} item${ids.length === 1 ? '' : 's'} × ${qty} to ${displayUser(selectedUser)}${modSuffix}!`, 'success');
         handleViewUserPets(selectedUser);
         setSelectedPetIds([]);
+        setGiveMods([]);
       }
       if (failed > 0) setError(`Failed for ${failed} item(s)`);
     } catch (err) {
@@ -1160,6 +1175,25 @@ function AdminPanel() {
                       onChange={(e) => setAddUserQty(e.target.value)}
                       title="How many of each selected item"
                     />
+                    <div className="mod-btn-row give-mods">
+                      <span className="mod-row-label">Mods:</span>
+                      {['F', 'R', 'M', 'N'].map((m) => (
+                        <button
+                          key={m}
+                          type="button"
+                          className={`mod-btn small ${giveMods.includes(m) ? 'active' : ''}`}
+                          title={`${MOD_LABELS[m]} (+${Math.round(MOD_BONUS[m] * 100)}%)`}
+                          onClick={() => toggleGiveMod(m)}
+                        >
+                          {m}
+                        </button>
+                      ))}
+                      {givePreview && (
+                        <span className="mod-preview">
+                          {givePreview.name} → {givePreview.value.toLocaleString()} AMP
+                        </span>
+                      )}
+                    </div>
                     <button
                       className="btn btn-primary"
                       onClick={handleAddPetToUser}

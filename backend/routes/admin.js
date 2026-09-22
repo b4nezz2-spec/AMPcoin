@@ -288,7 +288,7 @@ router.put('/users/:robloxUsername/admin', authenticateAdmin, (req, res) => {
 router.post('/user/:userId/add-item', authenticateAdmin, (req, res) => {
   try {
     const { userId } = req.params;
-    const { itemId, petId, quantity = 1 } = req.body;
+    const { itemId, petId, quantity = 1, mods = [] } = req.body;
     const targetItemId = itemId || petId;
 
     const usersDb = dbManager.getUsersDb();
@@ -303,7 +303,31 @@ router.post('/user/:userId/add-item', authenticateAdmin, (req, res) => {
       return res.status(404).json({ message: 'Item not found' });
     }
 
-    const inventory = dbManager.addItemToUserInventory(userId, item, quantity);
+    // Optional pet modifiers: F +5%, R +5%, M +20%, N +8% on base value.
+    // Modded copies get a distinct itemId suffix so they stack separately
+    // from unmodded copies in the user's inventory.
+    const MOD_BONUS = { F: 0.05, R: 0.05, M: 0.20, N: 0.08 };
+    const cleanMods = Array.isArray(mods) ? [...new Set(mods)].filter((m) => MOD_BONUS[m]) : [];
+    let itemToGive = item;
+    if (cleanMods.length > 0) {
+      const base = Number(item.baseValue);
+      const baseValue = (!isNaN(base) && base >= 0) ? base : Number(item.value || 0);
+      const mult = 1 + cleanMods.reduce((s, m) => s + MOD_BONUS[m], 0);
+      const moddedValue = Math.round(baseValue * mult);
+      const suffix = cleanMods.slice().sort().join('');
+      itemToGive = {
+        ...item,
+        itemId: `${item.itemId || item.id}:${suffix}`,
+        id: `${item.id || item.itemId}:${suffix}`,
+        name: `${item.name || item.itemName}${cleanMods.length ? ` (${cleanMods.join('')})` : ''}`,
+        itemName: `${item.itemName || item.name}${cleanMods.length ? ` (${cleanMods.join('')})` : ''}`,
+        value: moddedValue,
+        baseValue,
+        mods: cleanMods
+      };
+    }
+
+    const inventory = dbManager.addItemToUserInventory(userId, itemToGive, quantity);
 
     const db = dbManager.getMainDb();
     const adminLog = {
@@ -335,7 +359,7 @@ router.post('/user/:userId/add-item', authenticateAdmin, (req, res) => {
 // Alias for add-pet to user inventory
 router.post('/user/:userId/add-pet', authenticateAdmin, (req, res) => {
   const { userId } = req.params;
-  const { petId, itemId, quantity = 1 } = req.body;
+  const { petId, itemId, quantity = 1, mods = [] } = req.body;
   const targetId = petId || itemId;
 
   const usersDb = dbManager.getUsersDb();
@@ -350,7 +374,28 @@ router.post('/user/:userId/add-pet', authenticateAdmin, (req, res) => {
     return res.status(404).json({ message: 'Pet not found' });
   }
 
-  dbManager.addItemToUserInventory(userId, item, quantity);
+  const MOD_BONUS = { F: 0.05, R: 0.05, M: 0.20, N: 0.08 };
+  const cleanMods = Array.isArray(mods) ? [...new Set(mods)].filter((m) => MOD_BONUS[m]) : [];
+  let itemToGive = item;
+  if (cleanMods.length > 0) {
+    const base = Number(item.baseValue);
+    const baseValue = (!isNaN(base) && base >= 0) ? base : Number(item.value || 0);
+    const mult = 1 + cleanMods.reduce((s, m) => s + MOD_BONUS[m], 0);
+    const moddedValue = Math.round(baseValue * mult);
+    const suffix = cleanMods.slice().sort().join('');
+    itemToGive = {
+      ...item,
+      itemId: `${item.itemId || item.id}:${suffix}`,
+      id: `${item.id || item.itemId}:${suffix}`,
+      name: `${item.name || item.itemName}${cleanMods.length ? ` (${cleanMods.join('')})` : ''}`,
+      itemName: `${item.itemName || item.name}${cleanMods.length ? ` (${cleanMods.join('')})` : ''}`,
+      value: moddedValue,
+      baseValue,
+      mods: cleanMods
+    };
+  }
+
+  dbManager.addItemToUserInventory(userId, itemToGive, quantity);
 
   const db = dbManager.getMainDb();
   db.adminLogs = db.adminLogs || [];
