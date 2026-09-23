@@ -56,3 +56,4 @@ Set `REACT_APP_API_URL` to your Railway backend URL (e.g., `https://ampcoin-back
 - **Auto-deploys**: Push to GitHub → auto-deploys
 - **No cold starts**: Stays running (unlike Back4App free tier)
 - **Works as-is**: Your Express.js code runs without changes
+"# gngo67gngo" 
