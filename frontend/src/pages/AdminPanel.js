@@ -84,6 +84,9 @@ function AdminPanel() {
   const [rotatingId, setForcingId] = useState(null);
   const [purgeBusy, setPurgeBusy] = useState(false);
   const [purgeArmed, setPurgeArmed] = useState(false);
+  const [wipeName, setWipeName] = useState('');
+  const [wipeArmed, setWipeArmed] = useState(false);
+  const [wipeBusy, setWipeBusy] = useState(false);
   const navigate = useNavigate();
 
   const fetchAudits = async () => {
@@ -181,6 +184,44 @@ function AdminPanel() {
       setError(`Purge failed: ${err.message}`);
     } finally {
       setPurgeBusy(false);
+    }
+  };
+
+  const handleWipeEverywhere = async () => {
+    const name = wipeName.trim();
+    if (!name) {
+      setError('Type the exact pet name to wipe (e.g. Bat Dragon (MFR))');
+      return;
+    }
+    if (!wipeArmed) {
+      setWipeArmed(true);
+      setTimeout(() => setWipeArmed(false), 6000);
+      return;
+    }
+    setWipeArmed(false);
+    setWipeBusy(true);
+    try {
+      const response = await retryRequest(() =>
+        fetch(`${API_BASE}/api/admin/remove-item-everywhere`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({ name })
+        })
+      );
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) {
+        showCustomPopup(`Wiped "${name}" from everyone: ${data.purgedStacks} stacks, ${data.purgedUnits} units.`, 'success');
+        setWipeName('');
+      } else {
+        setError(data.message || 'Wipe failed');
+      }
+    } catch (err) {
+      setError(`Wipe failed: ${err.message}`);
+    } finally {
+      setWipeBusy(false);
     }
   };
 
@@ -1492,6 +1533,26 @@ function AdminPanel() {
                           ? 'Click again to confirm: delete ALL commons/uncommons'
                           : 'Delete all Common + Uncommon pets'}
                     </button>
+                    <div className="wipe-row">
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Pet name to wipe everywhere, e.g. Bat Dragon (MFR)"
+                        value={wipeName}
+                        onChange={(e) => setWipeName(e.target.value)}
+                      />
+                      <button
+                        className={`btn ${wipeArmed ? 'btn-warning' : 'btn-danger'}`}
+                        onClick={handleWipeEverywhere}
+                        disabled={wipeBusy}
+                      >
+                        {wipeBusy
+                          ? 'Wiping...'
+                          : wipeArmed
+                            ? 'Click again to confirm wipe'
+                            : 'Wipe from everyone'}
+                      </button>
+                    </div>
                   </div>
                 )}
                 <div className="search-bar">

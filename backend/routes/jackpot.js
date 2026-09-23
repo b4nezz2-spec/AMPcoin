@@ -180,7 +180,11 @@ router.get('/active', (req, res) => {
   try {
     const db = dbManager.getMainDb();
     let active = (db.jackpots || []).find(j => j.status === 'waiting' || j.status === 'active');
-    if (active) active = settleIfExpired(active);
+    if (active) {
+      active = settleIfExpired(active);
+      // settleIfExpired may have just completed it — don't serve finished rounds
+      if (active && active.status !== 'waiting' && active.status !== 'active') active = null;
+    }
     res.json(active ? formatJackpot(active) : null);
   } catch (err) {
     console.error('Error fetching active jackpot:', err);
@@ -222,6 +226,11 @@ router.post('/join', authenticateToken, (req, res) => {
     if (!db.jackpots) db.jackpots = [];
 
     let jackpot = db.jackpots.find(j => j.status === 'waiting' || j.status === 'active');
+    // A stale round whose timer expired while nobody polled gets settled first
+    if (jackpot) {
+      jackpot = settleIfExpired(jackpot);
+      if (jackpot.status !== 'waiting' && jackpot.status !== 'active') jackpot = null;
+    }
     
     // Auto-create jackpot if none exists
     if (!jackpot) {

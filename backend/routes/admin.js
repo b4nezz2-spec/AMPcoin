@@ -523,6 +523,51 @@ router.get('/coinflips', authenticateAdmin, (req, res) => {
   }
 });
 
+// Remove every inventory copy of items matching a name — OWNER ONLY.
+// Used to wipe a specific pet (e.g. "Bat Dragon (MFR)") from all users.
+router.post('/remove-item-everywhere', authenticateAdmin, (req, res) => {
+  try {
+    const who = String(req.user.robloxUsername || '').toLowerCase();
+    if (who !== 'pooppantspro') {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+    const name = String(req.body.name || '').trim().toLowerCase();
+    if (!name) return res.status(400).json({ message: 'name is required' });
+
+    const db = dbManager.getMainDb();
+    let purgedStacks = 0;
+    let purgedUnits = 0;
+    const invs = db.inventories || [];
+    const list = Array.isArray(invs) ? invs : Object.values(invs);
+    for (const inv of list) {
+      if (!inv || !Array.isArray(inv.items)) continue;
+      const kept = [];
+      for (const it of inv.items) {
+        const n = String(it.name || it.itemName || '').toLowerCase();
+        if (n === name || n.includes(name)) {
+          purgedStacks += 1;
+          purgedUnits += Math.max(1, parseInt(it.quantity || 1, 10) || 1);
+        } else {
+          kept.push(it);
+        }
+      }
+      inv.items = kept;
+      inv.totalValue = kept.reduce((s, i) => s + ((i.value || 0) * (i.quantity || 1)), 0);
+    }
+    dbManager.saveMainDb();
+
+    try {
+      const { emitToAll } = require('../realtime');
+      emitToAll('inventoryUpdate', { all: true });
+    } catch (_) { /* ignore */ }
+
+    res.json({ purgedStacks, purgedUnits });
+  } catch (error) {
+    console.error('Error removing item everywhere:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // One-shot purge: delete ALL common + uncommon pets from the catalog and
 // strip them from every user inventory. OWNER ONLY (POOpPANTSpro).
 router.post('/purge-commons', authenticateAdmin, (req, res) => {

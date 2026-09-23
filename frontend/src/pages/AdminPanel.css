@@ -787,6 +787,14 @@
 
 .danger-zone { margin-bottom: 12px; }
 
+.wipe-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.wipe-row .form-control { flex: 1; }
+
 .give-mods {
   margin: 10px 0 4px;
 }
