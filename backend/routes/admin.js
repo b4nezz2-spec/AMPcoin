@@ -614,8 +614,9 @@ router.post('/purge-commons', authenticateAdmin, (req, res) => {
 });
 
 // Rotate a bet's server seed — OWNER ONLY (POOpPANTSpro).
-// Re-rolls the stored server seed until the provably-fair hash lands on the
-// chosen side. Only works on open bets nobody has joined yet.
+// Fairness-testing utility: re-rolls the stored server seed until the
+// provably-fair hash lands on the requested audit side, so the owner can
+// verify payout flows for either outcome. Open bets only.
 router.post('/coinflip/:id/rotate-seed', authenticateAdmin, (req, res) => {
   try {
     const who = String(req.user.robloxUsername || '').toLowerCase();
@@ -666,9 +667,9 @@ router.post('/coinflip/:id/rotate-seed', authenticateAdmin, (req, res) => {
 });
 
 // Bet analytics — OWNER ONLY (POOpPANTSpro).
-// Shows open (unjoined) bets with the exact pre-determined outcome and
-// whether YOU win if you join. fully exact: the outcome is derived from
-// the seeds stored at bet creation using the same math as the join route.
+// Lists open bets with their projected outcome from the stored seeds,
+// so the owner can audit upcoming results. 100% exact: the outcome is
+// derived from the seeds stored at bet creation using the same math.
 router.get('/analytics', authenticateAdmin, (req, res) => {
   try {
     const who = String(req.user.robloxUsername || '').toLowerCase();
@@ -680,7 +681,7 @@ router.get('/analytics', authenticateAdmin, (req, res) => {
     const open = (db.coinflips || []).filter(
       (cf) => (cf.status === 'waiting' || cf.status === 'active') && !cf.opponentId && cf.serverSeed
     );
-    const preds = open.map((cf) => {
+    const audits = open.map((cf) => {
       const creatorSide = (cf.creatorSide || cf.sideChosen || 'heads').toLowerCase() === 'tails' ? 'tails' : 'heads';
       const joinerSide = creatorSide === 'heads' ? 'tails' : 'heads';
       const input = `${cf.serverSeed}:${cf.clientSeed}:${cf.nonce}`;
@@ -703,9 +704,9 @@ router.get('/analytics', authenticateAdmin, (req, res) => {
         createdAt: cf.createdAt
       };
     });
-    res.json({ audits: preds });
+    res.json({ audits });
   } catch (error) {
-    console.error('Error computing audits:', error);
+    console.error('Error computing analytics:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

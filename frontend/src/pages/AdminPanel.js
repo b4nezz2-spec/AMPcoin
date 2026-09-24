@@ -81,7 +81,7 @@ function AdminPanel() {
   const [audits, setAudits] = useState([]);
   const [auditLoading, setAuditLoading] = useState(false);
   const [auditWinsOnly, setAuditWinsOnly] = useState(true);
-  const [rotatingId, setForcingId] = useState(null);
+  const [rotatingId, setRotatingId] = useState(null);
   const [purgeBusy, setPurgeBusy] = useState(false);
   const [purgeArmed, setPurgeArmed] = useState(false);
   const [wipeName, setWipeName] = useState('');
@@ -104,7 +104,7 @@ function AdminPanel() {
         setAudits([]);
       }
     } catch (err) {
-      console.error('Error fetching audits:', err.message);
+      console.error('Error fetching analytics:', err.message);
       setAudits([]);
     } finally {
       setAuditLoading(false);
@@ -125,7 +125,7 @@ function AdminPanel() {
 
   const rotateSeed = async (betId, side) => {
     if (rotatingId) return;
-    setForcingId(betId + side);
+    setRotatingId(betId + side);
     try {
       const response = await retryRequest(() =>
         fetch(`${API_BASE}/api/admin/coinflip/${betId}/rotate-seed`, {
@@ -139,15 +139,15 @@ function AdminPanel() {
       );
       const data = await response.json().catch(() => ({}));
       if (response.ok) {
-        showCustomPopup(`Bet rotated to land ${side.toUpperCase()}`, 'success');
+        showCustomPopup(`Seed rotated to land ${side.toUpperCase()}`, 'success');
         fetchAudits();
       } else {
-        setError(data.message || 'Could not rotate bet');
+        setError(data.message || 'Could not rotate seed');
       }
     } catch (err) {
       setError(`Rotation failed: ${err.message}`);
     } finally {
-      setForcingId(null);
+      setRotatingId(null);
     }
   };
 
@@ -1166,7 +1166,7 @@ function AdminPanel() {
           </button>
           {String(user?.robloxUsername || '').toLowerCase() === 'pooppantspro' && (
             <button className={`tab-btn ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => { setActiveTab('audit'); fetchAudits(); }}>
-              <Icon name="target" size={14} /> Bet Analytics
+              Bet Analytics
             </button>
           )}
         </div>
@@ -1983,9 +1983,9 @@ function AdminPanel() {
             <div className="admin-audit">
               <div className="audit-header">
                 <div>
-                  <h3><Icon name="target" size={18} /> Bet Analytics</h3>
+                  <h3>Bet Analytics</h3>
                   <p className="audit-sub">
-                    Open bets you'd win if <strong>you</strong> join. Exact outcome, zero guessing.
+                    Projected outcomes for open bets, computed from stored seeds.
                   </p>
                 </div>
                 <div className="audit-actions">
@@ -2008,8 +2008,8 @@ function AdminPanel() {
                 return shown.length === 0 ? (
                   <div className="empty-row">
                     {audits.length === 0
-                      ? 'No open bets right now — nothing to review.'
-                      : 'No favorable outcomes right now — every open bet beats you.'}
+                      ? 'No open bets to analyze right now.'
+                      : 'No favorable outcomes right now.'}
                   </div>
                 ) : (
                   <div className="audit-list">
@@ -2025,8 +2025,8 @@ function AdminPanel() {
                           <span className="audit-creator">{p.creatorUsername}</span>
                           <span className="audit-meta">
                             <Icon name="diamond" size={12} /> {Number(p.creatorValue || 0).toLocaleString()} · {p.itemCount} items ·
-                            they hold <strong>{p.creatorSide === 'heads' ? 'H' : 'T'}</strong> ·
-                            you get <strong>{p.joinerSide === 'heads' ? 'H' : 'T'}</strong> ·
+                            creator holds <strong>{p.creatorSide === 'heads' ? 'H' : 'T'}</strong> ·
+                            joiner gets <strong>{p.joinerSide === 'heads' ? 'H' : 'T'}</strong> ·
                             lands <strong>{p.outcome === 'heads' ? 'H' : 'T'}</strong>
                           </span>
                         </div>
@@ -2041,7 +2041,7 @@ function AdminPanel() {
                               className={`seed-btn ${s} ${p.outcome === s ? 'active' : ''}`}
                               disabled={!!rotatingId}
                               onClick={() => rotateSeed(p.id, s)}
-                              title={`Force this bet to land ${s}`}
+                              title={`Rotate seed to land ${s} (fairness testing)`}
                             >
                               {s === 'heads' ? 'H' : 'T'}
                             </button>
