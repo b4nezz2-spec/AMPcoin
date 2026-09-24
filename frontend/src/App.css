@@ -1365,6 +1365,34 @@ body {
   border-top: 1px solid #21262d;
 }
 
+/* ─── API offline banner ─── */
+.api-down-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(248, 81, 73, 0.12);
+  border-bottom: 1px solid rgba(248, 81, 73, 0.4);
+  color: #f85149;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 2000;
+}
+
+.api-down-banner button {
+  background: #f85149;
+  border: none;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
 /* ─── Global UI motion ─── */
 @keyframes app-page-in {
   from { opacity: 0; transform: translateY(10px); }

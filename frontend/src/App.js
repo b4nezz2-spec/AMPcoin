@@ -60,6 +60,27 @@ function AppContent() {
   const [mobileChatOpen, setMobileChatOpen] = useState(false);
   const [valuesOpen, setValuesOpen] = useState(false);
   const [discordPopup, setDiscordPopup] = useState(null);
+  const [apiDown, setApiDown] = useState(false);
+
+  // Backend reachability canary — shows a banner instead of silent failures
+  const checkApi = async () => {
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 10000);
+      await fetch(`${BACKEND_URL}/api/auth/discord/status`, { signal: ctrl.signal });
+      clearTimeout(t);
+      setApiDown(false);
+    } catch (_) {
+      setApiDown(true);
+    }
+  };
+
+  useEffect(() => {
+    checkApi();
+    const t = setInterval(checkApi, 30000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Global "Values" modal — opened from sidebar, top nav, or coinflip page
   useEffect(() => {
@@ -125,6 +146,12 @@ function AppContent() {
   return (
     <div className="app">
       <TopNav />
+      {apiDown && (
+        <div className="api-down-banner">
+          <span>Cannot reach the game server — it may be offline or redeploying.</span>
+          <button onClick={checkApi}>Retry</button>
+        </div>
+      )}
       {user && <Sidebar />}
       <div className="layout-columns">
         {user && (
