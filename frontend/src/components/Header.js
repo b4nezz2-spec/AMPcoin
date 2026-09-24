@@ -171,6 +171,8 @@ const Header = ({ balance, notifications, socket }) => {
         return 'Jackpot';
       case '/coinflip':
         return 'Coinflip';
+      case '/trading':
+        return 'Trading';
       case '/blackjack':
         return 'Jackpot';
       case '/leaderboard':

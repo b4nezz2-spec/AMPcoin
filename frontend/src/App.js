@@ -10,6 +10,7 @@ import Logo from './components/Logo';
 import CoinflipPage from './pages/CoinflipPage';
 import BlackjackPage from './pages/BlackjackPage';
 import JackpotPage from './pages/JackpotPage';
+import TradingPage from './pages/TradingPage';
 import WalletPage from './pages/WalletPage';
 import StatsPage from './pages/StatsPage';
 import ProvablyFairPage from './pages/ProvablyFairPage';
@@ -32,25 +33,6 @@ const socket = io(BACKEND_URL, {
   reconnectionDelay: 1000,
   timeout: 10000
 });
-
-function TopNav() {
-  const openValues = () => window.dispatchEvent(new CustomEvent('ampcoin:open-values'));
-  return (
-    <nav className="top-nav">
-      <span className="top-nav-item" onClick={openValues}><Icon name="diamond" size={14} /> Values</span>
-      <a href="/leaderboard"><Icon name="trophy" size={14} /> Leaderboard</a>
-      <a
-        className="top-nav-discord"
-        href="https://discord.gg/EfMgJa9qxa"
-        target="_blank"
-        rel="noopener noreferrer"
-        title="Join our Discord"
-      >
-        <Icon name="discord" size={15} /> Discord
-      </a>
-    </nav>
-  );
-}
 
 function AppContent() {
   const { user, loading, refreshUser } = useAuth();
@@ -145,7 +127,6 @@ function AppContent() {
 
   return (
     <div className="app">
-      <TopNav />
       {apiDown && (
         <div className="api-down-banner">
           <span>Cannot reach the game server — it may be offline or redeploying.</span>
@@ -174,6 +155,7 @@ function AppContent() {
               <Route path="/" element={user ? <Navigate to="/coinflip" replace /> : <Navigate to="/login" replace />} />
               <Route path="/coinflip" element={<ProtectedRoute><CoinflipPage socket={socket} setBalance={setBalance} /></ProtectedRoute>} />
               <Route path="/jackpot" element={<ProtectedRoute><JackpotPage socket={socket} setBalance={setBalance} /></ProtectedRoute>} />
+              <Route path="/trading" element={<ProtectedRoute><TradingPage socket={socket} /></ProtectedRoute>} />
               <Route path="/blackjack" element={<ProtectedRoute><JackpotPage socket={socket} setBalance={setBalance} /></ProtectedRoute>} />
               <Route path="/wallet" element={<ProtectedRoute><Navigate to="/coinflip" replace /></ProtectedRoute>} />
               <Route path="/stats" element={<ProtectedRoute><StatsPage /></ProtectedRoute>} />

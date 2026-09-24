@@ -19,10 +19,10 @@ body {
   width: 100%;
 }
 
-/* ─── Sidebar = Horizontal Top Navbar (sits below the top-nav strip) ─── */
+/* ─── Sidebar = Horizontal Top Navbar ─── */
 .sidebar {
   position: fixed !important;
-  top: 40px !important;
+  top: 0 !important;
   left: 0 !important;
   right: 0 !important;
   bottom: auto !important;
@@ -104,6 +104,27 @@ body {
 
 .sidebar .nav-link .nav-icon { font-size: 1rem !important; }
 
+.nav-discord {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 6px 12px !important;
+  border-radius: 8px !important;
+  background: #5865F2 !important;
+  color: #fff !important;
+  text-decoration: none !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: background 0.15s !important;
+  white-space: nowrap !important;
+  border: none !important;
+  margin-left: 6px !important;
+}
+
+.nav-discord:hover { background: #4752c4 !important; }
+
 .sidebar-footer {
   margin-left: auto !important;
   display: flex !important;
@@ -161,11 +182,11 @@ body {
   color: #f85149 !important;
 }
 
-/* ─── Layout: Chat + Main (below 40px top-nav + 56px fixed navbar) ─── */
+/* ─── Layout: Chat + Main (below 56px navbar) ─── */
 .layout-columns {
   display: flex;
   margin-top: 56px;
-  min-height: calc(100vh - 96px);
+  min-height: calc(100vh - 56px);
 }
 
 /* Chat column — far left, full height */
@@ -173,9 +194,9 @@ body {
   width: 300px;
   min-width: 300px;
   max-width: 300px;
-  height: calc(100vh - 96px);
+  height: calc(100vh - 56px);
   position: sticky;
-  top: 96px;
+  top: 56px;
   border-right: 1px solid #161b22;
   background: #0d1117;
   display: flex;
@@ -212,48 +233,6 @@ body {
   overflow-y: auto;
 }
 
-/* ─── Top nav bar ─── */
-.top-nav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 22px;
-  height: 40px;
-  background: #0a0e18;
-  border-bottom: 1px solid #161b22;
-  position: sticky;
-  top: 0;
-  z-index: 950;
-  padding: 0 16px;
-}
-
-.top-nav a,
-.top-nav .top-nav-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #8b949e;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  transition: color 0.15s;
-  white-space: nowrap;
-}
-
-.top-nav a:hover,
-.top-nav .top-nav-item:hover { color: #e6edf3; }
-
-.top-nav-discord {
-  background: #5865F2;
-  color: #fff !important;
-  padding: 5px 12px;
-  border-radius: 7px;
-  transition: background 0.15s !important;
-}
-
-.top-nav-discord:hover { background: #4752c4 !important; color: #fff !important; }
-
 /* ─── Sub-header bar: page title, balance + wallet actions, user ─── */
 .header {
   display: flex !important;
@@ -263,7 +242,7 @@ body {
   background: #0d1117;
   border-bottom: 1px solid #161b22;
   position: sticky;
-  top: 96px;
+  top: 56px;
   z-index: 900;
   flex-wrap: wrap;
 }
@@ -395,7 +374,7 @@ body {
 .header-gw-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 @media (max-width: 768px) {
-  .header { top: 84px; padding: 8px 12px; gap: 8px; }
+  .header { top: 48px; padding: 8px 12px; gap: 8px; }
   .header-left h2 { font-size: 0.9rem; }
   .header-right .username { display: none; }
 }
@@ -425,9 +404,8 @@ body {
 .chat-backdrop { display: none; }
 
 @media (max-width: 768px) {
-  .top-nav { height: 36px; gap: 14px; font-size: 0.75rem; }
   .sidebar {
-    top: 36px !important;
+    top: 0 !important;
     height: 48px !important;
     padding: 0 8px !important;
     gap: 2px !important;
@@ -443,17 +421,17 @@ body {
   .sidebar .nav-link .nav-label { display: none !important; }
   .sidebar-footer .user-name { display: none !important; }
   .sidebar-footer .user-avatar { width: 28px !important; height: 28px !important; }
-  .layout-columns { margin-top: 48px !important; min-height: calc(100vh - 84px) !important; }
+  .layout-columns { margin-top: 48px !important; min-height: calc(100vh - 48px) !important; }
   .page-content { padding: 12px !important; }
 
-  /* Chat becomes a slide-over drawer (below 36px top-nav + 48px navbar) */
+  /* Chat becomes a slide-over drawer (below 48px navbar) */
   .chat-column {
     display: none;
     position: fixed !important;
     left: 0;
-    top: 84px !important;
+    top: 48px !important;
     bottom: 0;
-    height: calc(100vh - 84px) !important;
+    height: calc(100vh - 48px) !important;
     width: min(320px, 85vw) !important;
     min-width: 0 !important;
     max-width: 85vw !important;
@@ -465,7 +443,7 @@ body {
   .chat-backdrop.show {
     display: block;
     position: fixed;
-    top: 84px;
+    top: 48px;
     left: 0;
     right: 0;
     bottom: 0;
@@ -515,6 +493,71 @@ body {
     width: auto !important;
   }
   .inventory-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)) !important; }
+}
+
+/* ─── Mid-width: chat becomes a drawer so content never crushes ─── */
+@media (max-width: 1150px) and (min-width: 769px) {
+  .chat-column {
+    display: none;
+    position: fixed !important;
+    left: 0;
+    top: 56px !important;
+    bottom: 0;
+    height: calc(100vh - 56px) !important;
+    z-index: 1500;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+  }
+  .chat-column.mobile-open { display: flex !important; }
+  .chat-backdrop.show {
+    display: block;
+    position: fixed;
+    top: 56px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1400;
+  }
+  .mobile-chat-fab {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #00aaff, #0066ff);
+    color: #fff;
+    font-size: 1.4rem;
+    cursor: pointer;
+    z-index: 1600;
+    box-shadow: 0 4px 16px rgba(0, 170, 255, 0.45);
+  }
+}
+
+/* ─── Theme richness ─── */
+::selection { background: rgba(0, 170, 255, 0.35); }
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(600px 300px at 12% -40px, rgba(0, 102, 255, 0.14), transparent 70%),
+    radial-gradient(700px 340px at 88% 8%, rgba(0, 212, 255, 0.08), transparent 70%),
+    radial-gradient(800px 500px at 50% 110%, rgba(88, 28, 135, 0.12), transparent 70%);
+}
+
+.app, .layout-columns, .main-content { position: relative; z-index: 1; }
+
+:focus-visible {
+  outline: 2px solid rgba(88, 166, 255, 0.7);
+  outline-offset: 2px;
 }
 
 /* section */
@@ -1422,8 +1465,7 @@ body {
 
 /* Nav + logo motion */
 .sidebar .nav-link { transition: all 0.15s !important; }
-.sidebar .nav-link:hover { transform: translateX(2px); }
-.top-nav a, .top-nav .top-nav-item { transition: all 0.15s; }
+.sidebar .nav-link:hover { transform: translateY(-1px); }
 .amp-logo { transition: transform 0.2s; display: inline-flex; }
 .amp-logo:hover { transform: scale(1.04) rotate(-2deg); }
 
