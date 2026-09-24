@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import CreateCoinflipModal from '../components/CreateCoinflipModal';
 import LeaderboardModal from '../components/LeaderboardModal';
 import AnimatedPopup from '../components/AnimatedPopup';
+import ModalPortal from '../components/ModalPortal';
 import { CoinChip, CoinFlipAnimation } from '../components/CoinChip';
 import ModBadges from '../components/ModBadges';
 import Icon from '../components/Icon';
@@ -802,6 +803,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
         // Winner ring appears only after the flip animation lands
         const showWinnerRing = isCompleted && flipDoneId === viewBet.id;
         return (
+          <ModalPortal>
           <div className="cf-modal-overlay" onClick={() => setViewBet(null)}>
             <div className="cf-modal cf-view-modal" onClick={(e) => e.stopPropagation()}>
               <button className="cf-modal-close" onClick={() => setViewBet(null)}>×</button>
@@ -911,6 +913,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
               </div>
             </div>
           </div>
+          </ModalPortal>
         );
       })()}
 
@@ -923,6 +926,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
         const totalVal = getJoinTotalValue();
         const rangeOk = joinRangeOk();
         return (
+          <ModalPortal>
           <div className="cf-modal-overlay" onClick={() => setShowJoinModal(false)}>
             <div className="cf-modal cf-join-modal" onClick={(e) => e.stopPropagation()}>
               <button className="cf-modal-close" onClick={() => setShowJoinModal(false)}>×</button>
@@ -1072,6 +1076,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
               </div>
             </div>
           </div>
+          </ModalPortal>
         );
       })()}
 
@@ -1095,6 +1100,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
           HISTORY MODAL
       ═══════════════════════════════════════════════════════════════════ */}
       {showHistory && (
+        <ModalPortal>
         <div className="cf-modal-overlay" onClick={() => setShowHistory(false)}>
           <div className="cf-modal cf-history-modal" onClick={(e) => e.stopPropagation()}>
             <button className="cf-modal-close" onClick={() => setShowHistory(false)}>×</button>
@@ -1189,7 +1195,10 @@ const CoinflipPage = ({ socket, setBalance }) => {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
+
+      {/* Leaderboard */}
 
       {/* Leaderboard */}
       {showLeaderboard && (

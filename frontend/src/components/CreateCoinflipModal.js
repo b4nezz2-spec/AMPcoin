@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import AnimatedPopup from './AnimatedPopup';
 import { CoinChip } from './CoinChip';
 import ModBadges from './ModBadges';
+import ModalPortal from './ModalPortal';
 import Icon from './Icon';
 import './CoinChip.css';
 import './ModBadges.css';
@@ -169,6 +170,7 @@ const CreateCoinflipModal = ({ onClose, onCreated, userId, socket, setBalance, u
 
   if (loading) {
     return (
+      <ModalPortal>
       <div className="modal-overlay" onClick={onClose}>
         <div className="modal" onClick={(e) => e.stopPropagation()}>
           <div className="modal-header">
@@ -181,10 +183,12 @@ const CreateCoinflipModal = ({ onClose, onCreated, userId, socket, setBalance, u
           </div>
         </div>
       </div>
+      </ModalPortal>
     );
   }
 
   return (
+    <ModalPortal>
     <div className="cf-modal-overlay" onClick={onClose}>
       {notice && (
         <AnimatedPopup
@@ -414,6 +418,7 @@ const CreateCoinflipModal = ({ onClose, onCreated, userId, socket, setBalance, u
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 };
 

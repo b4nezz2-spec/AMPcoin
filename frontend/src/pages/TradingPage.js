@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import AnimatedPopup from '../components/AnimatedPopup';
 import ModBadges from '../components/ModBadges';
+import ModalPortal from '../components/ModalPortal';
 import Icon from '../components/Icon';
 import '../components/ModBadges.css';
 import './TradingPage.css';
@@ -508,6 +509,7 @@ const TradingPage = ({ socket }) => {
 
       {/* Offer picker modal */}
       {offerTrade && (
+        <ModalPortal>
         <div className="cf-modal-overlay" onClick={() => setOfferTrade(null)}>
           <div className="cf-modal cf-join-modal" onClick={(e) => e.stopPropagation()}>
             <button className="cf-modal-close" onClick={() => setOfferTrade(null)}>×</button>
@@ -604,6 +606,7 @@ const TradingPage = ({ socket }) => {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );
