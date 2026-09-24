@@ -68,19 +68,27 @@ function formatCoinflip(cf) {
   };
 }
 
-// Completed bets stay visible for 10 minutes, then are hard-deleted
-const COMPLETED_TTL_MS = 10 * 60 * 1000;
+// Completed bets stay in the lobby for 10 minutes, but are RETAINED for
+// history (30 days). Never hard-delete recent results — history depends on it.
+const LOBBY_COMPLETED_MS = 10 * 60 * 1000;
+const RETAIN_COMPLETED_MS = 30 * 24 * 3600 * 1000;
 
-function isExpiredCompleted(cf) {
+function isLobbyExpired(cf) {
+  if (!cf || cf.status !== 'completed') return false;
+  if (!cf.completedAt) return false;
+  return Date.now() - new Date(cf.completedAt).getTime() >= LOBBY_COMPLETED_MS;
+}
+
+function isRetentionExpired(cf) {
   if (!cf || cf.status !== 'completed') return false;
   if (!cf.completedAt) return false; // legacy records without timestamp are kept
-  return Date.now() - new Date(cf.completedAt).getTime() >= COMPLETED_TTL_MS;
+  return Date.now() - new Date(cf.completedAt).getTime() >= RETAIN_COMPLETED_MS;
 }
 
 function pruneExpiredCompleted(db) {
   if (!Array.isArray(db.coinflips) || db.coinflips.length === 0) return false;
   const before = db.coinflips.length;
-  db.coinflips = db.coinflips.filter((cf) => !isExpiredCompleted(cf));
+  db.coinflips = db.coinflips.filter((cf) => !isRetentionExpired(cf));
   return db.coinflips.length !== before;
 }
 
@@ -104,10 +112,10 @@ router.get('/', (req, res) => {
     if (status) {
       coinflips = coinflips.filter(cf => cf.status === status);
     } else {
-      // Waiting/active games plus recently completed ones (10 min window)
+      // Waiting/active games plus recently completed ones (10 min lobby window)
       coinflips = coinflips.filter(cf =>
         cf.status === 'waiting' || cf.status === 'active' ||
-        (cf.status === 'completed' && !isExpiredCompleted(cf))
+        (cf.status === 'completed' && !isLobbyExpired(cf))
       );
     }
 
@@ -799,13 +807,16 @@ router.get('/:id', (req, res) => {
   }
 });
 
-// Get coinflip history for a user
+// Get coinflip history for a user — every completed bet they played,
+// newest first (retained 30 days, never trimmed to active-only)
 router.get('/user/:userId/history', authenticateToken, (req, res) => {
   try {
     const { userId } = req.params;
     const db = dbManager.getMainDb();
     const history = (db.coinflips || [])
       .filter(cf => (cf.creatorId === userId || cf.opponentId === userId) && cf.status === 'completed')
+      .sort((a, b) => new Date(b.completedAt || b.updatedAt || 0) - new Date(a.completedAt || a.updatedAt || 0))
+      .slice(0, 200)
       .map(formatCoinflip);
 
     res.json(history);

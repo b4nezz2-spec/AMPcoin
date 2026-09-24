@@ -12,9 +12,10 @@
   background: rgba(3,5,9,.72);
   display: flex; align-items: center; justify-content: center;
   z-index: 3000; backdrop-filter: blur(4px); padding: 20px;
+  overflow-y: auto;
 }
 .profile-modal {
-  width: 94%; max-width: 380px;
+  width: 94%; max-width: 380px; margin: auto;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 18px;

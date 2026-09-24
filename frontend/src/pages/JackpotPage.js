@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import AnimatedPopup from '../components/AnimatedPopup';
 import Icon from '../components/Icon';
@@ -20,6 +20,42 @@ const JackpotPage = ({ socket, setBalance }) => {
   const [timer, setTimer] = useState(null);
   const [showHistory, setShowHistory] = useState(false);
   const [activeTab, setActiveTab] = useState('active'); // active, history
+  const [spinId, setSpinId] = useState(null); // userId currently highlighted by the sweep
+  const [spinning, setSpinning] = useState(false);
+  const spinTimers = useRef([]);
+  const prevStatus = useRef(null);
+
+  const clearSpin = () => {
+    spinTimers.current.forEach(clearTimeout);
+    spinTimers.current = [];
+  };
+
+  useEffect(() => clearSpin, []);
+
+  // Sweep animation: cycles through players, decelerates, lands on the winner
+  const runSpin = useCallback((jp) => {
+    const entries = jp.entries || [];
+    if (entries.length < 2 || !jp.winnerId) return;
+    clearSpin();
+    setSpinning(true);
+    const order = entries.map((e) => e.userId);
+    let winIdx = order.indexOf(jp.winnerId);
+    if (winIdx < 0) winIdx = 0;
+    const cycles = 3;
+    const totalSteps = order.length * cycles + winIdx + 1;
+    let t = 0;
+    for (let s = 0; s < totalSteps; s++) {
+      const uid = order[s % order.length];
+      const progress = s / totalSteps;
+      // ease-out: 70ms -> 420ms
+      t += 70 + Math.pow(progress, 2.2) * 350;
+      spinTimers.current.push(setTimeout(() => setSpinId(uid), t));
+    }
+    spinTimers.current.push(setTimeout(() => {
+      setSpinId(jp.winnerId);
+      setSpinning(false);
+    }, t + 650));
+  }, []);
 
   const showCustomPopup = (message, type = 'info') => {
     setPopup({ show: true, message, type });
@@ -113,7 +149,17 @@ const JackpotPage = ({ socket, setBalance }) => {
   useEffect(() => {
     if (!socket) return;
     socket.on('jackpotUpdate', (data) => {
+      const was = prevStatus.current;
+      prevStatus.current = data ? data.status : null;
       setJackpot(data);
+      if (data && data.status === 'completed' && data.winnerId && was !== 'completed') {
+        runSpin(data);
+      }
+      if (data && (data.status === 'waiting' || data.status === 'active')) {
+        clearSpin();
+        setSpinning(false);
+        setSpinId(null);
+      }
       if (data && data.timerStartedAt && data.status === 'active') {
         const elapsed = Math.floor((Date.now() - new Date(data.timerStartedAt).getTime()) / 1000);
         const remaining = Math.max(0, (data.timerDuration || 90) - elapsed);
@@ -211,11 +257,16 @@ const JackpotPage = ({ socket, setBalance }) => {
 
       {activeTab === 'active' ? (
         <div className="jp-active">
-          {/* Winner banner */}
-          {jackpot && jackpot.status === 'completed' && jackpot.winnerUsername && (
+          {/* Winner banner (after the sweep lands) */}
+          {jackpot && jackpot.status === 'completed' && jackpot.winnerUsername && !spinning && (
             <div className="jp-winner-banner">
               <Icon name="trophy" size={18} />
               <span><strong>{jackpot.winnerUsername}</strong> won the jackpot — <Icon name="diamond" size={13} /> {totalPotValue.toLocaleString()}</span>
+            </div>
+          )}
+          {spinning && (
+            <div className="jp-spinning-banner">
+              <span className="jp-spin-dots"><span /><span /><span /></span> Drawing winner...
             </div>
           )}
           {/* Jackpot Wheel / Pot Display */}
@@ -259,12 +310,14 @@ const JackpotPage = ({ socket, setBalance }) => {
           </div>
 
           {/* Player Cards */}
-          <div className="jp-players">
+          <div className={`jp-players ${spinning ? 'spinning' : ''}`}>
             <h3>Players in Pot</h3>
             {jackpot?.entries?.length > 0 ? (
               jackpot.entries.map((entry) => (
-                <div key={entry.userId} className="jp-player-card">
-                  <img
+                <div
+                  key={entry.userId}
+                  className={`jp-player-card ${spinId === entry.userId ? 'spin-active' : ''} ${jackpot.status === 'completed' && jackpot.winnerId === entry.userId && !spinning ? 'is-winner' : ''}`}
+                >  <img
                     src={entry.avatar || `https://www.roblox.com/headshot-thumbnail/image?userId=${entry.userId}&width=100&height=100&format=png`}
                     alt={entry.username}
                     className="jp-player-avatar"

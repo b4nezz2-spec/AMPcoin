@@ -28,6 +28,37 @@
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+/* Sweep draw animation */
+.jp-spinning-banner {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 12px 18px; margin-bottom: 16px;
+  background: rgba(47,129,247,.08); border: 1px solid rgba(47,129,247,.35);
+  border-radius: var(--r-md); color: var(--acc); font-size: .88rem; font-weight: 700;
+}
+.jp-spin-dots { display: inline-flex; gap: 4px; }
+.jp-spin-dots span {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: currentColor;
+  animation: jp-dot-bounce .9s infinite;
+}
+.jp-spin-dots span:nth-child(2) { animation-delay: .15s; }
+.jp-spin-dots span:nth-child(3) { animation-delay: .3s; }
+@keyframes jp-dot-bounce {
+  0%, 100% { transform: translateY(0); opacity: .5; }
+  50% { transform: translateY(-5px); opacity: 1; }
+}
+.jp-players.spinning .jp-player-card { opacity: .45; }
+.jp-players.spinning .jp-player-card.spin-active {
+  opacity: 1; border-color: var(--acc);
+  box-shadow: 0 0 0 1px var(--acc), 0 0 22px rgba(47,129,247,.45);
+  transform: translateY(-1px) scale(1.01);
+}
+.jp-player-card { transition: opacity .12s, border-color .12s, box-shadow .12s, transform .12s; }
+.jp-player-card.is-winner {
+  border-color: rgba(63,185,80,.6);
+  box-shadow: 0 0 0 1px rgba(63,185,80,.6), 0 0 22px rgba(63,185,80,.3);
+}
+
 /* Tabs */
 .jp-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
 .jp-tab, .jp-active {
@@ -60,7 +91,7 @@
   border: 1px dashed rgba(47,129,247,.35); pointer-events: none;
 }
 .jp-wheel-inner { text-align: center; z-index: 1; }
-.jp-pot-value { font-size: 1.8rem; font-weight: 800; color: var(--txt); letter-spacing: -.01em; }
+.jp-pot-value { font-size: 1.8rem; font-weight: 800; color: var(--txt); letter-spacing: -.01em; text-shadow: 0 0 24px rgba(47,129,247,.35); }
 .jp-pot-value .jp-diamond { font-size: 1.15rem; color: var(--acc); }
 .jp-pot-info {
   color: var(--mut); font-size: .7rem; font-weight: 700; letter-spacing: .1em;
