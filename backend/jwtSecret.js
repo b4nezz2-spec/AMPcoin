@@ -8,7 +8,10 @@ let cached = null;
 function jwtSecret() {
   if (cached) return cached;
   const fromEnv = process.env.JWT_SECRET;
-  if (fromEnv && fromEnv.length >= 16) {
+  if (fromEnv) {
+    if (fromEnv.length < 32) {
+      console.warn('[auth] WARNING: JWT_SECRET is short — use a long random value');
+    }
     cached = fromEnv;
     return cached;
   }
