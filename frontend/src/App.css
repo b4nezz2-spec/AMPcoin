@@ -1364,3 +1364,111 @@ body {
   color: #8b949e;
   border-top: 1px solid #21262d;
 }
+
+/* ─── Global UI motion ─── */
+@keyframes app-page-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.page-content { animation: app-page-in 0.3s ease both; }
+
+/* Modal springs (wallet, trade, value checker) */
+.wm-overlay, .trade-modal-overlay, .vc-overlay { animation: cf-fade-in 0.2s ease both; }
+.wm-modal, .trade-modal, .vc-modal { animation: cf-spring-in 0.32s cubic-bezier(0.34, 1.4, 0.64, 1) both; }
+
+@keyframes cf-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes cf-spring-in {
+  0% { opacity: 0; transform: translateY(26px) scale(0.96); }
+  60% { opacity: 1; transform: translateY(-4px) scale(1.005); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Press states */
+.header-wallet-btn:active, .wm-btn:active, .select-all-btn:active,
+.withdraw-bottom-btn:active, .jp-btn-primary:active, .jp-btn-secondary:active,
+.jp-tab:active, .auth-btn:active, .auth-btn-secondary:active, .tab-btn:active,
+.btn:active, .mod-btn:active, .send-button:active {
+  transform: scale(0.94) !important;
+}
+
+/* Nav + logo motion */
+.sidebar .nav-link { transition: all 0.15s !important; }
+.sidebar .nav-link:hover { transform: translateX(2px); }
+.top-nav a, .top-nav .top-nav-item { transition: all 0.15s; }
+.amp-logo { transition: transform 0.2s; display: inline-flex; }
+.amp-logo:hover { transform: scale(1.04) rotate(-2deg); }
+
+/* Chat messages slide in */
+@keyframes chat-in {
+  from { opacity: 0; transform: translateX(-6px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.chat-message-row { animation: chat-in 0.22s ease both; }
+
+/* Chat drawer slide */
+@keyframes chat-drawer-in {
+  from { transform: translateX(-24px); opacity: 0.5; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .chat-column.mobile-open { animation: chat-drawer-in 0.25s ease both; }
+}
+
+/* FAB pulse */
+@keyframes fab-pulse {
+  0% { box-shadow: 0 4px 16px rgba(0, 170, 255, 0.45), 0 0 0 0 rgba(0, 170, 255, 0.5); }
+  70% { box-shadow: 0 4px 16px rgba(0, 170, 255, 0.45), 0 0 0 12px rgba(0, 170, 255, 0); }
+  100% { box-shadow: 0 4px 16px rgba(0, 170, 255, 0.45), 0 0 0 0 rgba(0, 170, 255, 0); }
+}
+
+.mobile-chat-fab { animation: fab-pulse 2.4s infinite; }
+
+/* Loading logo float */
+@keyframes logo-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.app-loading-logo { animation: logo-float 2s ease-in-out infinite; }
+
+/* Jackpot wheel slow spin ring */
+.jp-wheel { position: relative; }
+.jp-wheel::after {
+  content: '';
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  border: 2px dashed rgba(88, 166, 255, 0.35);
+  animation: jp-ring-spin 24s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes jp-ring-spin { to { transform: rotate(360deg); } }
+
+.jp-player-card, .jp-history-item { transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s; }
+.jp-player-card:hover, .jp-history-item:hover { transform: translateY(-1px); box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35); }
+.jp-inv-tile, .cf-inv-tile { transition: all 0.15s; }
+.jp-inv-tile:active, .cf-inv-tile:active { transform: scale(0.93); }
+
+/* Admin + tables motion */
+.stat-card, .audit-row { transition: all 0.15s; }
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4); }
+.audit-row:hover { transform: translateY(-1px); }
+.tab-btn { transition: all 0.15s !important; }
+
+/* Input focus glow */
+.auth-input, .chat-input, .vc-search, .cf-create-search, .cf-value-input,
+.form-control, .wm-search {
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+/* Notification items slide */
+@keyframes notif-in {
+  from { opacity: 0; transform: translateX(10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.notification-item { animation: notif-in 0.25s ease both; }

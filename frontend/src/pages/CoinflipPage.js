@@ -197,9 +197,12 @@ const CoinflipPage = ({ socket, setBalance }) => {
     fetchJackpotCount();
     if (socket) {
       socket.on('newCoinflip', (data) => {
-        setCoinflips(prev => [data, ...prev.filter(cf => cf.id !== data.id)]);
-        setActiveCount(prev => prev + 1);
-        setTotalInGames(prev => prev + (data.totalValue || 0));
+        if (data && data.id) {
+          setCoinflips(prev => [data, ...prev.filter(cf => cf.id !== data.id)]);
+          setActiveCount(prev => prev + 1);
+          setTotalInGames(prev => prev + (data.totalValue || 0));
+          flashFreshRow(data.id);
+        }
       });
       socket.on('coinflipJoined', (data) => {
         setCoinflips(prev => prev.map(cf => cf.id === data.id ? data : cf));
@@ -218,7 +221,12 @@ const CoinflipPage = ({ socket, setBalance }) => {
       });
       socket.on('coinflipCancelled', (data) => {
         if (data && data.id) {
-          setCoinflips(prev => prev.filter(cf => cf.id !== data.id));
+          // Animate out, then remove
+          setLeavingBetId(data.id);
+          setTimeout(() => {
+            setCoinflips(prev => prev.filter(cf => cf.id !== data.id));
+            setLeavingBetId((cur) => (cur === data.id ? null : cur));
+          }, 380);
           setActiveCount(prev => Math.max(0, prev - 1));
         }
       });
@@ -252,6 +260,20 @@ const CoinflipPage = ({ socket, setBalance }) => {
   };
 
   useEffect(() => () => { animTimers.current.forEach(clearTimeout); }, []);
+
+  // Fresh-row highlight (create animation): flashes the glow, clears after 3.5s
+  const [freshBetId, setFreshBetId] = useState(null);
+  const freshTimer = useRef(null);
+  const flashFreshRow = (id) => {
+    if (!id) return;
+    setFreshBetId(id);
+    if (freshTimer.current) clearTimeout(freshTimer.current);
+    freshTimer.current = setTimeout(() => setFreshBetId(null), 3500);
+  };
+  useEffect(() => () => { if (freshTimer.current) clearTimeout(freshTimer.current); }, []);
+
+  // Leaving-row animation (cancel): collapse + fade before removal
+  const [leavingBetId, setLeavingBetId] = useState(null);
 
   const isVisibleGame = (cf) => {
     if (!cf) return false;
@@ -326,6 +348,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
       setCoinflips((prev) => [newBet, ...prev.filter((cf) => cf.id !== newBet.id)]);
       setActiveCount((prev) => prev + 1);
       setTotalInGames((prev) => prev + (newBet.totalValue || 0));
+      flashFreshRow(newBet.id);
       showCustomPopup('Coinflip created — your bet is live!', 'success');
     }
     fetchCoinflips();
@@ -465,6 +488,10 @@ const CoinflipPage = ({ socket, setBalance }) => {
   const handleCancelBet = async (bet) => {
     if (!bet || cancelling) return;
     setCancelling(true);
+    // Play the exit animation first, then hit the API
+    setLeavingBetId(bet.id);
+    setViewBet(null);
+    await new Promise((r) => setTimeout(r, 380));
     try {
       const response = await fetch(`${API_BASE}/api/coinflip/${bet.id}`, {
         method: 'DELETE',
@@ -475,14 +502,15 @@ const CoinflipPage = ({ socket, setBalance }) => {
         setCoinflips((prev) => prev.filter((cf) => cf.id !== bet.id));
         setActiveCount((prev) => Math.max(0, prev - 1));
         setTotalInGames((prev) => Math.max(0, prev - (bet.totalValue || 0)));
-        setViewBet(null);
         showCustomPopup('Bet cancelled — items refunded!', 'success');
         fetchInventory();
       } else {
+        setLeavingBetId(null);
         showCustomPopup(data.message || 'Failed to cancel bet', 'error');
       }
     } catch (err) {
       console.error('Error cancelling bet:', err);
+      setLeavingBetId(null);
       showCustomPopup('Failed to cancel bet due to server error', 'error');
     } finally {
       setCancelling(false);
@@ -654,7 +682,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
             const showOppRing = oppWon && !flipping;
 
             return (
-              <div key={coinflip.id} className={`cf-row ${meta.isCompleted ? 'cf-row-done' : ''}`}>
+              <div key={coinflip.id} className={`cf-row ${meta.isCompleted ? 'cf-row-done' : ''} ${freshBetId === coinflip.id ? 'cf-row-fresh' : ''} ${leavingBetId === coinflip.id ? 'cf-row-exit' : ''}`}>
                 {/* Players */}
                 <div className="cf-row-players">
                   <div className="cf-row-player">

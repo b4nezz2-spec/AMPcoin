@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AnimatedPopup from './AnimatedPopup';
 import Icon from './Icon';
+import Logo from './Logo';
 
 const DEFAULT_AVATAR = '/default-avatar.png';
 
@@ -42,8 +43,7 @@ function Sidebar() {
       <nav className="sidebar">
         <div className="sidebar-header">
           <Link to="/coinflip" className="sidebar-logo">
-            <span className="logo-icon"><Icon name="fire" size={22} /></span>
-            <span className="logo-text">AMPCOIN</span>
+            <Logo size={30} />
           </Link>
         </div>
 

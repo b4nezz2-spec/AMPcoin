@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Icon from '../components/Icon';
+import Logo from '../components/Logo';
 import './AuthPage.css';
 
 const LoginPage = () => {
@@ -73,8 +74,7 @@ const LoginPage = () => {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-logo">
-          <span className="auth-logo-fire"><Icon name="fire" size={22} /></span>
-          <span className="auth-logo-text">AMPCOIN</span>
+          <Logo size={44} textSize="1.7rem" />
         </div>
 
         {step === 1 ? (

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import io from 'socket.io-client';
 
 import './App.css';
 import './giveaways-notifications.css';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
+import Logo from './components/Logo';
 import CoinflipPage from './pages/CoinflipPage';
 import BlackjackPage from './pages/BlackjackPage';
 import JackpotPage from './pages/JackpotPage';
@@ -53,6 +54,7 @@ function TopNav() {
 
 function AppContent() {
   const { user, loading, refreshUser } = useAuth();
+  const location = useLocation();
   const [balance, setBalance] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const [mobileChatOpen, setMobileChatOpen] = useState(false);
@@ -113,6 +115,7 @@ function AppContent() {
   if (loading) {
     return (
       <div className="loading-container">
+        <div className="app-loading-logo"><Logo size={64} showText={false} /></div>
         <div className="loading-spinner"></div>
         <p>Loading AMPCOIN...</p>
       </div>
@@ -137,7 +140,7 @@ function AppContent() {
         )}
         <div className="main-content">
           {user && <Header balance={balance} setBalance={setBalance} notifications={notifications} socket={socket} />}
-          <div className="page-content">
+          <div className="page-content" key={location.pathname}>
             <Routes>
               <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/coinflip" />} />
               <Route path="/register" element={<Navigate to="/login" replace />} />
