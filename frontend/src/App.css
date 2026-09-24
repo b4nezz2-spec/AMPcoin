@@ -458,8 +458,9 @@ body {
 .chat-message-row {
   display: flex; gap: 8px; padding: 5px 14px; align-items: flex-start;
   transition: background 0.1s; animation: chat-in 0.22s ease both;
+  border-left: 2px solid transparent;
 }
-.chat-message-row:hover { background: rgba(148,163,184,.04); }
+.chat-message-row:hover { background: rgba(148,163,184,.04); border-left-color: var(--acc); }
 .chat-message-row.own-row { flex-direction: row-reverse; }
 .chat-message-row.other-row { flex-direction: row; }
 
@@ -473,7 +474,10 @@ body {
   min-width: 30px !important; min-height: 30px !important;
   max-width: 30px !important; max-height: 30px !important;
   border-radius: 50%; object-fit: cover; display: block;
+  border: 1px solid var(--line); background: var(--panel2);
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
+.chat-message-row:hover .chat-avatar { border-color: var(--acc); box-shadow: 0 0 10px rgba(47,129,247,.25); }
 .chat-bubble { flex: 1; min-width: 0; max-width: 85%; }
 .chat-bubble.own, .chat-bubble.other { flex: 1; min-width: 0; max-width: 85%; }
 .chat-message-row.own-row .chat-bubble { text-align: right; }
@@ -499,7 +503,10 @@ body {
   padding: 0 8px 0 12px; min-width: 0;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
 }
-.chat-input-wrap:focus-within { border-color: var(--acc); }
+.chat-input-wrap:focus-within {
+  border-color: var(--acc);
+  box-shadow: 0 0 0 3px rgba(47,129,247,.15), inset 0 1px 0 rgba(255,255,255,.03);
+}
 .chat-input {
   flex: 1; background: none; border: none; color: var(--txt);
   font-size: 0.85rem; outline: none; padding: 9px 0; min-width: 0;
@@ -538,8 +545,16 @@ body {
 /* ─── Giveaway banner (in chat) ─── */
 .gw-banner {
   display: flex; align-items: center; gap: 10px;
-  padding: 10px 14px; background: var(--panel);
-  border-bottom: 1px solid var(--line); flex-shrink: 0;
+  margin: 8px 10px 4px; padding: 10px 12px;
+  background: linear-gradient(180deg, rgba(210,153,34,.14), rgba(210,153,34,.05));
+  border: 1px solid rgba(210,153,34,.4); border-radius: var(--r-md);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 0 18px rgba(210,153,34,.12);
+  position: sticky; top: 0; z-index: 5;
+  animation: gw-pulse 2.2s ease-in-out infinite;
+}
+@keyframes gw-pulse {
+  0%, 100% { box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 0 12px rgba(210,153,34,.08); }
+  50% { box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 0 24px rgba(210,153,34,.22); }
 }
 .gw-banner-left, .gw-banner .left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
 .gw-banner-thumb, .gw-banner .thumb {
@@ -608,8 +623,11 @@ body {
 .gw-join-big.locked { background: var(--panel2); color: var(--dim); cursor: default; border-color: var(--line); box-shadow: none; }
 .gw-win-line { padding: 8px 12px; font-size: 0.78rem; color: var(--grn); font-weight: 600; font-variant-numeric: tabular-nums; }
 .gw-winner-banner {
-  padding: 8px 12px; font-size: 0.78rem; color: var(--gold); font-weight: 600;
-  background: rgba(210,153,34,.07); border-top: 1px solid var(--line-soft);
+  margin: 8px 10px 4px; padding: 10px 12px;
+  font-size: 0.78rem; color: var(--gold); font-weight: 600;
+  background: linear-gradient(180deg, rgba(210,153,34,.14), rgba(210,153,34,.05));
+  border: 1px solid rgba(210,153,34,.4); border-radius: var(--r-md);
+  position: sticky; top: 0; z-index: 5;
 }
 .gw-refund-banner { padding: 8px 12px; font-size: 0.78rem; color: var(--mut); border-top: 1px solid var(--line-soft); }
 .gw-error-line { padding: 6px 12px; font-size: 0.78rem; color: var(--red); font-weight: 600; }

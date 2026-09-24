@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import AnimatedPopup from '../components/AnimatedPopup';
+import { CoinLoader } from '../components/CoinChip';
+import '../components/CoinChip.css';
 import Icon from '../components/Icon';
 import ModBadges from '../components/ModBadges';
 import '../components/ModBadges.css';
@@ -235,8 +237,9 @@ const JackpotPage = ({ socket, setBalance }) => {
   if (loading) {
     return (
       <div className="jackpot-page">
-        <div className="loading-spinner"></div>
-        <p>Loading jackpot...</p>
+        <div className="jp-loading">
+          <CoinLoader size={84} label="Loading jackpot..." />
+        </div>
       </div>
     );
   }
@@ -313,10 +316,12 @@ const JackpotPage = ({ socket, setBalance }) => {
           <div className={`jp-players ${spinning ? 'spinning' : ''}`}>
             <h3>Players in Pot</h3>
             {jackpot?.entries?.length > 0 ? (
-              jackpot.entries.map((entry) => (
+              jackpot.entries.map((entry) => {
+                const isLeader = totalPotValue > 0 && entry.value === Math.max(...jackpot.entries.map((e) => e.value));
+                return (
                 <div
                   key={entry.userId}
-                  className={`jp-player-card ${spinId === entry.userId ? 'spin-active' : ''} ${jackpot.status === 'completed' && jackpot.winnerId === entry.userId && !spinning ? 'is-winner' : ''}`}
+                  className={`jp-player-card ${spinId === entry.userId ? 'spin-active' : ''} ${jackpot.status === 'completed' && jackpot.winnerId === entry.userId && !spinning ? 'is-winner' : ''} ${isLeader && jackpot.status !== 'completed' ? 'is-leader' : ''}`}
                 >  <img
                     src={entry.avatar || `https://www.roblox.com/headshot-thumbnail/image?userId=${entry.userId}&width=100&height=100&format=png`}
                     alt={entry.username}
@@ -333,7 +338,8 @@ const JackpotPage = ({ socket, setBalance }) => {
                     {totalPotValue > 0 ? ((entry.value / totalPotValue) * 100).toFixed(1) : 0}%
                   </span>
                 </div>
-              ))
+                );
+              })
             ) : (
               <div className="jp-empty">No one has entered yet. Be the first!</div>
             )}

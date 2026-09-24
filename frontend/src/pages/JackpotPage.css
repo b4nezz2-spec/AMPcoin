@@ -8,6 +8,11 @@
   --r-sm:8px; --r-md:10px; --r-lg:14px;
   max-width: 1100px; margin: 0 auto; padding: 4px 10px 24px; color: var(--txt);
 }
+.jp-loading {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0;
+}
 .jackpot-page :where(.jp-pot-value,.jp-player-chance,.jp-player-value,.jp-selected-value,.jp-inv-value,.jp-history-details) {
   font-variant-numeric: tabular-nums;
 }
@@ -57,6 +62,10 @@
 .jp-player-card.is-winner {
   border-color: rgba(63,185,80,.6);
   box-shadow: 0 0 0 1px rgba(63,185,80,.6), 0 0 22px rgba(63,185,80,.3);
+}
+.jp-player-card.is-leader .jp-player-avatar {
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 12px rgba(210,153,34,.5);
 }
 
 /* Tabs */

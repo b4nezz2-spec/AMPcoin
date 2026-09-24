@@ -32,7 +32,9 @@
 /* Columns */
 .tr-cols { display: flex; align-items: stretch; gap: 10px; }
 .tr-col { flex: 1; min-width: 0; background: var(--bg1); border: 1px solid var(--line-soft); border-radius: var(--r-md); padding: 10px 12px; }
-.tr-col-title { font-size: .66rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); margin-bottom: 8px; }
+.tr-col-title { font-size: .66rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.tr-col-title::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--acc); box-shadow: 0 0 8px rgba(47,129,247,.6); }
+.tr-col:last-child .tr-col-title::before { background: var(--gold); box-shadow: 0 0 8px rgba(210,153,34,.6); }
 .tr-swap { display: flex; align-items: center; font-size: 1.2rem; color: var(--acc); font-weight: 800; flex-shrink: 0; }
 .tr-items { display: flex; flex-wrap: wrap; gap: 8px; }
 .tr-want-text { color: var(--mut); font-size: .85rem; font-style: italic; }

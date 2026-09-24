@@ -5,7 +5,7 @@ import CreateCoinflipModal from '../components/CreateCoinflipModal';
 import LeaderboardModal from '../components/LeaderboardModal';
 import AnimatedPopup from '../components/AnimatedPopup';
 import ModalPortal from '../components/ModalPortal';
-import { CoinChip, CoinFlipAnimation } from '../components/CoinChip';
+import { CoinChip, CoinFlipAnimation, CoinLoader } from '../components/CoinChip';
 import ModBadges from '../components/ModBadges';
 import Icon from '../components/Icon';
 import '../components/CoinChip.css';
@@ -594,8 +594,7 @@ const CoinflipPage = ({ socket, setBalance }) => {
   if (loading) {
     return (
       <div className="cf-loading">
-        <div className="cf-loading-spinner"></div>
-        <p>Loading coinflips...</p>
+        <CoinLoader size={84} label="Flipping up the lobby..." />
       </div>
     );
   }

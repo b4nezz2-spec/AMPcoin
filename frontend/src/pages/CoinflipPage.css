@@ -264,6 +264,9 @@ a.cf-tab { text-decoration: none; }
 }
 .cf-row-done { opacity: 0.72; }
 .cf-row-done:hover { opacity: 0.9; }
+.cf-row:has(.ring-winner) {
+  border-left: 2px solid var(--grn);
+}
 
 .cf-highlight { border-color: rgba(63, 185, 80, 0.45) !important; }
 

@@ -113,6 +113,26 @@ export function CoinChip({ side = 'heads', size = 120 }) {
   return <HeadsChip size={size} />;
 }
 
+// Endless flipping coin used for loading states
+export function CoinLoader({ size = 72, label }) {
+  const dim = typeof size === 'number' ? size : 72;
+  return (
+    <div className="coin-loader" style={{ width: dim }}>
+      <div className="coin-flip-scene" style={{ width: dim, height: dim }}>
+        <div className="coin-flip-inner coin-loop" style={{ width: dim, height: dim }}>
+          <div className="coin-face coin-face-front">
+            <HeadsChip size={size} />
+          </div>
+          <div className="coin-face coin-face-back">
+            <TailsChip size={size} />
+          </div>
+        </div>
+      </div>
+      {label && <div className="coin-loader-label">{label}</div>}
+    </div>
+  );
+}
+
 export function CoinFlipAnimation({ result = 'heads', size = 120, onDone }) {
   const dim = typeof size === 'number' ? size : 120;
   const normalized = normalizeSide(result);
