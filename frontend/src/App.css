@@ -87,7 +87,7 @@ body {
   padding: 16px 20px;
   margin-top: 0;
   overflow-y: auto;
-  animation: app-page-in 0.3s ease both;
+  animation: app-page-in 0.3s ease backwards;
 }
 
 /* ─── Sidebar = fixed 56px horizontal top navbar ─── */

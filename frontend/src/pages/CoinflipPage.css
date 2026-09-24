@@ -31,7 +31,7 @@
   margin: 0 auto;
   padding: 0;
   color: var(--txt);
-  animation: cf-page-in 0.25s ease both;
+  animation: cf-page-in 0.25s ease backwards;
 }
 
 @keyframes cf-page-in {
