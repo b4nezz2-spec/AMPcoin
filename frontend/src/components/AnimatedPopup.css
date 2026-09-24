@@ -1,154 +1,87 @@
-/* Animated popup notifications — spring pop-in, glow, progress dismiss */
+/* Animated popup notifications — refined to match design system */
+:root {
+  --bg0:#070a11; --bg1:#0b0f17; --panel:#0e141d; --panel2:#121924;
+  --line:rgba(148,163,184,.12);
+  --txt:#eef2f7; --mut:#8b96a8;
+  --acc:#2f81f7; --grn:#3fb950; --red:#f85149; --gold:#d29922; --orange:#ec7f24;
+  --r-sm:8px; --r-md:10px; --r-lg:14px;
+}
 .apop-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 5000;
-  display: flex;
-  justify-content: center;
-  padding: 76px 16px 0;
-  pointer-events: none;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 5000;
+  display: flex; justify-content: center;
+  padding: 76px 16px 0; pointer-events: none;
 }
-
 .apop-card {
-  pointer-events: auto;
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 280px;
-  max-width: 420px;
+  pointer-events: auto; position: relative;
+  display: flex; align-items: center; gap: 12px;
+  min-width: 280px; max-width: 420px;
   padding: 14px 40px 16px 14px;
-  background: #161b22;
-  border: 1px solid #30363d;
-  border-radius: 14px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
-  overflow: hidden;
-  cursor: pointer;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 16px 48px rgba(0,0,0,.55);
+  overflow: hidden; cursor: pointer;
+  font-variant-numeric: tabular-nums;
 }
-
-.apop-enter { animation: apop-spring 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-.apop-exit { animation: apop-out 0.25s ease-in both; }
-
+.apop-enter { animation: apop-spring .45s cubic-bezier(.34,1.56,.64,1) both; }
+.apop-exit { animation: apop-out .25s ease-in both; }
 @keyframes apop-spring {
-  0% { opacity: 0; transform: translateY(-32px) scale(0.85); }
+  0% { opacity: 0; transform: translateY(-32px) scale(.85); }
   60% { opacity: 1; transform: translateY(4px) scale(1.03); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
-
-@keyframes apop-out {
-  to { opacity: 0; transform: translateY(-20px) scale(0.92); }
-}
-
+@keyframes apop-out { to { opacity: 0; transform: translateY(-20px) scale(.92); } }
 .apop-glow {
-  position: absolute;
-  top: -40px;
-  left: 10%;
-  right: 10%;
-  height: 80px;
-  border-radius: 50%;
-  filter: blur(30px);
-  opacity: 0.35;
-  pointer-events: none;
+  position: absolute; top: -40px; left: 10%; right: 10%;
+  height: 80px; border-radius: 50%;
+  filter: blur(30px); opacity: .3; pointer-events: none;
 }
-
-.apop-success { border-color: rgba(63, 185, 80, 0.6); }
-.apop-success .apop-glow { background: #3fb950; }
-.apop-error { border-color: rgba(248, 81, 73, 0.6); }
-.apop-error .apop-glow { background: #f85149; }
-.apop-warning { border-color: rgba(240, 136, 0, 0.6); }
-.apop-warning .apop-glow { background: #f08800; }
-.apop-info { border-color: rgba(88, 166, 255, 0.6); }
-.apop-info .apop-glow { background: #58a6ff; }
-
+.apop-success { border-color: rgba(63,185,80,.5); }
+.apop-success .apop-glow { background: var(--grn); }
+.apop-error { border-color: rgba(248,81,73,.5); }
+.apop-error .apop-glow { background: var(--red); }
+.apop-warning { border-color: rgba(236,127,36,.5); }
+.apop-warning .apop-glow { background: var(--orange); }
+.apop-info { border-color: rgba(47,129,247,.5); }
+.apop-info .apop-glow { background: var(--acc); }
 .apop-icon {
-  width: 34px;
-  height: 34px;
-  min-width: 34px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  font-weight: 800;
-  color: #fff;
-  animation: apop-icon-pop 0.5s 0.1s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  width: 34px; height: 34px; min-width: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; font-weight: 800; color: #fff;
+  animation: apop-icon-pop .5s .1s cubic-bezier(.34,1.56,.64,1) both;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.2);
 }
-
-@keyframes apop-icon-pop {
-  from { transform: scale(0); }
-  to { transform: scale(1); }
-}
-
-.apop-success .apop-icon { background: #3fb950; box-shadow: 0 0 14px rgba(63, 185, 80, 0.6); }
-.apop-error .apop-icon { background: #f85149; box-shadow: 0 0 14px rgba(248, 81, 73, 0.6); animation: apop-shake 0.4s 0.1s; }
-.apop-warning .apop-icon { background: #f08800; box-shadow: 0 0 14px rgba(240, 136, 0, 0.6); }
-.apop-info .apop-icon { background: #58a6ff; box-shadow: 0 0 14px rgba(88, 166, 255, 0.6); font-style: italic; font-family: serif; }
-
+@keyframes apop-icon-pop { from { transform: scale(0); } to { transform: scale(1); } }
+.apop-success .apop-icon { background: #238636; box-shadow: 0 0 14px rgba(63,185,80,.5), inset 0 1px 0 rgba(255,255,255,.2); }
+.apop-error .apop-icon { background: #da3633; box-shadow: 0 0 14px rgba(248,81,73,.5), inset 0 1px 0 rgba(255,255,255,.2); animation: apop-shake .4s .1s; }
+.apop-warning .apop-icon { background: #9e6a03; box-shadow: 0 0 14px rgba(236,127,36,.5), inset 0 1px 0 rgba(255,255,255,.2); }
+.apop-info .apop-icon { background: var(--acc); box-shadow: 0 0 14px rgba(47,129,247,.5), inset 0 1px 0 rgba(255,255,255,.2); font-style: italic; font-family: serif; }
 @keyframes apop-shake {
   0%, 100% { transform: translateX(0) scale(1); }
   25% { transform: translateX(-4px) scale(1.05); }
   50% { transform: translateX(4px) scale(1.05); }
   75% { transform: translateX(-2px) scale(1); }
 }
-
 .apop-body { flex: 1; min-width: 0; }
-
-.apop-title {
-  font-size: 0.88rem;
-  font-weight: 800;
-  color: #e6edf3;
-  letter-spacing: 0.2px;
-}
-
-.apop-message {
-  font-size: 0.82rem;
-  color: #b1bac4;
-  margin-top: 2px;
-  line-height: 1.4;
-  word-break: break-word;
-}
-
+.apop-title { font-size: .87rem; font-weight: 800; color: var(--txt); letter-spacing: .01em; }
+.apop-message { font-size: .81rem; color: var(--mut); margin-top: 2px; line-height: 1.45; word-break: break-word; }
 .apop-x {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 24px;
-  height: 24px;
-  border: none;
-  background: none;
-  color: #484f58;
-  font-size: 1.1rem;
-  cursor: pointer;
-  border-radius: 6px;
-  line-height: 1;
+  position: absolute; top: 6px; right: 6px;
+  width: 24px; height: 24px; border: none; background: none;
+  color: var(--mut); font-size: 1.05rem; cursor: pointer;
+  border-radius: 6px; line-height: 1; transition: all .12s ease;
 }
-
-.apop-x:hover { color: #e6edf3; background: rgba(255, 255, 255, 0.06); }
-
+.apop-x:hover { color: var(--txt); background: rgba(148,163,184,.1); }
 .apop-progress {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 3px;
-  width: 100%;
+  position: absolute; bottom: 0; left: 0; height: 3px; width: 100%;
   transform-origin: left;
-  animation-name: apop-bar;
-  animation-timing-function: linear;
-  animation-fill-mode: forwards;
+  animation-name: apop-bar; animation-timing-function: linear; animation-fill-mode: forwards;
 }
-
-@keyframes apop-bar {
-  from { transform: scaleX(1); }
-  to { transform: scaleX(0); }
-}
-
-.apop-success .apop-progress { background: #3fb950; }
-.apop-error .apop-progress { background: #f85149; }
-.apop-warning .apop-progress { background: #f08800; }
-.apop-info .apop-progress { background: #58a6ff; }
-
+@keyframes apop-bar { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+.apop-success .apop-progress { background: var(--grn); }
+.apop-error .apop-progress { background: var(--red); }
+.apop-warning .apop-progress { background: var(--orange); }
+.apop-info .apop-progress { background: var(--acc); }
 @media (max-width: 768px) {
   .apop-overlay { padding: 60px 12px 0; }
   .apop-card { min-width: 0; width: 100%; }
