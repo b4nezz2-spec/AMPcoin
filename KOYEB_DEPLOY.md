@@ -21,7 +21,7 @@ Go to **[koyeb.com](https://koyeb.com)** → Sign up with GitHub
 
 | Key | Value |
 |-----|-------|
-| `DATABASE_URL` | `postgresql://postgres:REDACTED_DB_PASSWORD@REDACTED_DB_HOST.supabase.co:5432/postgres` |
+| `DATABASE_URL` | your Postgres connection string (from Supabase/Neon dashboard — never commit the real one) |
 | `JWT_SECRET` | `SECRETKEY123` |
 | `CLIENT_URL` | `https://ampcoin.co.uk` |
 | `NODE_ENV` | `production` |

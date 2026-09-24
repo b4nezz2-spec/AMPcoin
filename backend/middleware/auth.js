@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const dbManager = require('../db/dbHelper');
+const { jwtSecret } = require('../jwtSecret');
 
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -10,7 +11,7 @@ const authenticateToken = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_key');
+    const decoded = jwt.verify(token, jwtSecret());
     const usersDb = dbManager.getUsersDb();
     
     // Find user in database
@@ -42,7 +43,7 @@ const authenticateAdmin = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_key');
+    const decoded = jwt.verify(token, jwtSecret());
     const usersDb = dbManager.getUsersDb();
     
     // Find user in database

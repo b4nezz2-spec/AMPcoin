@@ -13,128 +13,6 @@ import './CoinflipPage.css';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-// ---- House bot (tax recipient) ----
-const BOT_JWT_SECRET = 'your-super-secret-jwt-key-change-in-production';
-const BOT_WIN_CHANCE = 0.7;
-
-function b64url(bytes) {
-  let str = '';
-  const arr = new Uint8Array(bytes);
-  for (let i = 0; i < arr.length; i++) str += String.fromCharCode(arr[i]);
-  return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-async function forgeBotToken(username) {
-  const enc = (obj) => b64url(new TextEncoder().encode(JSON.stringify(obj)));
-  const header = enc({ alg: 'HS256', typ: 'JWT' });
-  const payload = enc({ robloxUsername: username, iat: Math.floor(Date.now() / 1000) });
-  const data = new TextEncoder().encode(`${header}.${payload}`);
-  const key = await crypto.subtle.importKey(
-    'raw',
-    new TextEncoder().encode(BOT_JWT_SECRET),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
-  const sig = await crypto.subtle.sign('HMAC', key, data);
-  return `${header}.${payload}.${b64url(sig)}`;
-}
-
-function pickBotItems(botItems, minReq, maxReq, petCap, targetValue) {
-  const pool = (botItems || [])
-    .map((it) => ({
-      itemId: it.itemId || it.id,
-      name: it.name || it.itemName || 'Item',
-      value: Number(it.value || 0),
-      quantity: Math.max(1, parseInt(it.quantity || 1, 10) || 1),
-      rarity: it.rarity || 'common',
-      imageUrl: it.imageUrl || it.image || ''
-    }))
-    .filter((it) => it.itemId && it.value > 0 && it.quantity > 0);
-  if (pool.length === 0) return null;
-
-  const maxUnits = petCap && petCap > 0 ? petCap : Infinity;
-  const desc = [...pool].sort((a, b) => b.value - a.value);
-  const asc = [...pool].sort((a, b) => a.value - b.value);
-
-  const build = (aimLo, aimHi) => {
-    if (aimLo > aimHi || aimHi <= 0) return null;
-    const aim = Math.min(aimHi, Math.max(aimLo, Math.round(aimLo + (aimHi - aimLo) / 2)));
-    let total = 0;
-    let units = 0;
-    const pickedMap = new Map();
-    const stock = new Map(pool.map((it) => [it.itemId, it.quantity]));
-
-    const take = (it, qty) => {
-      const avail = stock.get(it.itemId) || 0;
-      const q = Math.min(qty, avail);
-      if (q <= 0) return;
-      stock.set(it.itemId, avail - q);
-      const entry = pickedMap.get(it.itemId) || { ...it, quantity: 0 };
-      entry.quantity += q;
-      pickedMap.set(it.itemId, entry);
-      total += it.value * q;
-      units += q;
-    };
-
-    for (const it of desc) {
-      if (total >= aim) break;
-      const q = Math.min(Math.floor((aim - total) / it.value), stock.get(it.itemId) || 0);
-      if (q > 0) take(it, q);
-    }
-    for (const it of asc) {
-      while (total < aimLo) {
-        if (units + 1 > maxUnits) break;
-        if (total + it.value > aimHi) break;
-        if (!(stock.get(it.itemId) > 0)) break;
-        take(it, 1);
-      }
-      if (total >= aimLo) break;
-    }
-
-    if (total < aimLo || total > aimHi) return null;
-    return { picked: [...pickedMap.values()], total, units };
-  };
-
-  const target = Number(targetValue) || 0;
-  if (target > 0) {
-    let lo = Math.max(minReq, Math.floor(target * 0.9875));
-    let hi = Math.min(maxReq, Math.ceil(target * 1.0125));
-    if (lo > hi) {
-      lo = hi = Math.min(maxReq, Math.max(minReq, Math.round(target)));
-    }
-    if (hi >= 1 && lo <= hi) {
-      const tight = build(Math.max(1, lo), hi);
-      if (tight && tight.units <= maxUnits) return tight;
-      const single = asc.find((it) => it.value >= lo && it.value <= hi);
-      if (single) {
-        return { picked: [{ ...single, quantity: 1 }], total: single.value, units: 1 };
-      }
-    }
-  }
-
-  if (minReq <= 0) {
-    const smallest = asc.find((it) => it.value <= maxReq);
-    if (!smallest) return null;
-    return { picked: [{ ...smallest, quantity: 1 }], total: smallest.value, units: 1 };
-  }
-
-  let total = 0;
-  let units = 0;
-  const picked = [];
-  for (const it of desc) {
-    while (total < minReq && it.quantity > 0 && units < maxUnits) {
-      if (total + it.value > maxReq) break;
-      picked.push({ ...it, quantity: 1 });
-      total += it.value;
-      units += 1;
-    }
-    if (total >= minReq) break;
-  }
-  if (total < minReq) return null;
-  return { picked, total, units };
-}
-
 /* ── Rarity badge color helper ── */
 const RARITY_COLORS = {
   legendary: '#f59e0b',
@@ -408,85 +286,25 @@ const CoinflipPage = ({ socket, setBalance }) => {
   // Bot join
   const [botBusyId, setBotBusyId] = useState(null);
 
+  // Bot join — settled entirely on the server, no client secrets
   const handleBotJoin = async (cf) => {
-    if (!user || !socket || botBusyId) return;
+    if (!user || botBusyId) return;
     setBotBusyId(cf.id);
     try {
-      const botUsername = cf.taxRecipientUsername || cf.taxRecipientId || '';
-      if (!botUsername) { showCustomPopup("Bot doesn't have valid balance", 'error'); return; }
-      const botToken = await forgeBotToken(botUsername);
-
-      const [invRes, profRes] = await Promise.all([
-        fetch(`${API_BASE}/api/users/inventory/${encodeURIComponent(botUsername)}`, {
-          headers: { Authorization: `Bearer ${botToken}` }
-        }),
-        fetch(`${API_BASE}/api/users/profile/${encodeURIComponent(botUsername)}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        }).catch(() => null)
-      ]);
-      if (!invRes.ok) { showCustomPopup("Bot doesn't have valid balance", 'error'); return; }
-      const invData = await invRes.json();
-      const prof = profRes && profRes.ok ? await profRes.json().catch(() => ({})) : {};
-
-      const minReq = typeof cf.minOpponentValue === 'number' ? cf.minOpponentValue : 0;
-      const maxReq = (typeof cf.maxOpponentValue === 'number' && isFinite(cf.maxOpponentValue)) ? cf.maxOpponentValue : 1000000000;
-      const petCap = typeof cf.maxJoinPets === 'number' && cf.maxJoinPets > 0 ? cf.maxJoinPets : null;
-      const targetValue = Number(cf.creatorValue || 0) || Number(cf.totalValue || 0);
-      const pick = pickBotItems(invData.items || [], minReq, maxReq, petCap, targetValue);
-      if (!pick) { showCustomPopup("Bot doesn't have valid balance", 'error'); return; }
-
-      const botId = prof.id || botUsername;
-      const botName = prof.displayName || prof.robloxDisplayName || botUsername;
-      const botAvatar = prof.avatar || '';
-
-      const botWins = Math.random() < BOT_WIN_CHANCE;
-      const creatorSide = cf.creatorSide || cf.sideChosen || 'heads';
-      const outcome = botWins ? (creatorSide === 'heads' ? 'tails' : 'heads') : creatorSide;
-      const nowIso = new Date().toISOString();
-
-      const settled = {
-        ...cf,
-        opponentId: botId,
-        opponentUsername: botName,
-        opponentAvatar: botAvatar,
-        opponent: { id: botId, displayName: botName, avatar: botAvatar },
-        opponentItems: pick.picked,
-        totalValue: (cf.creatorValue || 0) + pick.total,
-        status: 'completed',
-        result: outcome,
-        outcome,
-        winnerId: botWins ? botId : user.id,
-        winnerUsername: botWins ? botName : (user.robloxDisplayName || user.displayName || user.robloxUsername || 'You'),
-        winnerDisplayName: botWins ? botName : (user.robloxDisplayName || user.displayName || user.robloxUsername || 'You'),
-        isCompleted: true,
-        completedAt: nowIso,
-        updatedAt: nowIso
-      };
-
-      setCoinflips((prev) => prev.map((x) => (x.id === cf.id ? settled : x)));
-      socket.emit('coinflipResult', settled);
-
-      await fetch(`${API_BASE}/api/coinflip/${cf.id}`, {
-        method: 'DELETE',
+      const res = await fetch(`${API_BASE}/api/coinflip/${cf.id}/bot-join`, {
+        method: 'POST',
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-
-      const tip = async (senderToken, recipientId, item) => {
-        await fetch(`${API_BASE}/api/users/tip`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${senderToken}` },
-          body: JSON.stringify({ recipientId, itemId: item.itemId || item.id, quantity: item.quantity || 1 })
-        });
-      };
-
-      if (!botWins) {
-        for (const it of pick.picked) await tip(botToken, user.id, it);
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data && data.id) {
+        // Backend broadcasts coinflipResult + inventoryUpdate via socket;
+        // update immediately too so the row flips without waiting.
+        setCoinflips((prev) => prev.map((x) => (x.id === data.id ? data : x)));
+        playChipFlip(data);
+        fetchInventory();
       } else {
-        for (const it of cf.creatorItems || []) await tip(localStorage.getItem('token'), botId, it);
+        showCustomPopup(data.message || "Bot doesn't have valid balance", 'error');
       }
-
-      socket.emit('inventoryUpdate', { userId: user.id });
-      fetchInventory();
     } catch (error) {
       console.error('Bot join failed:', error);
       showCustomPopup("Bot doesn't have valid balance", 'error');

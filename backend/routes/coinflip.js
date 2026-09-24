@@ -496,6 +496,258 @@ router.post('/:id/join', authenticateToken, (req, res) => {
   }
 });
 
+// Server-side house-bot join (creator only).
+// The tax-recipient account joins the creator's open bet. No client secrets,
+// no forged tokens — everything happens here in the DB.
+router.post('/:id/bot-join', authenticateToken, (req, res) => {
+  try {
+    const db = dbManager.getMainDb();
+    const usersDb = dbManager.getUsersDb();
+    const userId = req.user.userId;
+
+    const coinflip = (db.coinflips || []).find((cf) => cf.id === req.params.id);
+    if (!coinflip) return res.status(404).json({ message: 'Coinflip not found' });
+    if (coinflip.creatorId !== userId) {
+      return res.status(403).json({ message: 'Only the bet creator can add the bot' });
+    }
+    if (coinflip.status !== 'waiting' || coinflip.opponentId) {
+      return res.status(400).json({ message: 'Bet is no longer open' });
+    }
+
+    const recipient = getTaxRecipient();
+    if (!recipient) return res.status(400).json({ message: 'House bot is not configured' });
+    const botUser = (usersDb.users || []).find((u) => u.id === recipient.id);
+    if (!botUser) return res.status(400).json({ message: 'House bot account not found' });
+
+    const botInventory = dbManager.getUserInventory(recipient.id);
+    const pool = ((botInventory && botInventory.items) || [])
+      .map((it) => ({
+        itemId: it.itemId || it.id,
+        name: it.name || it.itemName || 'Item',
+        itemName: it.name || it.itemName || 'Item',
+        value: Number(it.value || 0),
+        quantity: Math.max(1, parseInt(it.quantity || 1, 10) || 1),
+        rarity: it.rarity || 'common',
+        image: it.imageUrl || it.image || '',
+        imageUrl: it.imageUrl || it.image || ''
+      }))
+      .filter((it) => it.itemId && it.value > 0 && it.quantity > 0);
+    if (pool.length === 0) {
+      return res.status(400).json({ message: "Bot doesn't have valid balance" });
+    }
+
+    const minReq = typeof coinflip.minOpponentValue === 'number' ? coinflip.minOpponentValue : 0;
+    const maxRaw = coinflip.maxOpponentValue;
+    const maxReq = (typeof maxRaw === 'number' && isFinite(maxRaw)) ? maxRaw : 1000000000;
+    const petCap = (typeof coinflip.maxJoinPets === 'number' && coinflip.maxJoinPets > 0)
+      ? coinflip.maxJoinPets
+      : null;
+    const maxUnits = petCap && petCap > 0 ? petCap : Infinity;
+    const target = Number(coinflip.creatorValue || 0) || Number(coinflip.totalValue || 0);
+
+    // Pick bot items matching the bet's value band
+    const desc = [...pool].sort((a, b) => b.value - a.value);
+    const asc = [...pool].sort((a, b) => a.value - b.value);
+    const build = (aimLo, aimHi) => {
+      if (aimLo > aimHi || aimHi <= 0) return null;
+      const aim = Math.min(aimHi, Math.max(aimLo, Math.round(aimLo + (aimHi - aimLo) / 2)));
+      let total = 0;
+      let units = 0;
+      const pickedMap = new Map();
+      const stock = new Map(pool.map((it) => [it.itemId, it.quantity]));
+      const take = (it, qty) => {
+        const avail = stock.get(it.itemId) || 0;
+        const q = Math.min(qty, avail);
+        if (q <= 0) return;
+        stock.set(it.itemId, avail - q);
+        const entry = pickedMap.get(it.itemId) || { ...it, quantity: 0 };
+        entry.quantity += q;
+        pickedMap.set(it.itemId, entry);
+        total += it.value * q;
+        units += q;
+      };
+      for (const it of desc) {
+        if (total >= aim) break;
+        const q = Math.min(Math.floor((aim - total) / it.value), stock.get(it.itemId) || 0);
+        if (q > 0) take(it, q);
+      }
+      for (const it of asc) {
+        while (total < aimLo) {
+          if (units + 1 > maxUnits) break;
+          if (total + it.value > aimHi) break;
+          if (!(stock.get(it.itemId) > 0)) break;
+          take(it, 1);
+        }
+        if (total >= aimLo) break;
+      }
+      if (total < aimLo || total > aimHi) return null;
+      return { picked: [...pickedMap.values()], total, units };
+    };
+
+    let pick = null;
+    if (target > 0) {
+      const lo = Math.max(minReq, Math.floor(target * 0.9875));
+      const hi = Math.min(maxReq, Math.ceil(target * 1.0125));
+      if (hi >= 1 && lo <= hi) {
+        const tight = build(Math.max(1, lo), hi);
+        if (tight && tight.units <= maxUnits) pick = tight;
+        else {
+          const single = asc.find((it) => it.value >= lo && it.value <= hi);
+          if (single) pick = { picked: [{ ...single, quantity: 1 }], total: single.value, units: 1 };
+        }
+      }
+    }
+    if (!pick) {
+      if (minReq > 0) {
+        const fallback = build(minReq, maxReq);
+        if (fallback && fallback.units <= maxUnits) pick = fallback;
+      } else {
+        const smallest = asc.find((it) => it.value <= maxReq);
+        if (smallest) pick = { picked: [{ ...smallest, quantity: 1 }], total: smallest.value, units: 1 };
+      }
+    }
+    if (!pick) {
+      return res.status(400).json({ message: "Bot doesn't have valid balance" });
+    }
+
+    // Deduct bot items
+    for (const it of pick.picked) {
+      dbManager.removeItemFromUserInventory(recipient.id, it.itemId, it.quantity || 1);
+    }
+
+    const botName = botUser.displayName || botUser.robloxDisplayName || botUser.robloxUsername || 'House Bot';
+    const botAvatar = botUser.avatar || '';
+    const opponentTotalValue = pick.total;
+
+    coinflip.opponentId = recipient.id;
+    coinflip.opponentUsername = botName;
+    coinflip.opponentAvatar = botAvatar;
+    coinflip.opponentItems = pick.picked.map((it) => ({
+      id: it.itemId,
+      itemId: it.itemId,
+      name: it.name || it.itemName,
+      itemName: it.name || it.itemName,
+      value: it.value || 0,
+      rarity: it.rarity || 'common',
+      quantity: it.quantity || 1,
+      image: it.image || it.imageUrl || ''
+    }));
+    coinflip.totalValue = (coinflip.creatorValue || coinflip.totalValue) + opponentTotalValue;
+
+    // House outcome: bot wins 70% of the time
+    const creatorSide = (coinflip.creatorSide || coinflip.sideChosen || 'heads').toLowerCase() === 'tails' ? 'tails' : 'heads';
+    const botWins = Math.random() < 0.7;
+    const outcome = botWins ? (creatorSide === 'heads' ? 'tails' : 'heads') : creatorSide;
+
+    const winnerId = botWins ? recipient.id : coinflip.creatorId;
+    const winnerUsername = botWins ? botName : coinflip.creatorUsername;
+    const loserId = botWins ? coinflip.creatorId : recipient.id;
+
+    coinflip.result = outcome;
+    coinflip.winnerId = winnerId;
+    coinflip.winnerUsername = winnerUsername;
+    coinflip.winnerDisplayName = winnerUsername;
+    coinflip.status = 'completed';
+    coinflip.completedAt = new Date().toISOString();
+    coinflip.updatedAt = new Date().toISOString();
+
+    const liveTaxRate = getCoinflipTaxRate();
+    const effectiveTaxRate = (typeof coinflip.taxRate === 'number' && coinflip.taxRate > 0)
+      ? coinflip.taxRate
+      : liveTaxRate;
+    coinflip.taxRate = effectiveTaxRate;
+
+    const potStacks = [...coinflip.creatorItems, ...coinflip.opponentItems];
+    const taxTo = getTaxRecipient();
+    let winnerStacks = potStacks;
+    coinflip.taxItems = [];
+    coinflip.taxAmount = 0;
+    coinflip.taxRecipientId = taxTo ? taxTo.id : null;
+    coinflip.taxRecipientUsername = taxTo ? taxTo.username : null;
+
+    if (taxTo && effectiveTaxRate > 0) {
+      const split = collectItemTax(potStacks, effectiveTaxRate);
+      winnerStacks = split.winnerStacks;
+      coinflip.taxItems = split.taxStacks;
+      coinflip.taxAmount = split.taxAmount;
+      for (const t of split.taxStacks) {
+        dbManager.addItemToUserInventory(taxTo.id, t, t.quantity || 1);
+      }
+    }
+
+    if (coinflip.taxAmount > 0) {
+      db.transactions = db.transactions || [];
+      db.transactions.push({
+        id: uuidv4(),
+        userId: winnerId,
+        robloxUsername: winnerUsername,
+        amount: -coinflip.taxAmount,
+        type: 'coinflip_tax',
+        status: 'completed',
+        metadata: {
+          coinflipId: coinflip.id,
+          taxRate: effectiveTaxRate,
+          taxRecipientId: coinflip.taxRecipientId,
+          taxRecipientUsername: coinflip.taxRecipientUsername,
+          taxItems: coinflip.taxItems.map((t) => ({
+            itemId: t.itemId || t.id,
+            name: t.name || t.itemName,
+            quantity: t.quantity || 1,
+            value: t.value || 0
+          }))
+        },
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    for (const potItem of winnerStacks) {
+      dbManager.addItemToUserInventory(winnerId, potItem, potItem.quantity || 1);
+    }
+
+    const wonItemsCount = (winnerStacks || []).reduce((sum, it) => sum + (it.quantity || 1), 0);
+    if (wonItemsCount > 0) {
+      const firstWon = winnerStacks[0] || {};
+      addNotification({
+        userId: winnerId,
+        type: 'items',
+        title: 'Items received',
+        message: `You won the coinflip and received ${wonItemsCount} item${wonItemsCount === 1 ? '' : 's'}!`,
+        imageUrl: firstWon.imageUrl || firstWon.image || ''
+      });
+    }
+
+    const winnerUser = usersDb.users.find((u) => u.id === winnerId);
+    if (winnerUser) {
+      winnerUser.gamesPlayed = (winnerUser.gamesPlayed || 0) + 1;
+      winnerUser.gamesWon = (winnerUser.gamesWon || 0) + 1;
+      winnerUser.updatedAt = new Date().toISOString();
+    }
+
+    const loserUser = usersDb.users.find((u) => u.id === loserId);
+    if (loserUser) {
+      loserUser.gamesPlayed = (loserUser.gamesPlayed || 0) + 1;
+      loserUser.gamesLost = (loserUser.gamesLost || 0) + 1;
+      loserUser.updatedAt = new Date().toISOString();
+    }
+
+    dbManager.saveUsersDb();
+    dbManager.saveMainDb();
+
+    const { emitToAll } = require('../realtime');
+    emitToAll('inventoryUpdate', { userId: winnerId });
+    emitToAll('inventoryUpdate', { userId: loserId });
+    if (coinflip.taxRecipientId && coinflip.taxAmount > 0) {
+      emitToAll('inventoryUpdate', { userId: coinflip.taxRecipientId });
+    }
+    emitToAll('coinflipResult', formatCoinflip(coinflip));
+
+    res.json(formatCoinflip(coinflip));
+  } catch (error) {
+    console.error('Error in bot join:', error);
+    res.status(500).json({ message: 'Server error in bot join' });
+  }
+});
+
 // Cancel a waiting coinflip (creator only) — refunds wagered items
 router.delete('/:id', authenticateToken, (req, res) => {
   try {

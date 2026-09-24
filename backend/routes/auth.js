@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 const dbManager = require('../db/dbHelper');
+const { jwtSecret } = require('../jwtSecret');
 
 const router = express.Router();
 
@@ -216,7 +217,7 @@ router.post('/register', async (req, res) => {
         robloxUsername: newUser.robloxUsername,
         isAdmin: !!newUser.isAdmin
       },
-      process.env.JWT_SECRET || 'fallback_secret_key',
+      jwtSecret(),
       { expiresIn: '24h' }
     );
 
@@ -284,7 +285,7 @@ router.post('/login', async (req, res) => {
         robloxUsername: user.robloxUsername,
         isAdmin: !!user.isAdmin
       },
-      process.env.JWT_SECRET || 'fallback_secret_key',
+      jwtSecret(),
       { expiresIn: '24h' }
     );
 
@@ -503,7 +504,7 @@ router.post('/verify-and-register', async (req, res) => {
 
       const loginToken = jwt.sign(
         { userId: existing.id, robloxUsername: existing.robloxUsername, isAdmin: !!existing.isAdmin },
-        process.env.JWT_SECRET || 'fallback_secret_key',
+        jwtSecret(),
         { expiresIn: '24h' }
       );
 
@@ -547,7 +548,7 @@ router.post('/verify-and-register', async (req, res) => {
 
     const token = jwt.sign(
       { userId: newUser.id, robloxUsername: newUser.robloxUsername, isAdmin: !!newUser.isAdmin },
-      process.env.JWT_SECRET || 'fallback_secret_key',
+      jwtSecret(),
       { expiresIn: '24h' }
     );
 
@@ -569,7 +570,7 @@ router.post('/verify-token', async (req, res) => {  try {
 
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_key');
+      decoded = jwt.verify(token, jwtSecret());
     } catch (err) {
       return res.status(401).json({ valid: false, message: 'Invalid token' });
     }
@@ -646,7 +647,7 @@ router.get('/discord', async (req, res) => {
     if (!token) return res.status(401).send('Missing login token.');
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_key');
+      decoded = jwt.verify(token, jwtSecret());
     } catch (_) {
       return res.status(401).send('Invalid login token.');
     }
